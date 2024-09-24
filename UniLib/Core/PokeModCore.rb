@@ -230,6 +230,7 @@ insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD, Proc.new do
   provider = CUSTOM_TYPE2_PROVIDERS[@species]
   unless provider.nil?
     ret = provider.call(self)
+    return nil if ret == type1
     return ret unless ret.nil?
   end
 end)
