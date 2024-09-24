@@ -74,7 +74,7 @@ def unilib_save_data(name, data, saveslot=true)
   dir = "#{UNILIB_PATH}Save/"
   Dir.mkdir(dir) unless Dir.exist?(dir)
   prefix = saveslot ? "Game_#{$Unidata[:saveslot]}_" : ""
-  File.write(dir + prefix + name + ".dat", Marshal.dump(data)) rescue nil
+  File.open(dir + prefix + name + ".dat", "w") { |f| f.write(Marshal.dump(data)) }
 end
 
 <<-DOC

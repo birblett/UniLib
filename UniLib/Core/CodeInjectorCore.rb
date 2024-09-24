@@ -127,10 +127,10 @@ define_method(:pbCallTitle) do
   EVENT_ON_PLAY.sort! { |a, b| b[1] <=> a[1]}
   EVENT_ON_SAVE.sort! { |a, b| b[1] <=> a[1]}
   insertions = Time.now
-  PENDING_INSERTIONS.push([:PokemonLoad, :startPlayingSaveFile, "$game_player.center($game_player.x, $game_player.y)", Proc.new do
+  PENDING_INSERTIONS.push([:PokemonLoad, :startPlayingSaveFile, "$game_player.center($game_player.x, $game_player.y)", proc do
     EVENT_ON_PLAY.each { |fixer| method(fixer[0]).call }
   end, 0, false])
-  PENDING_INSERTIONS.push([:Object, :saveNew, "end", Proc.new do
+  PENDING_INSERTIONS.push([:Object, :saveNew, "end", proc do
     EVENT_ON_SAVE.each { |saver| method(saver[0]).call }
   end, 0, false])
   PENDING_INSERTIONS.each do |pending|

@@ -136,7 +136,7 @@ add_save_event(:write_custom_crest_flags)
 # ====================================================== PATCH ======================================================= #
 # ==================================================================================================================== #
 
-insert_in_method(:Cache_Game, :map_load, "end", Proc.new do |mapid|
+insert_in_method(:Cache_Game, :map_load, "end", proc do |mapid|
   if mapid == 168
     @cachedmaps[mapid] = load_data(sprintf("Data/Map%03d.rxdata", mapid))
     chmap = [0, 6, 10, 14, 15]
@@ -185,18 +185,18 @@ insert_in_method(:Cache_Game, :map_load, "end", Proc.new do |mapid|
   end
 end)
 
-insert_in_method(:Interpreter, :command_111, "result = false", Proc.new do |result|
+insert_in_method(:Interpreter, :command_111, "result = false", proc do |result|
   if (@parameters[1].is_a? Symbol) and @parameters[1].to_s.start_with?("UNILIB_CREST_")
     result = !$custom_crest_flags[@parameters[1]].nil?
   else
 end end)
 
-replace_in_method(:Interpreter, :command_111, "@branch[@list[@index].indent] = result", Proc.new do if true
+replace_in_method(:Interpreter, :command_111, "@branch[@list[@index].indent] = result", proc do if true
   end
   @branch[@list[@index].indent] = result
 end)
 
-insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponent.crested", Proc.new do |opponent, type, typemod|
+insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponent.crested", proc do |opponent, type, typemod|
   if opponent.crested
     vtype = CREST_WEAKNESS_OVERRIDE[opponent.species]
     b = check_type(type, vtype, TYPE_WEAKNESS_MAP)
@@ -217,7 +217,7 @@ def check_type(type, vtype, map)
   (vtype.class == Array and vtype.include?(type)) or (map[vtype].include?(type) unless vtype.nil? or map[vtype].nil?)
 end
 
-insert_in_method_before(:PokeBattle_AI, :pbRoughDamage, "case attacker.crested", Proc.new do |attacker, typecrest, type|
+insert_in_method_before(:PokeBattle_AI, :pbRoughDamage, "case attacker.crested", proc do |attacker, typecrest, type|
   if attacker.crested
     vtype = CREST_WEAKNESS_OVERRIDE[attacker.species]
     typecrest = true if check_type(type, vtype, TYPE_WEAKNESS_MAP)
@@ -232,6 +232,6 @@ insert_in_method_before(:PokeBattle_AI, :pbRoughDamage, "case attacker.crested",
   end
 end, 1)
 
-insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "case attacker.crested", Proc.new do |attacker, type, typecrest|
+insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "case attacker.crested", proc do |attacker, type, typecrest|
   typecrest = true if type == CREST_STAB_OVERRIDE[attacker.crested]
 end, 3)

@@ -106,7 +106,7 @@ add_save_event(:write_invalid_items)
 # ====================================================== PATCH ======================================================= #
 # ==================================================================================================================== #
 
-insert_in_function(:pbItemIconFile, :HEAD, Proc.new do
+insert_in_function(:pbItemIconFile, :HEAD, proc do
   unless CUSTOM_ITEMS[item].nil?
     Dir.mkdir(UNILIB_ASSET_PATH) rescue nil
     name = "Data/Mods/UniLibAssets/#{item.to_s.gsub("_","").downcase}.png"

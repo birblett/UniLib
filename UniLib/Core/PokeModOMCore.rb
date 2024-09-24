@@ -26,11 +26,11 @@ TYPE_MAPPED_MOVES = {:NORMAL => [], :FIRE => [], :FIGHTING => [], :WATER => [], 
 AAA_POKEMON = {}
 PLATE_POKEMON = {}
 CUSTOM_ABILITIES = []
-CAMO_PROVIDER_TYPE1 = Proc.new do |pokemon|
+CAMO_PROVIDER_TYPE1 = proc do |pokemon|
   next pokemon.moves[0].type unless pokemon.moves[0].nil?
   next nil
 end
-CAMO_PROVIDER_TYPE2 = Proc.new do |pokemon|
+CAMO_PROVIDER_TYPE2 = proc do |pokemon|
   next pokemon.moves[1].type unless pokemon.moves[1].nil?
   next nil
 end
@@ -51,14 +51,14 @@ class PokeModifier
   attr_accessor(:plates)
   attr_accessor(:camo)
 
-  EVENT_POKEMODIFIER_INIT.push(Proc.new do |modifier|
+  EVENT_POKEMODIFIER_INIT.push(proc do |modifier|
     modifier.aaa = false
     modifier.stab = false
     modifier.plates = []
     modifier.camo = false
   end)
 
-  EVENT_POKEMODIFIER_POST_BUILD.push(Proc.new do |modifier|
+  EVENT_POKEMODIFIER_POST_BUILD.push(proc do |modifier|
     modifier.set_aaa_internal if modifier.aaa
     if modifier.stab
       type1 = modifier.get_data(:Type1)
@@ -115,7 +115,7 @@ end
 # ====================================================== PATCH ======================================================= #
 # ==================================================================================================================== #
 
-insert_in_function(ItemHandlers::UseOnPokemon.instance_variable_get(:@hash)[:ABILITYCAPSULE], :HEAD, Proc.new do |pokemon, scene|
+insert_in_function(ItemHandlers::UseOnPokemon.instance_variable_get(:@hash)[:ABILITYCAPSULE], :HEAD, proc do |pokemon, scene|
   if !AAA_POKEMON[pokemon.species].nil? and AAA_POKEMON[pokemon.species].include?(pokemon.form)
     i = ability_select(1, pokemon.getAbilityList)
     if i != 0
@@ -126,7 +126,7 @@ insert_in_function(ItemHandlers::UseOnPokemon.instance_variable_get(:@hash)[:ABI
   end
 end)
 
-insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD, Proc.new do
+insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD, proc do
   return PLATE_MAP[@item] if !PLATE_POKEMON[@species].nil? and !PLATE_POKEMON[@species][@form].nil? and PLATE_POKEMON[@species][@form].include?(@item) and PLATE_MAP.include?(@item)
   return CUSTOM_PLATE_MAP[@item] if !PLATE_POKEMON[@species].nil? and !PLATE_POKEMON[@species][@form].nil? and PLATE_POKEMON[@species][@form].include?(@item) and CUSTOM_PLATE_MAP.include?(@item)
 end)
