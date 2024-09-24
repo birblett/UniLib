@@ -1,0 +1,8 @@
+*
+!LICENSE
+!UniLibStandardAPI.rb
+!.gitignore
+!UniLib/
+!UniLib/*.rb
+!UniLib/Core/
+!UniLib/Core/*.rb
