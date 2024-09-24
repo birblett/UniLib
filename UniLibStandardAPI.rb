@@ -60,19 +60,21 @@ end
 <<-DOC
 loads from UniLib/Save/Game_<savenum>_<name>.dat
 DOC
-def unilib_load_data(name, default, force=true)
+def unilib_load_data(name, default, saveslot=true)
   dir = "#{UNILIB_PATH}Save/"
-  Dir.mkdir(dir) unless Dir.exist?(dir) if force
-  Marshal.load(File.read(dir + "Game_#{$Unidata[:saveslot]}_" + name + ".dat")) rescue default
+  Dir.mkdir(dir) unless Dir.exist?(dir)
+  prefix = saveslot ? "Game_#{$Unidata[:saveslot]}_" : ""
+  Marshal.load(File.read(dir + prefix + name + ".dat")) rescue default
 end
 
 <<-DOC
 writes to UniLib/Save/Game_<savenum>_<name>.dat
 DOC
-def unilib_save_data(name, data, force=true)
+def unilib_save_data(name, data, saveslot=true)
   dir = "#{UNILIB_PATH}Save/"
-  Dir.mkdir(dir) unless Dir.exist?(dir) if force
-  File.write(dir + "Game_#{$Unidata[:saveslot]}_" + name + ".dat", Marshal.dump(data)) rescue nil
+  Dir.mkdir(dir) unless Dir.exist?(dir)
+  prefix = saveslot ? "Game_#{$Unidata[:saveslot]}_" : ""
+  File.write(dir + prefix + name + ".dat", Marshal.dump(data)) rescue nil
 end
 
 <<-DOC
