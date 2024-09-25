@@ -15,13 +15,13 @@ DOC
 
 <<-DOC
 COMMON
-@function - a symbol (i.e. :function) corresponding to a function bound to Object. this includes all global functions.
-@clazz - a class containing the target method
-@method - a symbol (i.e. :method) corresponding to a method bound to @clazz. this includes all global functions.
-@target - a string or one of :HEAD or :TAIL. insertion will be after the first match, or after the definition with :HEAD
+@param function - a symbol (i.e. :function) corresponding to a function bound to Object. this includes all global functions.
+@param clazz - a class containing the target method
+@param method - a symbol (i.e. :method) corresponding to a method bound to @clazz. this includes all global functions.
+@param target - a string or one of :HEAD or :TAIL. insertion will be after the first match, or after the definition with :HEAD
           and right before the last "end" with :TAIL
-@proc - a Proc object. the body must be on its own lines.
-@index - if nonzero, attempts to match a duplicate corresponding to the index (for example with multiple "ends")
+@param proc - a Proc object. the body must be on its own lines.
+@param index - if nonzero, attempts to match a duplicate corresponding to the index (for example with multiple "ends")
 >> for injection, replacement, and deletion functions.
 DOC
 
@@ -83,8 +83,8 @@ def delete_in_method(clazz, method, target, index=0)
 end
 
 <<-DOC
-@play_event - a symbolic function reference (i.e. :function)
-@priority - a numeric priority
+@param play_event - a symbolic function reference (i.e. :function)
+@param priority - a numeric priority
 >> these events are called when the player enters a save file. useful for deserializing data. numerically higher 
    priorities go first.
 DOC
@@ -93,8 +93,8 @@ def add_play_event(play_event, priority=1000)
 end
 
 <<-DOC
-@save_event - a symbolic function reference (i.e. :function)
-@priority - a numeric priority
+@param save_event - a symbolic function reference (i.e. :function)
+@param priority - a numeric priority
 >> these events are called on save. useful for serializing data. numerically higher priorities go first.
 DOC
 def add_save_event(save_event, priority=1000)

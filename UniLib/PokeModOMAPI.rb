@@ -9,9 +9,9 @@ verify_version(0.3, File.basename(__FILE__).gsub!(".rb", ""))
 # ==================================================================================================================== #
 
 <<-DOC
-@item - an item id
-@type - a type id
->>adds an custom item-type mapping
+@param item - an item id
+@param type - a type id
+>> adds an custom item-type mapping
 DOC
 def add_custom_plate(item, type)
   CUSTOM_PLATE_MAP[item] = type
@@ -39,7 +39,7 @@ class PokeModifier
   end
 
   <<-DOC
-  @plates - single item or list of items corresponding to an arceus plate.
+  @param plates - single item or list of items corresponding to an arceus plate.
   >> allows specified pokemon to change their secondary type while holding a valid plate
   DOC
   def set_plates(plates)

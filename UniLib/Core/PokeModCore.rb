@@ -181,7 +181,6 @@ class PokeModifier
   end
 
   def build
-    unidev_log(@species, @form)
     EVENT_POKEMODIFIER_PRE_BUILD.each { |event| event.call(self) }
     set_stats_internal(@stats) unless @stats.empty?
     set_types_internal(@types) unless @types.empty?

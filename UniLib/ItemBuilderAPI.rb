@@ -14,9 +14,9 @@ DOC
 class ItemBuilder
 
   <<-DOC
-  @symbol - id to register under
-  @hash - hash with relevant item data, same format as ITEMHASH
-  @override - whether old entries are overridden or not
+  @param symbol - id to register under
+  @param hash - hash with relevant item data, same format as ITEMHASH
+  @param override - whether old entries are overridden or not
   >> creates a new item builder unless it already exists for the specified item type; otherwise overwrites existing 
      traits if specified
   DOC
@@ -30,7 +30,7 @@ class ItemBuilder
   end
 
   <<-DOC
-  @price - a numeric price
+  @param price - a numeric price
   >> sets the shop price of an item.
   DOC
   def price(price)
@@ -159,7 +159,7 @@ class ItemBuilder
   end
 
   <<-DOC
-  @move - a move id 
+  @param move - a move id 
   >> makes an item a tm
   DOC
   def tm(move)
@@ -168,7 +168,7 @@ class ItemBuilder
   end
 
   <<-DOC
-  @type_boost - a type id of the type to be boosted
+  @param type_boost - a type id of the type to be boosted
   >> makes an item a type boosting item
   DOC
   def type_boost(type_boost)

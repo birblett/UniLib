@@ -14,8 +14,8 @@ DOC
 class CrestBuilder < ItemBuilder
 
   <<-DOC
-  @species - base species id for the crest
-  @desc - crest description
+  @param species - base species id for the crest
+  @param desc - crest description
   >> creates a new crest builder unless an existing item exists that is already a crest corresponding to :SPECIES_CREST
   DOC
   def self.add(species, desc)
@@ -33,7 +33,7 @@ class CrestBuilder < ItemBuilder
   end
 
   <<-DOC
-  @species - pokemon species id (or list of)
+  @param species - pokemon species id (or list of)
   >> registers another user of the given crest
   DOC
   def add_receiver(species)
@@ -46,7 +46,7 @@ class CrestBuilder < ItemBuilder
   end
 
   <<-DOC
-  @type - type id
+  @param type - type id
   >> gives the users the secondary type while holding the crest.
   DOC
   def crest_secondary_type(type)
@@ -55,7 +55,7 @@ class CrestBuilder < ItemBuilder
   end
 
   <<-DOC
-  @type - type id
+  @param type - type id
   >> gives user STAB and resistances of the given type
   DOC
   def type_fake(type)
@@ -66,7 +66,7 @@ class CrestBuilder < ItemBuilder
   end
 
   <<-DOC
-  @type - type id
+  @param type - type id
   >> allows the user to receive STAB-bonuses from the given type
   DOC
   def stab_override(type)
@@ -75,7 +75,7 @@ class CrestBuilder < ItemBuilder
   end
 
   <<-DOC
-  @type - type id (or array of type ids)
+  @param type - type id (or array of type ids)
   >> allows the user to no longer be weak to the given type. if an array of types is given, uses those as resistances 
      instead.
   DOC
@@ -85,7 +85,7 @@ class CrestBuilder < ItemBuilder
   end
 
   <<-DOC
-  @type - type id (or array of type ids)
+  @param type - type id (or array of type ids)
   >> allows the user to gain the resistances of the given type. if an array of types is given, uses those as resistances 
      instead.
   DOC
@@ -95,7 +95,7 @@ class CrestBuilder < ItemBuilder
   end
 
   <<-DOC
-  @type - type id (or array of type ids)
+  @param type - type id (or array of type ids)
   >> forces the user resist the given type(s).
   DOC
   def force_resistance(type)
@@ -103,8 +103,8 @@ class CrestBuilder < ItemBuilder
   end
 
   <<-DOC
-  @tier - tier at which the crest begins appearing. must be 1-4.
-  @price - price, in red essence, of the crest
+  @param tier - tier at which the crest begins appearing. must be 1-4.
+  @param price - price, in red essence, of the crest
   >> adds the crest to cairo's shop, at the specified tier and price
   DOC
   def cairo(tier, price)

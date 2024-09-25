@@ -21,9 +21,9 @@ DOC
 #noinspection RubyTooManyInstanceVariablesInspection
 class PokeModifier
   <<-DOC
-  @species - numerical pokemon dex number or PBSpecies constant (i.e. PBSpecies::NINETALES)
-  @form - a form, in string representation (i.e. "Alolan", "Mega") - default 0
-  @force - if true, replaces the existing entry if it exists - default false
+  @param species - numerical pokemon dex number or PBSpecies constant (i.e. PBSpecies::NINETALES)
+  @param form - a form, in string representation (i.e. "Alolan", "Mega") - default 0
+  @param force - if true, replaces the existing entry if it exists - default false
   >> returns an existing pokemodifier entry, or creates one if it doesn't exist
   DOC
   def self.add(species, form=0, force=false)
@@ -47,7 +47,7 @@ class PokeModifier
   end
 
   <<-DOC
-  @stats - stat input in the form of a 6-number array, in the form [hp, atk, def, spa, spd, spe]
+  @param stats - stat input in the form of a 6-number array, in the form [hp, atk, def, spa, spd, spe]
   >> overwrites a pokemon's existing stats with the provided array
   DOC
   def stats(stats)
@@ -56,8 +56,8 @@ class PokeModifier
   end
 
   <<-DOC
-  @index - index/name of stat to be overwritten - :HP/:ATK/:DEF/:SPA/:SPD/:SPE as well as numbers 0-5 are valid
-  @value - new value for base stat
+  @param index - index/name of stat to be overwritten - :HP/:ATK/:DEF/:SPA/:SPD/:SPE as well as numbers 0-5 are valid
+  @param value - new value for base stat
   >> overwrites an existing stat for a pokemon
   DOC
   def stat(index, value)
@@ -70,7 +70,7 @@ class PokeModifier
   end
 
   <<-DOC
-  @index1 @index2 - indices/names of stats to be swapped - :HP/:ATK/:DEF/:SPA/:SPD/:SPE as well as numbers 0-5 are valid
+  @param index1 @param index2 - indices/names of stats to be swapped - :HP/:ATK/:DEF/:SPA/:SPD/:SPE as well as numbers 0-5 are valid
   >> swaps the values of two stats - respects previously changed stats
   DOC
   def swap(stat1, stat2)
@@ -81,7 +81,7 @@ class PokeModifier
   end
 
   <<-DOC
-  @types - type input in the form of a hash, with :Type1/:Type2 as indices (i.e. {:Type1 => PBTypes::FIRE, :Type2 => 
+  @param types - type input in the form of a hash, with :Type1/:Type2 as indices (i.e. {:Type1 => PBTypes::FIRE, :Type2 => 
            PBTypes::WATER})
   >> overwrites existing typings
   DOC
@@ -91,7 +91,7 @@ class PokeModifier
   end
 
   <<-DOC
-  @type - numerical type id or PBTypes constant (i.e. PBTypes::FIRE)
+  @param type - numerical type id or PBTypes constant (i.e. PBTypes::FIRE)
   >> sets primary type
   DOC
   def type1(type)
@@ -100,7 +100,7 @@ class PokeModifier
   end
 
   <<-DOC
-  @type - numerical type id or PBTypes constant (i.e. PBTypes::FIRE)
+  @param type - numerical type id or PBTypes constant (i.e. PBTypes::FIRE)
   >> sets secondary type
   DOC
   def type2(type)
@@ -109,7 +109,7 @@ class PokeModifier
   end
 
   <<-DOC
-  @proc - a conditional Proc with one PokeBattle_Pokemon argument
+  @param proc - a conditional Proc with one PokeBattle_Pokemon argument
   >> sets a custom primary type based on a condition. proc should return nil if no changes are required.
   DOC
   def type1_provider(proc)
@@ -117,7 +117,7 @@ class PokeModifier
   end
 
   <<-DOC
-  @proc - a conditional Proc with one PokeBattle_Pokemon argument
+  @param proc - a conditional Proc with one PokeBattle_Pokemon argument
   >> sets a custom secondary type based on a condition. proc should return nil if no changes are required.
   DOC
   def type2_provider(proc)
@@ -125,7 +125,7 @@ class PokeModifier
   end
 
   <<-DOC
-  @abilities - ability input in the form of a hash, with keys as indices 0-2 (i.e. {1 => PBAbilities::STENCH, 1 => 
+  @param abilities - ability input in the form of a hash, with keys as indices 0-2 (i.e. {1 => PBAbilities::STENCH, 1 => 
                PBAbilities::ILLUMINATE}. index 2 will always replace the hidden ability; index 1 will replace it if
                that ability happens to be its hidden ability.)
   >> replaces the abilities at the provided indices
@@ -136,7 +136,7 @@ class PokeModifier
   end
 
   <<-DOC
-  @moves - tuple with a level and move id (or array of them) (i.e. [[50, :SUNSTEELSTRIKE], [60, :MOONGEISTBEAM])
+  @param moves - tuple with a level and move id (or array of them) (i.e. [[50, :SUNSTEELSTRIKE], [60, :MOONGEISTBEAM])
   >> adds level-up moves at the given levels
   DOC
   def level_moves(moves, override=true)
@@ -151,7 +151,7 @@ class PokeModifier
   end
 
   <<-DOC
-  @moves - numerical move id or PBMoves constant (or array of them) (i.e. [PBMoves::SUNSTEELSTRIKE, 
+  @param moves - numerical move id or PBMoves constant (or array of them) (i.e. [PBMoves::SUNSTEELSTRIKE, 
           PBMoves::MOONGEISTBEAM])
   >> adds the given egg moves
   DOC
@@ -167,7 +167,7 @@ class PokeModifier
   end
 
   <<-DOC
-  @moves - numerical move id or PBMoves constant (or array of them) (i.e. [PBMoves::SUNSTEELSTRIKE, 
+  @param moves - numerical move id or PBMoves constant (or array of them) (i.e. [PBMoves::SUNSTEELSTRIKE, 
           PBMoves::MOONGEISTBEAM])
   >> allows the given moves to be learned via tm or tutor
   DOC
