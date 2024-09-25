@@ -86,7 +86,7 @@ def unilib_log(*args)
     unless $debug_name == ""
       str_final = ""
       args.each {|msg| str_final += msg.to_s + " " }
-      File.write(LOG_PATH + $debug_name, "#{str_final}\n", mode: "a+")
+      File.open(LOG_PATH + $debug_name, "a+") { |f| f.write("#{str_final}\n") }
     end
   end
 end
@@ -98,5 +98,5 @@ def unidev_log(*args)
   Dir.mkdir(LOG_PATH) unless Dir.exist?(LOG_PATH)
   str_final = ""
   args.each {|msg| str_final += msg.to_s + " " }
-  File.write(LOG_PATH + "dev.out", "#{str_final}\n", mode: "a+")
+  File.open(LOG_PATH + "dev.out", "a+") { |f| f.write("#{str_final}\n") }
 end
