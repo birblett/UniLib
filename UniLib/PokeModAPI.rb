@@ -27,13 +27,22 @@ class PokeModifier
   >> returns an existing pokemodifier entry, or creates one if it doesn't exist
   DOC
   def self.add(species, form=0, force=false)
+    form_str = nil
     if form.class == String
+      form_str = form + " Form"
       tmp = FORM_MAP[species][form + " Form"]
-      tmp = FORM_MAP[species][form + " Forme"] if tmp.nil?
-      form = tmp.nil? ? FORM_MAP[species][form] : tmp
+      if tmp.nil?
+        form_str = form + " Forme"
+        tmp = FORM_MAP[species][form + " Forme"]
+      end
+      if tmp.nil?
+        form_str = form
+        tmp = FORM_MAP[species][form]
+      end
+      form = tmp
     end
     MODIFIED_POKEMON[species] = {} if MODIFIED_POKEMON[species].nil?
-    MODIFIED_POKEMON[species][form] = PokeModifier.new(species, form) if MODIFIED_POKEMON[species][form].nil? or force
+    MODIFIED_POKEMON[species][form] = PokeModifier.new(species, form, form_str) if MODIFIED_POKEMON[species][form].nil? or force
     MODIFIED_POKEMON[species][form]
   end
 

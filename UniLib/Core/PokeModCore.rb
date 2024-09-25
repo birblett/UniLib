@@ -55,9 +55,10 @@ class PokeModifier
   attr_accessor(:eggs_overwrite)
   attr_accessor(:moves_overwrite)
 
-  def initialize(species, form)
+  def initialize(species, form, form_str)
     @species = species
     @form = form
+    @form_str = form_str
     @stats = get_hash_data(:BaseStats)
     @types = {:Type1 => get_hash_data(:Type1), :Type2 => get_hash_data(:Type2)}
     abil2 = get_hash_data(:Abilities)[2]
@@ -103,7 +104,7 @@ class PokeModifier
     if @form == 0
       mon_data.instance_variable_set(("@" + String(sym)).to_sym, data)
     else
-      mon_data[sym].nil? ? mon_data[sym] = data : mon_data.instance_variable_set(("@" + String(sym)).to_sym, data)
+      mon_data[sym] = data
     end
   end
 
@@ -115,13 +116,20 @@ class PokeModifier
     abilities.each do |index, ability|
       next if index > 2 or index < 0 or ability.nil?
       if index == 2 and @form == 0
-        set_data(:HiddenAbility, ability)
-        set_data(:Abilities, [get_data(:Abilities)]) unless get_data(:Abilities).class == Array
+        ha = get_data(:flags)
+        (ha.nil? or ha[:HiddenAbilities].nil?) ? set_data(:HiddenAbilities, ability) : ha[:HiddenAbilities] = ability
+        a = get_data(:Abilities)
+        set_data(:Abilities, [a]) unless a.class == Array
         get_data(:Abilities)[2] = ability unless get_data(:Abilities)[1].nil?
-        get_data(:Abilities)[1] = ability if get_data(:Abilities)[1] == get_data(:HiddenAbility)
+        get_data(:Abilities)[1] = ability if get_data(:Abilities)[1] == get_data(:HiddenAbilities)
       else
+        ha = get_data(:flags)
+        if ha.nil? or ha[:HiddenAbilities].nil?
+          set_data(:HiddenAbilities, ability) if index == 1 and get_data(:Abilities)[1] == get_data(:HiddenAbilities)
+        else
+          ha[:HiddenAbilities] = ability if index == 1 and get_data(:Abilities)[1] == ha[:HiddenAbilities]
+        end
         set_data(:Abilities, [get_data(:Abilities)]) unless get_data(:Abilities).class == Array
-        set_data(:HiddenAbility, ability) if index == 1 and get_data(:Abilities)[1] == get_data(:HiddenAbility)
         get_data(:Abilities)[index] = ability
       end
     end
@@ -173,6 +181,7 @@ class PokeModifier
   end
 
   def build
+    unidev_log(@species, @form)
     EVENT_POKEMODIFIER_PRE_BUILD.each { |event| event.call(self) }
     set_stats_internal(@stats) unless @stats.empty?
     set_types_internal(@types) unless @types.empty?
