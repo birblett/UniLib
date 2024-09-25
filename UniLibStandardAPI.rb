@@ -11,7 +11,6 @@ UNILIB_ASSET_PATH = File.dirname(__FILE__) + "/UniLibAssets/"
 LIB_PATH = UNILIB_PATH + "Core/"
 LOG_PATH = UNILIB_PATH + "Log/"
 
-
 def verify_version(version, file)
   if version > API_VERSION
     Kernel.pbMessage("UniLib: #{file} is from a future version: #{version} - please update UniLib! (currently #{API_VERSION})")
