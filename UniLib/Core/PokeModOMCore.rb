@@ -24,6 +24,7 @@ CUSTOM_PLATE_MAP = {}
 TYPE_MAPPED_MOVES = {:NORMAL => [], :FIRE => [], :FIGHTING => [], :WATER => [], :FLYING => [], :GRASS => [], :POISON => [], :ELECTRIC => [], :GROUND => [], :PSYCHIC => [], :ROCK => [], :ICE => [], :BUG => [], :DRAGON => [], :GHOST => [], :DARK => [], :STEEL => [], :FAIRY => [], :QMARKS => [], :SHADOW => []}
 
 AAA_POKEMON = {}
+STAB_POKEMON = {}
 PLATE_POKEMON = {}
 CUSTOM_ABILITIES = []
 CAMO_PROVIDER_TYPE1 = proc do |pokemon|
@@ -36,7 +37,7 @@ CAMO_PROVIDER_TYPE2 = proc do |pokemon|
 end
 
 MOVEHASH.each do |key, value|
-  TYPE_MAPPED_MOVES[value[:type]].append([-1, key]) unless BANNED_MOVES.include?(key) or value[:ID].nil? or BANNED_MOVES_RANGE.include? value[:ID] rescue Kernel.pbMessage("#{value[:type]}")
+  TYPE_MAPPED_MOVES[value[:type]].append(key) unless BANNED_MOVES.include?(key) or value[:ID].nil? or BANNED_MOVES_RANGE.include? value[:ID] rescue nil
 end
 
 ABILHASH.each do |key, value|
@@ -61,11 +62,19 @@ class PokeModifier
   EVENT_POKEMODIFIER_POST_BUILD.push(proc do |modifier|
     modifier.set_aaa_internal if modifier.aaa
     if modifier.stab
+      STAB_POKEMON[modifier.species] = []
       type1 = modifier.get_data(:Type1)
       type2 = modifier.get_data(:Type2)
-      modifier.level_moves(TYPE_MAPPED_MOVES[type1]) unless type1.nil?
-      modifier.level_moves(TYPE_MAPPED_MOVES[type2]) unless type2.nil?
-      modifier.set_level_moves_internal
+      unless type1.nil?
+        STAB_POKEMON[modifier.species].push(type1)
+        modifier.egg_moves(TYPE_MAPPED_MOVES[type1])
+        modifier.compatible_moves(TYPE_MAPPED_MOVES[type1])
+      end
+      unless type2.nil?
+        STAB_POKEMON[modifier.species].push(type2)
+        modifier.egg_moves(TYPE_MAPPED_MOVES[type2])
+        modifier.compatible_moves(TYPE_MAPPED_MOVES[type2])
+      end
     end
     modifier.set_plates_internal(modifier.plates) unless modifier.plates.empty?
     if modifier.camo
@@ -129,4 +138,8 @@ end)
 insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD, proc do
   return PLATE_MAP[@item] if !PLATE_POKEMON[@species].nil? and !PLATE_POKEMON[@species][@form].nil? and PLATE_POKEMON[@species][@form].include?(@item) and PLATE_MAP.include?(@item)
   return CUSTOM_PLATE_MAP[@item] if !PLATE_POKEMON[@species].nil? and !PLATE_POKEMON[@species][@form].nil? and PLATE_POKEMON[@species][@form].include?(@item) and CUSTOM_PLATE_MAP.include?(@item)
+end)
+
+insert_in_function_before(:pbGetRelearnableMoves, "return moves|[]", proc do |pokemon, moves|
+  STAB_POKEMON[pokemon.species].each { |type| moves += TYPE_MAPPED_MOVES[type] unless TYPE_MAPPED_MOVES[type].nil? } unless STAB_POKEMON[pokemon.species].nil?
 end)
