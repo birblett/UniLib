@@ -88,7 +88,7 @@ end
 writes to current debug file, if enabled.
 DOC
 def unilib_log(*args)
-  if UNI_DEBUG_ENABLED
+  if UNILIB_DEBUG_ENABLED
     Dir.mkdir(UNILIB_LOG_PATH) unless Dir.exist?(UNILIB_LOG_PATH)
     unless $debug_name == ""
       str_final = ""
