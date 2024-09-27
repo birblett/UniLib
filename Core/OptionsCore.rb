@@ -110,6 +110,30 @@ class UniNumberOption < OptionBase
     end, @increment, @desc)
   end
 
+  def ==(other)
+    (other.is_a?(OptionBase) ? @name == other.name : @value + 1 == other)
+  end
+
+  def !=(other)
+    (other.is_a?(OptionBase) ? @name != other.name : @value + 1 != other)
+  end
+
+  def >(other)
+    (other.is_a?(OptionBase) ? @value > other.value : @value + 1 > other)
+  end
+
+  def <(other)
+    (other.is_a?(OptionBase) ? @value < other.value  : @value + 1 < other)
+  end
+
+  def >=(other)
+    (other.is_a?(OptionBase) ? @value >= other.value : @value + 1 >= other)
+  end
+
+  def <=(other)
+    (other.is_a?(OptionBase) ? @value <= other.value  : @value + 1 <= other)
+  end
+
 end
 
 # ==================================================================================================================== #
