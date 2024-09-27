@@ -124,6 +124,27 @@ end
 # ====================================================== PATCH ======================================================= #
 # ==================================================================================================================== #
 
+class PokeBattle_Pokemon
+
+  def self.new(*args, &block)
+    instance = allocate()
+    instance.send(:initialize, *args, &block)
+    if args[3]
+      movelist=[]
+      moveset = instance.formCheck(:Moveset)
+      moveset = !moveset.nil? ? moveset : $cache.pkmn[instance.instance_variable_get(:@species)].Moveset
+      (0...moveset.length).each { |k| movelist.push(moveset[k][1]) if moveset[k][0]<=args[1] and moveset[k][0] > -50 }
+      movelist.reverse!
+      movelist.uniq!
+      movelist = movelist[0,4].reverse
+      instance.instance_variable_set(:@moves, [])
+      (0...4).each { |i| instance.instance_variable_get(:@moves)[i]=PBMove.new(movelist[i]) if i < movelist.length }
+    end
+    return instance
+  end
+
+end
+
 insert_in_function(ItemHandlers::UseOnPokemon.instance_variable_get(:@hash)[:ABILITYCAPSULE], :HEAD, proc do |pokemon, scene|
   if !AAA_POKEMON[pokemon.species].nil? and AAA_POKEMON[pokemon.species].include?(pokemon.form)
     i = ability_select(1, pokemon.getAbilityList)
