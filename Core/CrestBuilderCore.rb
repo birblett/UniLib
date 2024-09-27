@@ -2,7 +2,7 @@
 # =================================================== DEPENDENCIES =================================================== #
 # ==================================================================================================================== #
 
-verify_version(0.3, File.basename(__FILE__).gsub!(".rb", ""))
+verify_version(0.4, File.basename(__FILE__).gsub!(".rb", ""))
 unilib_include "ItemBuilder"
 unilib_include "PokeModOM"
 
