@@ -1,0 +1,38 @@
+Insertion on class: Object -  method: saveNew -  time taken: 0.0021135 -  result: true -  target: end 
+Insertion on class: PokemonLoad -  method: startPlayingSaveFile -  time taken: 0.0039847 -  result: true -  target: $game_player.center($game_player.x, $game_player.y) 
+Insertion on class: Object -  method: #<Proc:0x000001da6ddfe410 ItemEffects:1352> -  time taken: 0.0079971 -  result: true -  target: HEAD 
+Insertion on class: PokeBattle_Pokemon -  method: type2 -  time taken: 0.0037662 -  result: true -  target: HEAD 
+Insertion on class: Object -  method: pbGetRelearnableMoves -  time taken: 0.0025821 -  result: true -  target: return moves|[] 
+Insertion on class: Object -  method: pbItemIconFile -  time taken: 0.008407 -  result: true -  target: HEAD 
+Insertion on class: Cache_Game -  method: map_load -  time taken: 0.0028435 -  result: true -  target: end 
+Insertion on class: Interpreter -  method: command_111 -  time taken: 0.0065321 -  result: true -  target: result = false 
+Insertion on class: Interpreter -  method: command_111 -  time taken: 0.0012693 -  result: true -  target: @branch[@list[@index].indent] = result 
+Insertion on class: PokeBattle_Move -  method: pbTypeModMessages -  time taken: 0.0291926 -  result: true -  target: if opponent.crested 
+Insertion on class: PokeBattle_AI -  method: pbRoughDamage -  time taken: 0.197749 -  result: true -  target: case attacker.crested 
+Insertion on class: PokeBattle_Move -  method: pbCalcDamage -  time taken: 0.111125 -  result: true -  target: case attacker.crested 
+Insertion on class: PokemonOptionScene -  method: pbStartScene -  time taken: 0.0028437 -  result: true -  target: for i in 0...OptionList.length 
+Insertion on class: PokeBattle_Move -  method: pbCalcDamage -  time taken: 0.0008734 -  result: true -  target: striker = 1+@battle.pbRandom(14) 
+Insertion on class: PokeBattle_Move -  method: pbCalcDamage -  time taken: 0.0009035 -  result: true -  target: case attacker.ability 
+Insertion on class: PokeBattle_Move -  method: pbCalcDamage -  time taken: 0.0011437 -  result: true -  target: damage*=0.5 if attacker.status== :BURN && pbIsPhysical?(type) && attacker.ability != :GUTS && @move != :FACADE 
+Insertion on class: PokeBattle_Battle -  method: pbCrestEffects -  time taken: 0.0043233 -  result: true -  target: when :ZANGOOSE 
+Insertion on class: PokeBattle_Pokemon -  method: getEggMoveList -  time taken: 0.0032632 -  result: true -  target: movelist = $cache.pkmn[babyspecies[0]].formData.dig(formname,:EggMoves) 
+Insertion on class: PokeBattle_Pokemon -  method: type2 -  time taken: 0.0011553 -  result: true -  target: HEAD 
+Insertion on class: PokemonEncounters -  method: pbShouldFilterKnownPkmnFromEncounter? -  time taken: 0.0013933 -  result: true -  target: return false 
+Insertion on class: PokemonEncounters -  method: pbShouldFilterOtherPkmnFromEncounter? -  time taken: 0.0013005 -  result: true -  target: return false 
+Insertion on class: PokeBattle_BattleCommon -  method: pbThrowPokeBall -  time taken: 0.0159347 -  result: true -  target: rareness /= 2 if $game_variables[:LuckMoves] != 0 
+Insertion on class: Object -  method: pbShowBattleStats -  time taken: 0.00479 -  result: true -  target: report.push(_INTL("Level: {1}",pkmn.level)) 
+Insertion on class: Object -  method: pbHiddenMoveAnimation -  time taken: 0.0049029 -  result: true -  target: HEAD 
+Insertion on class: Object -  method: pbFadeOutIn -  time taken: 0.0040225 -  result: true -  target: Graphics.update 
+Insertion on class: Object -  method: pbFadeOutIn -  time taken: 1.87e-05 -  result: true -  target: Graphics.update 
+Insertion on class: Object -  method: pbFadeOutIn -  time taken: 2.3e-05 -  result: true -  target: Input.update 
+Insertion on class: Object -  method: pbFadeOutIn -  time taken: 3.55e-05 -  result: true -  target: Input.update 
+Insertion on class: Object -  method: pbSetSpritesToColor -  time taken: 0.0042784 -  result: true -  target: Graphics.update 
+Insertion on class: Object -  method: pbSetSpritesToColor -  time taken: 1.91e-05 -  result: true -  target: Input.update 
+Insertion on class: Object -  method: pbFadeOutIn -  time taken: 0.0011469 -  result: true -  target: pbPushFade 
+Insertion on class: Object -  method: pbFadeOutIn -  time taken: 0.0024508 -  result: true -  target: viewport.dispose 
+Insertion on class: PokeBattle_Battler -  method: pbDisposeItem -  time taken: 0.0206896 -  result: true -  target: self.pokemon.itemInitial=nil if self.pokemon.itemInitial==self.item 
+Insertion on class: Object -  method: pbEachNaturalMove -  time taken: 0.0017423 -  result: true -  target: TAIL 
+Insertion on class: Object -  method: pbGetRelearnableMoves -  time taken: 0.001323 -  result: true -  target: moves= tmoves+pokemon.getEggMoveList(true)+moves if Rejuv && $PokemonBag.pbHasItem?(:HM02) 
+Insertion on class: Object -  method: #<Proc:0x000001da713dd068 Rejuv/RejuvCustomScripts:59> -  time taken: 0.0421385 -  result: true -  target: if check==0 
+Insertion on class: PokeBattle_Pokemon -  method: type1 -  time taken: 0.0077929 -  result: true -  target: HEAD 
+staging insertions=0.0081553 staging deletions=0.0010653 compilation=0.0670543 
