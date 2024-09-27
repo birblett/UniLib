@@ -50,7 +50,7 @@ def insert_in_method_internal(clazz, method, target, proc, index, prepend)
   return false if insertion_index.nil?
   true
 rescue NoMethodError
-  false
+  unidev_log("Failed to insert in method ", method, "of class", clazz, "at target \"", target,"\"")
 end
 
 def get_target_index(base, target, index)
@@ -102,7 +102,7 @@ def get_method_source(clazz, method)
     return valid ? code_lines : nil
   end
 rescue Exception
-  Kernel.pbMessage("erm... what the deuce?")
+  nil
 end
 
 def valid_expression(str)
@@ -129,16 +129,18 @@ define_method(:pbCallTitle) do
   insertions = Time.now
   PENDING_INSERTIONS.push([:PokemonLoad, :startPlayingSaveFile, "$game_player.center($game_player.x, $game_player.y)", proc do
     EVENT_ON_PLAY.each { |fixer| method(fixer[0]).call }
-  end, 0, false])
+  end, 0, false, 100000])
   PENDING_INSERTIONS.push([:Object, :saveNew, "end", proc do
     EVENT_ON_SAVE.each { |saver| method(saver[0]).call }
-  end, 0, false])
+  end, 0, false, 100000])
+  PENDING_INSERTIONS.sort! { |a, b| b[6] <=> a[6]}
   PENDING_INSERTIONS.each do |pending|
     insertions = Time.now
     out = insert_in_method_internal(pending[0], pending[1], pending[2], pending[3], pending[4], pending[5])
     unilib_log("Insertion on class: #{pending[0]} - ", "method: #{pending[1]} - ", "time taken: #{Time.now - insertions} - ", "result: #{out} - ", "target:", pending[2])
   end
   deletions = Time.now
+  PENDING_DELETIONS.sort! { |a, b| b[4] <=> a[4]}
   PENDING_DELETIONS.each do |pending|
     delete_in_method_internal(pending[0], pending[1], pending[2], pending[3])
   end

@@ -28,58 +28,58 @@ DOC
 <<-DOC
 >> injects a block of code after the specified target in the target function.
 DOC
-def insert_in_function(function, target, proc, index=0)
-  insert_in_method(:Object, function, target, proc, index)
+def insert_in_function(function, target, proc, index=0, priority=1000)
+  insert_in_method(:Object, function, target, proc, index, priority)
 end
 
 <<-DOC
 >> injects a block of code after the specified target in the target method.
 DOC
-def insert_in_method(clazz, method, target, proc, index=0)
-  PENDING_INSERTIONS.push([clazz, method, target, proc, index, false])
+def insert_in_method(clazz, method, target, proc, index=0, priority=1000)
+  PENDING_INSERTIONS.push([clazz, method, target, proc, index, false, priority])
 end
 
 <<-DOC
 >> injects a block of code before the specified target in the target function.
 DOC
-def insert_in_function_before(function, target, proc, index=0)
-  insert_in_method_before(:Object, function, target, proc, index)
+def insert_in_function_before(function, target, proc, index=0, priority=1000)
+  insert_in_method_before(:Object, function, target, proc, index, priority)
 end
 
 <<-DOC
 >> injects a block of code before the specified target in the target method.
 DOC
-def insert_in_method_before(clazz, method, target, proc, index=0)
-  PENDING_INSERTIONS.push([clazz, method, target, proc, index, true])
+def insert_in_method_before(clazz, method, target, proc, index=0, priority=1000)
+  PENDING_INSERTIONS.push([clazz, method, target, proc, index, true, priority])
 end
 
 <<-DOC
 >> replaces a target line in the target function. chains with other operations.
 DOC
-def replace_in_function(function, target, proc, index=0)
-  replace_in_method(:Object, function, target, proc, index)
+def replace_in_function(function, target, proc, index=0, priority=1000)
+  replace_in_method(:Object, function, target, proc, index, priority)
 end
 
 <<-DOC
 >> replaces a target line in the target method. chains with other operations.
 DOC
-def replace_in_method(clazz, method, target, proc, index=0)
-  insert_in_method_before(clazz, method, target, proc, index)
-  delete_in_method(clazz, method, target, index)
+def replace_in_method(clazz, method, target, proc, index=0, priority=1000)
+  insert_in_method_before(clazz, method, target, proc, index, priority)
+  delete_in_method(clazz, method, target, index, priority)
 end
 
 <<-DOC
 >> deletes a target line in the target function. chains with other operations.
 DOC
-def delete_in_function(function, target, index=0)
-  delete_in_method(:Object, function, target, index)
+def delete_in_function(function, target, index=0, priority=1000)
+  delete_in_method(:Object, function, target, index, priority)
 end
 
 <<-DOC
 >> deletes a target line in the target method. chains with other operations.
 DOC
-def delete_in_method(clazz, method, target, index=0)
-  PENDING_DELETIONS.push([clazz, method, target, index])
+def delete_in_method(clazz, method, target, index=0, priority=1000)
+  PENDING_DELETIONS.push([clazz, method, target, index, priority])
 end
 
 <<-DOC
