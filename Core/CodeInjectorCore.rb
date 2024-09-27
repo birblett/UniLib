@@ -122,7 +122,7 @@ end
 
 entrypoint = method(:pbCallTitle)
 define_method(:pbCallTitle) do
-  LOADED.clear
+  UNILIB_LOADED.clear
   ret = entrypoint.()
   EVENT_ON_PLAY.sort! { |a, b| b[1] <=> a[1]}
   EVENT_ON_SAVE.sort! { |a, b| b[1] <=> a[1]}

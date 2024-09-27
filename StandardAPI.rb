@@ -3,8 +3,8 @@
 # =========================================== REQUIRED FOR ALL OTHER APIS! ============================================#
 # ==================================================================================================================== #
 
-LOADED = {} unless defined? LOADED
-DEBUG_ENABLED = false
+UNILIB_LOADED = {} unless defined? UNILIB_LOADED
+UNILIB_DEBUG_ENABLED = false
 UNILIB_VERSION = 0.4
 UNILIB_PATH = File.dirname(__FILE__) + "/"
 UNILIB_ASSET_PATH = File.dirname(__FILE__) + "/UniLibAssets/"
@@ -33,20 +33,20 @@ end
 used for loading required apis and libraries. makes sure an api is not loaded more than once.
 DOC
 def unilib_include(path_relative)
-  $debug_name = Time.now.strftime("%Y_%m_%d-%H_%M_%S.log") unless LOADED["CodeInjector"]
+  $debug_name = Time.now.strftime("%Y_%m_%d-%H_%M_%S.log") unless UNILIB_LOADED["CodeInjector"]
   unilib_include("CodeInjector") if path_relative != "CodeInjector"
-  load UNILIB_LIB_PATH + path_relative + "Core.rb" if File.exists?(UNILIB_LIB_PATH + path_relative + "Core.rb") unless LOADED[path_relative]
-  load UNILIB_LIB_PATH + path_relative + "Lib.rb" if File.exists?(UNILIB_LIB_PATH + path_relative + "Lib.rb") unless LOADED[path_relative]
-  load UNILIB_PATH + path_relative + "API.rb" if File.exists?(UNILIB_PATH + path_relative + "API.rb") unless LOADED[path_relative]
-  LOADED[path_relative] = true
+  load UNILIB_LIB_PATH + path_relative + "Core.rb" if File.exists?(UNILIB_LIB_PATH + path_relative + "Core.rb") unless UNILIB_LOADED[path_relative]
+  load UNILIB_LIB_PATH + path_relative + "Lib.rb" if File.exists?(UNILIB_LIB_PATH + path_relative + "Lib.rb") unless UNILIB_LOADED[path_relative]
+  load UNILIB_PATH + path_relative + "API.rb" if File.exists?(UNILIB_PATH + path_relative + "API.rb") unless UNILIB_LOADED[path_relative]
+  UNILIB_LOADED[path_relative] = true
 end
 
 <<-DOC
 used for loading files in subdirectories. makes sure the file is not loaded more than once.
 DOC
 def unilib_file_load(path_relative)
-  load UNILIB_PATH + "../" + path_relative + ".rb" unless LOADED[path_relative]
-  LOADED[path_relative] = true
+  load UNILIB_PATH + "../" + path_relative + ".rb" unless UNILIB_LOADED[path_relative]
+  UNILIB_LOADED[path_relative] = true
 end
 
 <<-DOC
@@ -56,10 +56,10 @@ def unilib_dir_load(path_relative)
   files = Dir.entries(File.dirname(__FILE__) + "../" + path_relative)
   files.each do |entry|
     name = path_relative + "/" + entry
-    unless LOADED[name]
+    unless UNILIB_LOADED[name]
       path = File.dirname(__FILE__) + "../" + name
       load path if entry != "." and entry != ".." and entry.end_with? ".rb" and File.file? path
-      LOADED[name] = true
+      UNILIB_LOADED[name] = true
     end
   end
 end
@@ -88,7 +88,7 @@ end
 writes to current debug file, if enabled.
 DOC
 def unilib_log(*args)
-  if DEBUG_ENABLED
+  if UNI_DEBUG_ENABLED
     Dir.mkdir(UNILIB_LOG_PATH) unless Dir.exist?(UNILIB_LOG_PATH)
     unless $debug_name == ""
       str_final = ""
