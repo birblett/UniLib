@@ -75,15 +75,15 @@ class IncrementNumberOption < NumberOption
   end
 
   def next(current)
-    index=current + @optstart
-    index += @increment
-    index > @optend ? @optstart : index
+    index = current + @optstart + @increment
+    index = @optstart if index>@optend
+    index - @optstart
   end
 
   def prev(current)
-    index=current + @optstart
-    index -= @increment
-    index < @optstart ? @optend : index
+    index = current + @optstart - @increment
+    index = @optend if index < @optstart
+    index - @optstart
   end
 
 end
