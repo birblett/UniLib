@@ -27,10 +27,10 @@ class UniStringOption < OptionBase
   @param options - a string array specifying the available options. defaults to the first option.
   >> string options. when compared like OPTION == value, compares the integer index of the option selected.
   DOC
-  def initialize(name, desc, options, on_update_proc=nil)
+  def initialize(name, desc, options, on_update_proc=nil, default=0)
     super(name, desc, on_update_proc)
     @options = []
-    @value = 0
+    @value = default
     options.each { |option| @options.push(_INTL(option)) }
   end
 
