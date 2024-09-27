@@ -70,7 +70,8 @@ class PokeModifier
   end
 
   <<-DOC
-  @param index1 @param index2 - indices/names of stats to be swapped - :HP/:ATK/:DEF/:SPA/:SPD/:SPE as well as numbers 0-5 are valid
+  @param index1 @param index2 - indices/names of stats to be swapped - :HP/:ATK/:DEF/:SPA/:SPD/:SPE as well as numbers 
+                                0-5 are valid
   >> swaps the values of two stats - respects previously changed stats
   DOC
   def swap(stat1, stat2)
@@ -81,8 +82,8 @@ class PokeModifier
   end
 
   <<-DOC
-  @param types - type input in the form of a hash, with :Type1/:Type2 as indices (i.e. {:Type1 => PBTypes::FIRE, :Type2 => 
-           PBTypes::WATER})
+  @param types - type input in the form of a hash, with :Type1/:Type2 as indices (i.e. {:Type1 => PBTypes::FIRE, 
+                 :Type2 => PBTypes::WATER})
   >> overwrites existing typings
   DOC
   def types(types)
@@ -126,8 +127,8 @@ class PokeModifier
 
   <<-DOC
   @param abilities - ability input in the form of a hash, with keys as indices 0-2 (i.e. {1 => PBAbilities::STENCH, 1 => 
-               PBAbilities::ILLUMINATE}. index 2 will always replace the hidden ability; index 1 will replace it if
-               that ability happens to be its hidden ability.)
+                     PBAbilities::ILLUMINATE}. index 2 will always replace the hidden ability; index 1 will replace it 
+                     if that ability happens to be its hidden ability.)
   >> replaces the abilities at the provided indices
   DOC
   def abilities(abilities)

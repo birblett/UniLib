@@ -15,11 +15,12 @@ DOC
 
 <<-DOC
 COMMON
-@param function - a symbol (i.e. :function) corresponding to a function bound to Object. this includes all global functions.
+@param function - a symbol (i.e. :function) corresponding to a function bound to Object. this includes all global 
+                  functions.
 @param clazz - a class containing the target method
 @param method - a symbol (i.e. :method) corresponding to a method bound to @clazz. this includes all global functions.
-@param target - a string or one of :HEAD or :TAIL. insertion will be after the first match, or after the definition with :HEAD
-          and right before the last "end" with :TAIL
+@param target - a string or one of :HEAD or :TAIL. insertion will be after the first match, or after the definition with
+                :HEAD and right before the last "end" with :TAIL
 @param proc - a Proc object. the body must be on its own lines.
 @param index - if nonzero, attempts to match a duplicate corresponding to the index (for example with multiple "ends")
 >> for injection, replacement, and deletion functions.
