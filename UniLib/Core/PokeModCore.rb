@@ -141,14 +141,13 @@ class PokeModifier
   end
 
   def set_level_moves_internal(sort=false)
-    @learnset.sort_by!{ |a| a[0] }
+    @learnset.sort_by!{ |a| a[0] } if sort
     @learnset.each do |move|
       add = true
-      @base_learnset.each do |learned|
-        add = false if (move <=> learned) == 0
-      end
+      @base_learnset.each { |learned| add = false if (move <=> learned) == 0 }
       @base_learnset.push(move) if add
     end
+    @learnset.clear
     @base_learnset.sort_by!{ |a| a[0] } if sort
     set_data(:Moveset, @base_learnset)
   end
