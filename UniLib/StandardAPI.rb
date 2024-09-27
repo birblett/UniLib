@@ -6,7 +6,7 @@
 LOADED = {} unless defined? LOADED
 DEBUG_ENABLED = false
 UNILIB_VERSION = 0.3
-UNILIB_PATH = File.dirname(__FILE__) + "/UniLib/"
+UNILIB_PATH = File.dirname(__FILE__) + "/"
 UNILIB_ASSET_PATH = File.dirname(__FILE__) + "/UniLibAssets/"
 UNILIB_LIB_PATH = UNILIB_PATH + "Core/"
 UNILIB_LOG_PATH = UNILIB_PATH + "Log/"
@@ -26,14 +26,14 @@ end
 used to check for the presence of a mod in the mods directory.
 DOC
 def mod_included?(other)
-  File.file?(File.dirname(__FILE__) + "/" + other + ".rb")
+  File.file?(UNILIB_PATH + "../" + other + ".rb")
 end
 
 <<-DOC
 used for loading required apis and libraries. makes sure an api is not loaded more than once.
 DOC
 def unilib_include(path_relative)
-  $debug_name = Time.now.strftime("%d_%m_%Y-%H_%M_%S.log") unless LOADED["CodeInjector"]
+  $debug_name = Time.now.strftime("%Y_%m_%d-%H_%M_%S.log") unless LOADED["CodeInjector"]
   unilib_include("CodeInjector") if path_relative != "CodeInjector"
   load UNILIB_LIB_PATH + path_relative + "Core.rb" if File.exists?(UNILIB_LIB_PATH + path_relative + "Core.rb") unless LOADED[path_relative]
   load UNILIB_LIB_PATH + path_relative + "Lib.rb" if File.exists?(UNILIB_LIB_PATH + path_relative + "Lib.rb") unless LOADED[path_relative]
@@ -45,7 +45,7 @@ end
 used for loading files in subdirectories. makes sure the file is not loaded more than once.
 DOC
 def unilib_file_load(path_relative)
-  load File.dirname(__FILE__) + "/" + path_relative + ".rb" unless LOADED[path_relative]
+  load UNILIB_PATH + "../" + path_relative + ".rb" unless LOADED[path_relative]
   LOADED[path_relative] = true
 end
 
@@ -53,11 +53,11 @@ end
 loads all files in a subdirectory.
 DOC
 def unilib_dir_load(path_relative)
-  files = Dir.entries(File.dirname(__FILE__) + "/" + path_relative)
+  files = Dir.entries(File.dirname(__FILE__) + "../" + path_relative)
   files.each do |entry|
     name = path_relative + "/" + entry
     unless LOADED[name]
-      path = File.dirname(__FILE__) + "/" + name
+      path = File.dirname(__FILE__) + "../" + name
       load path if entry != "." and entry != ".." and entry.end_with? ".rb" and File.file? path
       LOADED[name] = true
     end
