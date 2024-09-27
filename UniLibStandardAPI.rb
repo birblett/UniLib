@@ -5,30 +5,38 @@
 
 LOADED = {} unless defined? LOADED
 DEBUG_ENABLED = false
-API_VERSION = 0.3
+UNILIB_VERSION = 0.3
 UNILIB_PATH = File.dirname(__FILE__) + "/UniLib/"
 UNILIB_ASSET_PATH = File.dirname(__FILE__) + "/UniLibAssets/"
-LIB_PATH = UNILIB_PATH + "Core/"
-LOG_PATH = UNILIB_PATH + "Log/"
+UNILIB_LIB_PATH = UNILIB_PATH + "Core/"
+UNILIB_LOG_PATH = UNILIB_PATH + "Log/"
 
+<<-DOC
+used for verifying the correct version of unilib.
+DOC
 def verify_version(version, file)
-  if version > API_VERSION
-    Kernel.pbMessage("UniLib: #{file} is from a future version: #{version} - please update UniLib! (currently #{API_VERSION})")
-  elsif version < API_VERSION
-    Kernel.pbMessage("UniLib: #{file} is from an outdated version: #{version} - please update UniLib! (currently #{API_VERSION})")
+  if version > UNILIB_VERSION
+    Kernel.pbMessage("UniLib: #{file} is from a future version: #{version} - please update UniLib! (currently #{UNILIB_VERSION})")
+  elsif version < UNILIB_VERSION
+    Kernel.pbMessage("UniLib: #{file} is from an outdated version: #{version} - please update UniLib! (currently #{UNILIB_VERSION})")
   end
+end
+
+<<-DOC
+used to check for the presence of a mod in the mods directory.
+DOC
+def mod_included?(other)
+  File.file?(File.dirname(__FILE__) + "/" + other + ".rb")
 end
 
 <<-DOC
 used for loading required apis and libraries. makes sure an api is not loaded more than once.
 DOC
 def unilib_include(path_relative)
-  unless LOADED["CodeInjector"]
-    $debug_name = Time.now.strftime("%d_%m_%Y-%H_%M_%S.log")
-  end
+  $debug_name = Time.now.strftime("%d_%m_%Y-%H_%M_%S.log") unless LOADED["CodeInjector"]
   unilib_include("CodeInjector") if path_relative != "CodeInjector"
-  load LIB_PATH + path_relative + "Core.rb" if File.exists?(LIB_PATH + path_relative + "Core.rb") unless LOADED[path_relative]
-  load LIB_PATH + path_relative + "Lib.rb" if File.exists?(LIB_PATH + path_relative + "Lib.rb") unless LOADED[path_relative]
+  load UNILIB_LIB_PATH + path_relative + "Core.rb" if File.exists?(UNILIB_LIB_PATH + path_relative + "Core.rb") unless LOADED[path_relative]
+  load UNILIB_LIB_PATH + path_relative + "Lib.rb" if File.exists?(UNILIB_LIB_PATH + path_relative + "Lib.rb") unless LOADED[path_relative]
   load UNILIB_PATH + path_relative + "API.rb" if File.exists?(UNILIB_PATH + path_relative + "API.rb") unless LOADED[path_relative]
   LOADED[path_relative] = true
 end
@@ -81,11 +89,11 @@ writes to current debug file, if enabled.
 DOC
 def unilib_log(*args)
   if DEBUG_ENABLED
-    Dir.mkdir(LOG_PATH) unless Dir.exist?(LOG_PATH)
+    Dir.mkdir(UNILIB_LOG_PATH) unless Dir.exist?(UNILIB_LOG_PATH)
     unless $debug_name == ""
       str_final = ""
       args.each {|msg| str_final += msg.to_s + " " }
-      File.open(LOG_PATH + $debug_name, "a+") { |f| f.write("#{str_final}\n") }
+      File.open(UNILIB_LOG_PATH + $debug_name, "a+") { |f| f.write("#{str_final}\n") }
     end
   end
 end
@@ -94,8 +102,8 @@ end
 dumps to dev.out
 DOC
 def unidev_log(*args)
-  Dir.mkdir(LOG_PATH) unless Dir.exist?(LOG_PATH)
+  Dir.mkdir(UNILIB_LOG_PATH) unless Dir.exist?(UNILIB_LOG_PATH)
   str_final = ""
   args.each {|msg| str_final += msg.to_s + " " }
-  File.open(LOG_PATH + "dev.out", "a+") { |f| f.write("#{str_final}\n") }
+  File.open(UNILIB_LOG_PATH + "dev.out", "a+") { |f| f.write("#{str_final}\n") }
 end
