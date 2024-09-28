@@ -36,6 +36,10 @@ class PokeModifier
         tmp = FORM_MAP[species][form + " Forme"]
       end
       if tmp.nil?
+        form_str = form = " Rotom"
+        tmp = FORM_MAP[species][form]
+      end
+      if tmp.nil?
         form_str = form
         tmp = FORM_MAP[species][form]
       end
