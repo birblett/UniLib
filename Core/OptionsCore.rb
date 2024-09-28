@@ -8,7 +8,7 @@ verify_version(0.4, File.basename(__FILE__).gsub!(".rb", ""))
 # ================================================== INTERNAL/CORE =================================================== #
 # ==================================================================================================================== #
 
-CUSTOM_OPTIONS = []
+UNILIB_CUSTOM_OPTIONS = []
 OLD_OPTIONS = []
 $options_init = false
 
@@ -22,7 +22,7 @@ class OptionBase
     @name = name
     @desc = desc
     @update = on_update_proc
-    CUSTOM_OPTIONS.push(self) unless CUSTOM_OPTIONS.include?(self)
+    UNILIB_CUSTOM_OPTIONS.push(self) unless UNILIB_CUSTOM_OPTIONS.include?(self)
   end
 
   def update
@@ -136,7 +136,7 @@ end
 $queue_option_removal = false
 
 SEPARATE_UNILIB_OPTIONS = UniStringOption.new("UniLib Option Menu", "Moves UniLib options to their own menu.", %w[Off On], proc { |value| $queue_option_removal = value == 1 }, 1)
-CUSTOM_OPTIONS -= [SEPARATE_UNILIB_OPTIONS]
+UNILIB_CUSTOM_OPTIONS -= [SEPARATE_UNILIB_OPTIONS]
 
 #noinspection RubyInstanceMethodNamingConvention
 class UniLibOptionScene
@@ -152,7 +152,7 @@ class UniLibOptionScene
     @sprites["textbox"]=Kernel.pbCreateMessageWindow
     @sprites["textbox"].letterbyletter=false
     if SEPARATE_UNILIB_OPTIONS == 1
-      CUSTOM_OPTIONS.each { |option| OptionList.push(option.get_option) unless option.get_option.nil? or OptionList.include?(option.get_option)}
+      UNILIB_CUSTOM_OPTIONS.each { |option| OptionList.push(option.get_option) unless option.get_option.nil? or OptionList.include?(option.get_option)}
       OptionList.push(SEPARATE_UNILIB_OPTIONS.get_option) unless OptionList.include?(SEPARATE_UNILIB_OPTIONS.get_option)
     end
     @sprites["option"]=Window_PokemonOption.new(OptionList, 0, @sprites["title"].height,Graphics.width, Graphics.height-@sprites["title"].height-@sprites["textbox"].height)
@@ -211,10 +211,10 @@ def read_option_data
     $options_init = true
     options = unilib_load_data("options", [], false)
     options.each do |option|
-      i = CUSTOM_OPTIONS.index(option)
+      i = UNILIB_CUSTOM_OPTIONS.index(option)
       if i
-        CUSTOM_OPTIONS[i].value = option.value
-        CUSTOM_OPTIONS[i].update
+        UNILIB_CUSTOM_OPTIONS[i].value = option.value
+        UNILIB_CUSTOM_OPTIONS[i].update
       else
         OLD_OPTIONS.push(option)
       end
@@ -223,7 +223,7 @@ def read_option_data
 end
 
 def write_option_data
-  unilib_save_data("options", CUSTOM_OPTIONS + OLD_OPTIONS, false)
+  unilib_save_data("options", UNILIB_CUSTOM_OPTIONS + OLD_OPTIONS, false)
 end
 
 add_play_event(:read_option_data)
@@ -234,15 +234,15 @@ add_save_event(:write_option_data)
 # ==================================================================================================================== #
 
 insert_in_method_before(:PokemonOptionScene, :pbStartScene, "for i in 0...OptionList.length", proc do
-  if SEPARATE_UNILIB_OPTIONS == 0
-    CUSTOM_OPTIONS.each { |option| OptionList.push(option.get_option) unless option.get_option.nil? or OptionList.include?(option.get_option)}
+  if SEPARATE_UNILIB_OPTIONS == 0 and UNILIB_CUSTOM_OPTIONS.length > 0
+    UNILIB_CUSTOM_OPTIONS.each { |option| OptionList.push(option.get_option) unless option.get_option.nil? or OptionList.include?(option.get_option)}
     OptionList.push(SEPARATE_UNILIB_OPTIONS.get_option) unless OptionList.include?(SEPARATE_UNILIB_OPTIONS.get_option)
   end
 end)
 
 insert_in_method(:PokemonMenu, :pbStartPokemonMenu, "cmdOption=-1", "cmd_uni=-1")
 
-insert_in_method(:PokemonMenu, :pbStartPokemonMenu, "commands[cmdOption=commands.length]=_INTL(\"Options\")", "commands[cmd_uni=commands.length]=_INTL(\"UniLib\") if SEPARATE_UNILIB_OPTIONS == 1")
+insert_in_method(:PokemonMenu, :pbStartPokemonMenu, "commands[cmdOption=commands.length]=_INTL(\"Options\")", "commands[cmd_uni=commands.length]=_INTL(\"UniLib\") if SEPARATE_UNILIB_OPTIONS == 1 and UNILIB_CUSTOM_OPTIONS.length > 0")
 
 insert_in_method_before(:PokemonMenu, :pbStartPokemonMenu, "elsif cmdOption>=0 && command==cmdOption", proc do |command, cmd_uni| if true
   elsif cmd_uni>=0 && command==cmd_uni
@@ -259,7 +259,7 @@ end end)
 insert_in_method(:PokemonMenu, :pbStartPokemonMenu, "command=@scene.pbShowCommands(commands)", proc do
   if $queue_option_removal
     arr = []
-    (CUSTOM_OPTIONS + [SEPARATE_UNILIB_OPTIONS]).each { |opt| arr.push(opt.get_option)}
+    (UNILIB_CUSTOM_OPTIONS + [SEPARATE_UNILIB_OPTIONS]).each { |opt| arr.push(opt.get_option)}
     PokemonOptionScene::OptionList.delete_if { |v| arr.include?(v) }
   end
 end)
