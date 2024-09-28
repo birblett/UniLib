@@ -22,11 +22,13 @@ class OptionBase
     @name = name
     @desc = desc
     @update = on_update_proc
+    @increment = 1
+    @min = 0
     UNILIB_CUSTOM_OPTIONS.push(self) unless UNILIB_CUSTOM_OPTIONS.include?(self)
   end
 
   def update
-    @update.call(@value) unless @update.nil?
+    @update.call(@value * @increment + @min) unless @update.nil?
   end
 
   def get_option
@@ -207,10 +209,12 @@ end
 # ==================================================================================================================== #
 
 def read_option_data
-  unless $options_init
-    $options_init = true
-    options = unilib_load_data("options", [], false)
-    options.each do |option|
+  options = unilib_load_data("options", [], false)
+  options.each do |option|
+    if option == SEPARATE_UNILIB_OPTIONS
+      SEPARATE_UNILIB_OPTIONS.value = option.value
+      SEPARATE_UNILIB_OPTIONS.update
+    else
       i = UNILIB_CUSTOM_OPTIONS.index(option)
       if i
         UNILIB_CUSTOM_OPTIONS[i].value = option.value
@@ -219,15 +223,12 @@ def read_option_data
         OLD_OPTIONS.push(option)
       end
     end
+
   end
 end
 
-def write_option_data
-  unilib_save_data("options", UNILIB_CUSTOM_OPTIONS + OLD_OPTIONS, false)
-end
 
 add_play_event(:read_option_data)
-add_save_event(:write_option_data)
 
 # ==================================================================================================================== #
 # ====================================================== PATCH ======================================================= #
@@ -263,3 +264,5 @@ insert_in_method(:PokemonMenu, :pbStartPokemonMenu, "command=@scene.pbShowComman
     PokemonOptionScene::OptionList.delete_if { |v| arr.include?(v) }
   end
 end)
+
+insert_in_method(:PokemonOption, :pbStartScreen, "@scene.pbOptions", "unilib_save_data(\"options\", UNILIB_CUSTOM_OPTIONS + OLD_OPTIONS + [SEPARATE_UNILIB_OPTIONS], false)")

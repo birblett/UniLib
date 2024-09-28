@@ -60,11 +60,11 @@ class UniNumberOption < OptionBase
   @param default - the default value of the option, set to max normally
   >> string options. when compared like OPTION == value, compares the integer index of the option selected.
   DOC
-  def initialize(name, desc, min, max, shift_increment=1, default=max - 1, on_update_proc=nil)
+  def initialize(name, desc, min, max, shift_increment=1, default=min, on_update_proc=nil)
     super(name, desc, on_update_proc)
     @min = min
     @max = max
-    @value = default
+    @value = default - min
     @increment = shift_increment
     inst = self
     @option = IncrementNumberOption.new(_INTL(@name), _INTL("Type %d"), @min, @max, proc { inst.value }, proc do |value|
