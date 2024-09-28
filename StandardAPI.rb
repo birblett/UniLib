@@ -71,7 +71,9 @@ def unilib_load_data(name, default, saveslot=true)
   dir = "#{UNILIB_PATH}Save/"
   Dir.mkdir(dir) unless Dir.exist?(dir)
   prefix = saveslot ? "Game_#{$Unidata[:saveslot]}_" : ""
-  Marshal.load(File.read(dir + prefix + name + ".dat")) rescue default
+  ret = default
+  File.open(dir + prefix + name + ".dat", "rb") { |f| ret = Marshal.load(f.read) } rescue default
+  ret
 end
 
 <<-DOC
@@ -81,7 +83,7 @@ def unilib_save_data(name, data, saveslot=true)
   dir = "#{UNILIB_PATH}Save/"
   Dir.mkdir(dir) unless Dir.exist?(dir)
   prefix = saveslot ? "Game_#{$Unidata[:saveslot]}_" : ""
-  File.open(dir + prefix + name + ".dat", "w") { |f| f.write(Marshal.dump(data)) }
+  File.open(dir + prefix + name + ".dat", "wb") { |f| f.write(Marshal.dump(data)) }
 end
 
 <<-DOC
