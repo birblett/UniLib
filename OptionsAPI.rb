@@ -32,6 +32,11 @@ class UniStringOption < OptionBase
     @options = []
     @value = default
     options.each { |option| @options.push(_INTL(option)) }
+    inst = self
+    @option = EnumOption.new(_INTL(@name) ,@options, proc { inst.value }, proc do |value|
+      inst.value = value
+      inst.update
+    end, @desc)
   end
 
   <<-DOC
@@ -55,12 +60,17 @@ class UniNumberOption < OptionBase
   @param default - the default value of the option, set to max normally
   >> string options. when compared like OPTION == value, compares the integer index of the option selected.
   DOC
-  def initialize(name, desc, min, max, shift_increment=1, default=max, on_update_proc=nil)
+  def initialize(name, desc, min, max, shift_increment=1, default=max - 1, on_update_proc=nil)
     super(name, desc, on_update_proc)
     @min = min
     @max = max
     @value = default
     @increment = shift_increment
+    inst = self
+    IncrementNumberOption.new(_INTL(@name), _INTL("Type %d"), @min, @max, proc { inst.value }, proc do |value|
+      inst.value = value
+      inst.update
+    end, @increment, @desc)
   end
 
 end
