@@ -135,7 +135,7 @@ end
 
 $queue_option_removal = false
 
-SEPARATE_UNILIB_OPTIONS = UniStringOption.new("Separate UniLib Options", "Moves UniLib options to their own menu.", %w[Off On], proc { |value| $queue_option_removal = value == 1 }, 1)
+SEPARATE_UNILIB_OPTIONS = UniStringOption.new("UniLib Option Menu", "Moves UniLib options to their own menu.", %w[Off On], proc { |value| $queue_option_removal = value == 1 }, 1)
 CUSTOM_OPTIONS -= [SEPARATE_UNILIB_OPTIONS]
 
 #noinspection RubyInstanceMethodNamingConvention
