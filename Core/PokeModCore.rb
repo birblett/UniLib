@@ -119,7 +119,6 @@ class PokeModifier
         (ha.nil? or ha[:HiddenAbilities].nil?) ? set_data(:HiddenAbilities, ability) : ha[:HiddenAbilities] = ability
         a = get_data(:Abilities)
         set_data(:Abilities, [a]) unless a.class == Array
-        get_data(:Abilities)[2] = ability unless get_data(:Abilities)[1].nil?
         get_data(:Abilities)[1] = ability if get_data(:Abilities)[1] == get_data(:HiddenAbilities)
       else
         ha = get_data(:flags)
