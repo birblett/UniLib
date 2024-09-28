@@ -67,7 +67,7 @@ class UniNumberOption < OptionBase
     @value = default
     @increment = shift_increment
     inst = self
-    IncrementNumberOption.new(_INTL(@name), _INTL("Type %d"), @min, @max, proc { inst.value }, proc do |value|
+    @option = IncrementNumberOption.new(_INTL(@name), _INTL("Type %d"), @min, @max, proc { inst.value }, proc do |value|
       inst.value = value
       inst.update
     end, @increment, @desc)
