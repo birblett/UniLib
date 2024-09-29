@@ -57,6 +57,13 @@ def unilib_resolve_asset(path_relative)
 end
 
 <<-DOC
+returns a bitmap associated with an image in the UniLibAssets directory.
+DOC
+def unilib_bitmap(path_relative)
+  AnimatedBitmap.new(unilib_resolve_asset(path_relative))
+end
+
+<<-DOC
 loads all files in a subdirectory.
 DOC
 def unilib_dir_load(path_relative)

@@ -227,7 +227,6 @@ def read_option_data
   end
 end
 
-
 add_play_event(:read_option_data)
 add_new_file_event(:read_option_data)
 
