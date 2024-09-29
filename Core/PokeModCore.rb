@@ -10,7 +10,7 @@ require "Scripts/Rejuv/montext"
 # ==================================================================================================================== #
 
 TYPES = [:NORMAL, :FIGHTING, :FLYING, :GROUND, :POISON, :ROCK, :BUG, :GHOST, :STEEL, :QMARKS, :FIRE, :WATER, :GRASS,
-         :ELECTRIC, :PSYCHIC, :ICE, :DRAGON, :DARK, :FAIRY]
+         :ELECTRIC, :PSYCHIC, :ICE, :DRAGON, :DARK, :FAIRY, :SHADOW]
 STAT_INDEX = {:HP => 0, :ATK => 1, :DEF => 2, :SPA => 3, :SPD => 4, :SPE => 5}
 
 FORM_MAP = {}
