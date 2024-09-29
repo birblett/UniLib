@@ -21,7 +21,7 @@ DOC
 #noinspection RubyTooManyInstanceVariablesInspection
 class PokeModifier
   <<-DOC
-  @param species - numerical pokemon dex number or PBSpecies constant (i.e. PBSpecies::NINETALES)
+  @param species - pokemon symbolic constant (i.e. :NINETALES)
   @param form - a form, in string representation (i.e. "Alolan", "Mega") - default 0
   @param force - if true, replaces the existing entry if it exists - default false
   >> returns an existing pokemodifier entry, or creates one if it doesn't exist
@@ -29,20 +29,10 @@ class PokeModifier
   def self.add(species, form=0, force=false)
     form_str = nil
     if form.class == String
-      form_str = form + " Form"
-      tmp = FORM_MAP[species][form + " Form"]
-      if tmp.nil?
-        form_str = form + " Forme"
-        tmp = FORM_MAP[species][form + " Forme"]
-      end
-      if tmp.nil?
-        form_str = form = " Rotom"
-        tmp = FORM_MAP[species][form]
-      end
-      if tmp.nil?
-        form_str = form
-        tmp = FORM_MAP[species][form]
-      end
+      tmp = FORM_MAP[species][(form_str = form + " Form")]
+      tmp = FORM_MAP[species][(form_str = form + " Forme")] if tmp.nil?
+      tmp = FORM_MAP[species][(form_str = form + " Rotom")] if tmp.nil?
+      tmp = FORM_MAP[species][(form_str = form)] if tmp.nil?
       form = tmp
     end
     MODIFIED_POKEMON[species] = {} if MODIFIED_POKEMON[species].nil?
