@@ -59,6 +59,22 @@ class OptionBase
     (other.is_a?(OptionBase) ? @value <= other.value  : @value <= other)
   end
 
+  def +(other)
+    (other.is_a?(Integer) || other.is_a?(Float)) ? @value + other : 0
+  end
+
+  def -(other)
+    (other.is_a?(Integer) || other.is_a?(Float)) ? @value - other : 0
+  end
+
+  def *(other)
+    (other.is_a?(Integer) || other.is_a?(Float)) ? @value * other : 0
+  end
+
+  def /(other)
+    (other.is_a?(Integer) || other.is_a?(Float)) ? @value / other : 0
+  end
+
   def marshal_dump
     [@name, @value]
   end
