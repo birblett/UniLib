@@ -78,13 +78,13 @@ class IncrementNumberOption < NumberOption
   end
 
   def next(current)
-    index = current + @optstart + @increment
+    index = current + @optstart + @increment * (Input.press?(Input::SHIFT) ? 10 : 1)
     index = @optstart if index>@optend
     index - @optstart
   end
 
   def prev(current)
-    index = current + @optstart - @increment
+    index = current + @optstart - @increment * (Input.press?(Input::SHIFT) ? 10 : 1)
     index = @optend if index < @optstart
     index - @optstart
   end
