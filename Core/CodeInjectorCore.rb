@@ -16,6 +16,7 @@ SUB_2 = "../../"
 MOD_DIR = "#{File.dirname(__FILE__)}/#{SUB_2}"
 EVENT_ON_PLAY = []
 EVENT_ON_SAVE = []
+EVENT_ON_NEW_FILE = []
 
 def get_or_create_method_attr(clazz, method, sym, default)
   METHOD_MODS[clazz][method][sym] = default if METHOD_MODS[clazz][method][sym].nil?
@@ -129,6 +130,9 @@ define_method(:pbCallTitle) do
   insertions = Time.now
   PENDING_INSERTIONS.push([:PokemonLoad, :startPlayingSaveFile, "$game_player.center($game_player.x, $game_player.y)", proc do
     EVENT_ON_PLAY.each { |fixer| method(fixer[0]).call }
+  end, 0, false, 100000])
+  PENDING_INSERTIONS.push([:PokemonLoad, :pbStartLoadScreen, "saveClientData", proc do
+    EVENT_ON_NEW_FILE.each { |fixer| method(fixer[0]).call }
   end, 0, false, 100000])
   PENDING_INSERTIONS.push([:Object, :saveNew, "end", proc do
     EVENT_ON_SAVE.each { |saver| method(saver[0]).call }

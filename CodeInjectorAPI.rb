@@ -94,6 +94,15 @@ def add_play_event(play_event, priority=1000)
 end
 
 <<-DOC
+@param new_file_event - a symbolic function reference (i.e. :function)
+@param priority - a numeric priority
+>> these events are called when the player creates a new save file. numerically higher priorities go first.
+DOC
+def add_new_file_event(new_file_event, priority=1000)
+  EVENT_ON_NEW_FILE.push([new_file_event, priority]) unless EVENT_ON_NEW_FILE.include?([new_file_event, priority])
+end
+
+<<-DOC
 @param save_event - a symbolic function reference (i.e. :function)
 @param priority - a numeric priority
 >> these events are called on save. useful for serializing data. numerically higher priorities go first.
