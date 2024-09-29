@@ -73,12 +73,12 @@ def get_method_source(clazz, method)
     temp, line = method.source_location
   else
     clazz = Kernel.const_get(clazz) if clazz.is_a? Symbol
-    temp, line = clazz.method(method).source_location rescue clazz.instance_method(method).source_location
+    temp, line = clazz.instance_method(method).source_location rescue clazz.method(method).source_location
   end
   file = temp
   file = "#{MOD_DIR}#{temp}.rb" unless File.exists?(file)
-  file = "#{MOD_DIR}#{SUB_2}Scripts/#{temp}.rb" unless File.exists?(file)
   file = "#{MOD_DIR}#{SUB_2}Scripts/Rejuv/#{temp}.rb" unless File.exists?(file)
+  file = "#{MOD_DIR}#{SUB_2}Scripts/#{temp}.rb" unless File.exists?(file)
   if File.exists?(file)
     lines = []
     File.readlines(file, chomp: true).each { |l| lines.push(l) }
