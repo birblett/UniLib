@@ -7,7 +7,7 @@ UNILIB_LOADED = {} unless defined? UNILIB_LOADED
 UNILIB_DEBUG_ENABLED = false
 UNILIB_VERSION = 0.4
 UNILIB_PATH = File.dirname(__FILE__) + "/"
-UNILIB_ASSET_PATH = File.dirname(__FILE__) + "/UniLibAssets/"
+UNILIB_ASSET_PATH = File.dirname(__FILE__) + "/../UniLibAssets/"
 UNILIB_LIB_PATH = UNILIB_PATH + "Core/"
 UNILIB_LOG_PATH = UNILIB_PATH + "Log/"
 
@@ -47,6 +47,13 @@ DOC
 def unilib_file_load(path_relative)
   load UNILIB_PATH + "../" + path_relative + ".rb" unless UNILIB_LOADED[path_relative]
   UNILIB_LOADED[path_relative] = true
+end
+
+<<-DOC
+returns a path associated with a file in the UniLibAssets directory.
+DOC
+def unilib_resolve_asset(path_relative)
+  "Data/Mods/UniLibAssets/#{path_relative}"
 end
 
 <<-DOC
