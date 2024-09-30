@@ -36,43 +36,43 @@ class OptionBase
   end
 
   def ==(other)
-    (other.is_a?(OptionBase) ? @name == other.name : @value == other)
+    (other.is_a?(OptionBase) ? @name == other.name : (@value + @min) == other)
   end
 
   def !=(other)
-    (other.is_a?(OptionBase) ? @name != other.name : @value != other)
+    (other.is_a?(OptionBase) ? @name != other.name : (@value + @min) != other)
   end
 
   def >(other)
-    (other.is_a?(OptionBase) ? @value > other.value : @value > other)
+    (other.is_a?(OptionBase) ? @value > other.value : (@value + @min) > other)
   end
 
   def <(other)
-    (other.is_a?(OptionBase) ? @value < other.value  : @value < other)
+    (other.is_a?(OptionBase) ? @value < other.value  : (@value + @min) < other)
   end
 
   def >=(other)
-    (other.is_a?(OptionBase) ? @value >= other.value : @value >= other)
+    (other.is_a?(OptionBase) ? @value >= other.value : (@value + @min) >= other)
   end
 
   def <=(other)
-    (other.is_a?(OptionBase) ? @value <= other.value  : @value <= other)
+    (other.is_a?(OptionBase) ? @value <= other.value  : (@value + @min) <= other)
   end
 
   def +(other)
-    (other.is_a?(Integer) || other.is_a?(Float)) ? @value + other : 0
+    (other.is_a?(Integer) || other.is_a?(Float)) ? @value + @min + other : 0
   end
 
   def -(other)
-    (other.is_a?(Integer) || other.is_a?(Float)) ? @value - other : 0
+    (other.is_a?(Integer) || other.is_a?(Float)) ? @value + @min - other : 0
   end
 
   def *(other)
-    (other.is_a?(Integer) || other.is_a?(Float)) ? @value * other : 0
+    (other.is_a?(Integer) || other.is_a?(Float)) ? (@value + @min) * other : 0
   end
 
   def /(other)
-    (other.is_a?(Integer) || other.is_a?(Float)) ? @value / other : 0
+    (other.is_a?(Integer) || other.is_a?(Float)) ? (@value + @min) / other : 0
   end
 
   def marshal_dump
