@@ -12,8 +12,8 @@ verify_version(0.4, File.basename(__FILE__).gsub!(".rb", ""))
 COMMON
 @param name - string name
 @param desc - string description
-@param on_update_proc - a proc that activates when the option is first loaded and whenever it is changed. useful for 
-                  changing global properties, like $DEBUG, for instance.
+@param on_update_proc - a proc that activates when the option is first loaded and whenever it is changed. useful for changing global 
+                        properties, like $DEBUG, for instance.
 >> a set of classes for creating options in the options menu and comparing them via ==. automatically serialized and
    deserialized.
 DOC
@@ -73,4 +73,36 @@ class UniNumberOption < OptionBase
     end, @increment, @desc)
   end
 
+end
+
+<<-DOC
+COMMON - commands
+@param id - a string id associated with the command.
+@param text - the displayed text of the command.
+@param executes - a proc or function, called when the command is selected.
+@param predicate - a proc or function returning a boolean value which determines if this should show up in the option menu or not.
+DOC
+
+<<-DOC
+@param executes @param predicate - takes the scene context as an argument
+adds a command to the pause menu below the Options command, or below the UniLib command if enabled
+DOC
+def add_pause_command(id, text, executes, predicate=nil)
+  UNILIB_PAUSE_COMMANDS[id] = [text, executes, predicate]
+end
+
+<<-DOC
+@param executes @param predicate - takes the selected pokemon as an argument
+adds a command to the menu when selecting a pokemon in the party. appears at the bottom, above the cancel command.
+DOC
+def add_party_command(id, text, executes, predicate=nil)
+  UNILIB_PARTY_COMMANDS[id] = [text, executes, predicate]
+end
+
+<<-DOC
+@param executes @param predicate - takes the selected pokemon as argument 1, and whether it is held or not as argument 2
+adds a command to the menu when selecting a pokemon in the box. appears at the bottom, below either the cancel or debug command.
+DOC
+def add_box_command(id, text, executes, predicate=nil)
+  UNILIB_BOX_COMMANDS[id] = [text, executes, predicate]
 end

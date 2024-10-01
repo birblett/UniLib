@@ -10,6 +10,27 @@ verify_version(0.4, File.basename(__FILE__).gsub!(".rb", ""))
 
 UNILIB_CUSTOM_OPTIONS = []
 OLD_OPTIONS = []
+UNILIB_PAUSE_COMMANDS = {}
+UNILIB_PARTY_COMMANDS = {}
+UNILIB_BOX_COMMANDS = {}
+
+UNILIB_PAUSE_COMMANDS["unilib_option_menu"] = ["UniLib", proc do |context|
+  scene=UniLibOptionScene.new
+  screen=PokemonOption.new(scene)
+  pbFadeOutIn(99999) {
+    context.instance_variable_get(:@scene).pbRefresh
+    screen.pbStartScreen
+    pbUpdateSceneMap
+  }
+  $updateFLHUD = true
+end, proc do |_|
+  if $queue_option_removal
+    arr = (UNILIB_CUSTOM_OPTIONS + [SEPARATE_UNILIB_OPTIONS]).map { |opt| opt.get_option }
+    PokemonOptionScene::OptionList.delete_if { |v| arr.include?(v) }
+  end
+  SEPARATE_UNILIB_OPTIONS == 1
+end]
+
 $options_init = false
 
 class OptionBase
@@ -73,6 +94,10 @@ class OptionBase
 
   def /(other)
     (other.is_a?(Integer) || other.is_a?(Float)) ? (@value + @min) / other : 0
+  end
+
+  def &(other)
+    (other.is_a?(Integer) || other.is_a?(Float)) ? (@value + @min) & other : 0
   end
 
   def marshal_dump
@@ -257,28 +282,16 @@ insert_in_method_before(:PokemonOptionScene, :pbStartScene, "for i in 0...Option
   end
 end)
 
-insert_in_method(:PokemonMenu, :pbStartPokemonMenu, "cmdOption=-1", "cmd_uni=-1")
-
-insert_in_method(:PokemonMenu, :pbStartPokemonMenu, "commands[cmdOption=commands.length]=_INTL(\"Options\")", "commands[cmd_uni=commands.length]=_INTL(\"UniLib\") if SEPARATE_UNILIB_OPTIONS == 1 and UNILIB_CUSTOM_OPTIONS.length > 0")
-
-insert_in_method_before(:PokemonMenu, :pbStartPokemonMenu, "elsif cmdOption>=0 && command==cmdOption", proc do |command, cmd_uni| if true
-  elsif cmd_uni>=0 && command==cmd_uni
-    scene=UniLibOptionScene.new
-    screen=PokemonOption.new(scene)
-    pbFadeOutIn(99999) {
-      screen.pbStartScreen
-      pbUpdateSceneMap
-      @scene.pbRefresh
-    }
-    $updateFLHUD = true
-end end)
-
-insert_in_method(:PokemonMenu, :pbStartPokemonMenu, "command=@scene.pbShowCommands(commands)", proc do
-  if $queue_option_removal
-    arr = []
-    (UNILIB_CUSTOM_OPTIONS + [SEPARATE_UNILIB_OPTIONS]).each { |opt| arr.push(opt.get_option)}
-    PokemonOptionScene::OptionList.delete_if { |v| arr.include?(v) }
-  end
-end)
-
 insert_in_method(:PokemonOption, :pbStartScreen, "@scene.pbOptions", "unilib_save_data(\"options\", UNILIB_CUSTOM_OPTIONS + OLD_OPTIONS + [SEPARATE_UNILIB_OPTIONS], false)")
+
+insert_in_method(:PokemonMenu, :pbStartPokemonMenu, "commands[cmdOption=commands.length]=_INTL(\"Options\")", "uni_cmds = UNILIB_PAUSE_COMMANDS.reduce({}) { |c, entry| commands[c[entry[0]] = commands.length] = _INTL(entry[1][0]) if entry[1][2].nil? or entry[1][2].call(self); c}")
+
+insert_in_method(:PokemonMenu, :pbStartPokemonMenu, "command=@scene.pbShowCommands(commands)", "uni_cmds.each { |c, idx| UNILIB_PAUSE_COMMANDS[c][1].call(self) if command == idx}")
+
+insert_in_method_before(:PokemonScreen, :pbPokemonScreen, "commands[commands.length]=_INTL(\"Cancel\")", "uni_cmds = UNILIB_PARTY_COMMANDS.reduce({}) { |c, entry| commands[c[entry[0]] = commands.length] = _INTL(entry[1][0]) if entry[1][2].nil? or entry[1][2].call(pkmn); c}")
+
+insert_in_method_before(:PokemonScreen, :pbPokemonScreen, "if cmdSummary>=0 && command==cmdSummary", "uni_cmds.each { |c, idx| UNILIB_PARTY_COMMANDS[c][1].call(pkmn) if command == idx }")
+
+insert_in_method_before(:PokemonStorageScreen, :pbStartScreen, "command=pbShowCommands(helptext,commands)", "uni_cmds = UNILIB_BOX_COMMANDS.reduce({}) { |c, entry| commands[c[entry[0]] = commands.length] = _INTL(entry[1][0]) if entry[1][2].nil? or entry[1][2].call(heldpoke ? heldpoke : pokemon, selected[0] == -1); c} if heldpoke or pokemon")
+
+insert_in_method(:PokemonStorageScreen, :pbStartScreen, "command=pbShowCommands(helptext,commands)", "uni_cmds.each { |c, idx| UNILIB_PARTY_COMMANDS[c][1].call(heldpoke ? heldpoke : pokemon, selected[0] == -1) if command == idx }")
