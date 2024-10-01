@@ -15,11 +15,9 @@ UNILIB_PARTY_COMMANDS = {}
 UNILIB_BOX_COMMANDS = {}
 
 UNILIB_PAUSE_COMMANDS["unilib_option_menu"] = ["UniLib", proc do |context|
-  scene=UniLibOptionScene.new
-  screen=PokemonOption.new(scene)
   pbFadeOutIn(99999) {
     context.instance_variable_get(:@scene).pbRefresh
-    screen.pbStartScreen
+    PokemonOption.new(UniLibOptionScene.new).pbStartScreen
     pbUpdateSceneMap
   }
   $updateFLHUD = true
