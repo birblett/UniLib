@@ -81,23 +81,21 @@ def get_method_source(clazz, method)
   file = "#{MOD_DIR}#{SUB_2}Scripts/Rejuv/#{temp}.rb" unless File.exists?(file)
   file = "#{MOD_DIR}#{SUB_2}Scripts/#{temp}.rb" unless File.exists?(file)
   if File.exists?(file)
-    lines = []
-    File.readlines(file, chomp: true).each { |l| lines.push(l) }
-    code = ""
-    code_lines = []
-    valid = false
+    lines, code, code_lines, valid = IO.foreach(file).to_a, "", [], false
     (line - 1..lines.length).each do |index|
       current = lines[index].strip
-      if not current.start_with?("#") and current.include?("#")
+      next if current.start_with?("#")
+      if current.include?("#")
         tmp = current.split(/#(?=([^"\\]*(\\.|"([^"\\]*\\.)*[^"\\]*"))*[^"]*$)/)
         current = tmp[0] if tmp.length > 0
       end
+      next if current.empty? or current.length == 0
       current.split(/;/).each do |str|
         code += str + "\n"
         code_lines.push(str)
-        valid = valid_expression(code) if str.include? "end"
+        valid = valid_expression(code) if str.include?("end")
         break if valid
-      end unless current.empty? or current.length == 0 or current.start_with?("#")
+      end
       break if valid
     end
     return valid ? code_lines : nil
@@ -139,9 +137,9 @@ define_method(:pbCallTitle) do
   end, 0, false, 100000])
   PENDING_INSERTIONS.sort! { |a, b| b[6] <=> a[6]}
   PENDING_INSERTIONS.each do |pending|
-    insertions = Time.now
+    insertion = Time.now
     out = insert_in_method_internal(pending[0], pending[1], pending[2], pending[3], pending[4], pending[5])
-    unilib_log("Insertion on class: #{pending[0]} - ", "method: #{pending[1]} - ", "time taken: #{Time.now - insertions} - ", "result: #{out} - ", "target:", pending[2])
+    # unilib_log("Insertion on class: #{pending[0]} - ", "method: #{pending[1]} - ", "time taken: #{Time.now - insertion} - ", "result: #{out} - ", "target:", pending[2])
   end
   deletions = Time.now
   PENDING_DELETIONS.sort! { |a, b| b[4] <=> a[4]}
