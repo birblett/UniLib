@@ -11,6 +11,7 @@ UNILIB_ASSET_PATH = File.dirname(__FILE__) + "/../UniLibAssets/"
 UNILIB_LIB_PATH = UNILIB_PATH + "Core/"
 UNILIB_LOG_PATH = UNILIB_PATH + "Log/"
 UNILIB_SESSION_DEBUG = Time.now.strftime("%Y_%m_%d-%H_%M_%S.log") unless defined? UNILIB_SESSION_DEBUG
+UNILIB_CLEAR_INJECTOR_CACHE = false
 
 <<-DOC
 used for verifying the correct version of unilib.

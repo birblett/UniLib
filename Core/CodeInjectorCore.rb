@@ -10,7 +10,7 @@ verify_version(0.4, File.basename(__FILE__).gsub!(".rb", ""))
 
 PENDING_DELETIONS = []
 PENDING_INSERTIONS = []
-METHOD_MODS = {}
+METHOD_MODS = {} if !defined? METHOD_MODS or UNILIB_CLEAR_INJECTOR_CACHE
 NO_OP = {}
 SUB_2 = "../../"
 MOD_DIR = "#{File.dirname(__FILE__)}/#{SUB_2}"
@@ -158,6 +158,8 @@ define_method(:pbCallTitle) do
           ref[:INJECT][-2].each { |injected| source += injected + "\n" } if num == ref[:CODE].length - 2 unless ref[:INJECT][-2].nil?
         end
       end
+      ref[:INJECT].clear if ref[:INJECT]
+      ref[:DELETE].clear if ref[:DELETE]
     end
     clazz.class_eval(source)
   end
