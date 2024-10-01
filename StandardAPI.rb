@@ -10,6 +10,7 @@ UNILIB_PATH = File.dirname(__FILE__) + "/"
 UNILIB_ASSET_PATH = File.dirname(__FILE__) + "/../UniLibAssets/"
 UNILIB_LIB_PATH = UNILIB_PATH + "Core/"
 UNILIB_LOG_PATH = UNILIB_PATH + "Log/"
+UNILIB_SESSION_DEBUG = Time.now.strftime("%Y_%m_%d-%H_%M_%S.log") unless defined? UNILIB_SESSION_DEBUG
 
 <<-DOC
 used for verifying the correct version of unilib.
@@ -33,7 +34,6 @@ end
 used for loading required apis and libraries. makes sure an api is not loaded more than once.
 DOC
 def unilib_include(path_relative)
-  $debug_name = Time.now.strftime("%Y_%m_%d-%H_%M_%S.log") unless UNILIB_LOADED["CodeInjector"]
   unilib_include("CodeInjector") if path_relative != "CodeInjector"
   load UNILIB_LIB_PATH + path_relative + "Core.rb" if File.exists?(UNILIB_LIB_PATH + path_relative + "Core.rb") unless UNILIB_LOADED[path_relative]
   load UNILIB_LIB_PATH + path_relative + "Lib.rb" if File.exists?(UNILIB_LIB_PATH + path_relative + "Lib.rb") unless UNILIB_LOADED[path_relative]
@@ -106,10 +106,10 @@ DOC
 def unilib_log(*args)
   if UNILIB_DEBUG_ENABLED
     Dir.mkdir(UNILIB_LOG_PATH) unless Dir.exist?(UNILIB_LOG_PATH)
-    unless $debug_name == ""
+    unless UNILIB_SESSION_DEBUG == ""
       str_final = ""
       args.each {|msg| str_final += msg.to_s + " " }
-      File.open(UNILIB_LOG_PATH + $debug_name, "a+") { |f| f.write("#{str_final}\n") }
+      File.open(UNILIB_LOG_PATH + UNILIB_SESSION_DEBUG, "a+") { |f| f.write("#{str_final}\n") }
     end
   end
 end
