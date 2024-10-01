@@ -1,12 +1,12 @@
-# ==================================================================================================================== #
-# =================================================== DEPENDENCIES =================================================== #
-# ==================================================================================================================== #
+# ======================================================================================================================================== #
+# ============================================================= DEPENDENCIES ============================================================= #
+# ======================================================================================================================================== #
 
 verify_version(0.4, File.basename(__FILE__).gsub!(".rb", ""))
 
-# ==================================================================================================================== #
-# ==================================================== PUBLIC API ==================================================== #
-# ==================================================================================================================== #
+# ======================================================================================================================================== #
+# ============================================================== PUBLIC API ============================================================== #
+# ======================================================================================================================================== #
 
 <<-DOC
 forcibly refreshes abilities on load. ability capsules will be overridden if replacing an existing ability.
@@ -64,8 +64,7 @@ class PokeModifier
   end
 
   <<-DOC
-  @param index1 @param index2 - indices/names of stats to be swapped - :HP/:ATK/:DEF/:SPA/:SPD/:SPE as well as numbers 
-                                0-5 are valid
+  @param index1 @param index2 - indices/names of stats to be swapped - :HP/:ATK/:DEF/:SPA/:SPD/:SPE as well as numbers 0-5 are valid
   >> swaps the values of two stats - respects previously changed stats
   DOC
   def swap(stat1, stat2)
@@ -120,9 +119,8 @@ class PokeModifier
   end
 
   <<-DOC
-  @param abilities - ability input in the form of a hash, with keys as indices 0-2 (i.e. {1 => PBAbilities::STENCH, 1 => 
-                     PBAbilities::ILLUMINATE}. index 2 will always replace the hidden ability; index 1 will replace it 
-                     if that ability happens to be its hidden ability.)
+  @param abilities - ability input in the form of a hash, with keys as indices 0-2 (i.e. {1 => :STENCH, 2 => :ILLUMINATE}. index 2 will 
+                     always replace the hidden ability.)
   >> replaces the abilities at the provided indices
   DOC
   def abilities(abilities)
@@ -146,8 +144,7 @@ class PokeModifier
   end
 
   <<-DOC
-  @param moves - numerical move id or PBMoves constant (or array of them) (i.e. [PBMoves::SUNSTEELSTRIKE, 
-          PBMoves::MOONGEISTBEAM])
+  @param moves - move constant (or array of them) (i.e. [:SUNSTEELSTRIKE, :MOONGEISTBEAM])
   >> adds the given egg moves
   DOC
   def egg_moves(moves, override=true)
@@ -162,8 +159,7 @@ class PokeModifier
   end
 
   <<-DOC
-  @param moves - numerical move id or PBMoves constant (or array of them) (i.e. [PBMoves::SUNSTEELSTRIKE, 
-          PBMoves::MOONGEISTBEAM])
+  @param moves - move constant (or array of them) (i.e. [:SUNSTEELSTRIKE, :MOONGEISTBEAM])
   >> allows the given moves to be learned via tm or tutor
   DOC
   def compatible_moves(moves)

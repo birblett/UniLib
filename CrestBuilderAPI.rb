@@ -1,12 +1,12 @@
-# ==================================================================================================================== #
-# =================================================== DEPENDENCIES =================================================== #
-# ==================================================================================================================== #
+# ======================================================================================================================================== #
+# ============================================================= DEPENDENCIES ============================================================= #
+# ======================================================================================================================================== #
 
 verify_version(0.4, File.basename(__FILE__).gsub!(".rb", ""))
 
-# ==================================================================================================================== #
-# ==================================================== PUBLIC API ==================================================== #
-# ==================================================================================================================== #
+# ======================================================================================================================================== #
+# ============================================================== PUBLIC API ============================================================== #
+# ======================================================================================================================================== #
 
 <<-DOC
 >> builder class for creating new crests.
@@ -76,8 +76,7 @@ class CrestBuilder < ItemBuilder
 
   <<-DOC
   @param type - type id (or array of type ids)
-  >> allows the user to no longer be weak to the given type. if an array of types is given, uses those as resistances 
-     instead.
+  >> allows the user to no longer be weak to the given type. if an array of types is given, uses those as resistances instead.
   DOC
   def weakness_override(type)
     @weakness_override = type
@@ -86,8 +85,7 @@ class CrestBuilder < ItemBuilder
 
   <<-DOC
   @param type - type id (or array of type ids)
-  >> allows the user to gain the resistances of the given type. if an array of types is given, uses those as resistances 
-     instead.
+  >> allows the user to gain the resistances of the given type. if an array of types is given, uses those as resistances instead.
   DOC
   def resistance_override(type)
     @resistance_override = type
