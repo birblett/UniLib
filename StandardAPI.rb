@@ -5,7 +5,7 @@
 
 UNILIB_LOADED = {} unless defined? UNILIB_LOADED
 UNILIB_DEBUG_ENABLED = false
-UNILIB_VERSION = 0.4
+UNILIB_VERSION = 0.5
 UNILIB_PATH = File.dirname(__FILE__) + "/"
 UNILIB_ASSET_PATH = File.dirname(__FILE__) + "/../UniLibAssets/"
 UNILIB_LIB_PATH = UNILIB_PATH + "Core/"
