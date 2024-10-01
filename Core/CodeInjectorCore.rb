@@ -119,51 +119,55 @@ end
 # ====================================================== PATCH ======================================================= #
 # ==================================================================================================================== #
 
+CODE_SOURCE = ""
+
+LOAD_HOOK_INSERTION = [:PokemonLoad, :startPlayingSaveFile, "$game_player.center($game_player.x, $game_player.y)", "EVENT_ON_PLAY.each { |fixer| method(fixer[0]).call }", 0, false, 100000]
+FIXER_HOOK_INSERTION = [:PokemonLoad, :pbStartLoadScreen, "saveClientData", "EVENT_ON_NEW_FILE.each { |fixer| method(fixer[0]).call }", 0, false, 100000]
+SAVE_HOOK_INSERTION = [:Object, :saveNew, "end", "EVENT_ON_SAVE.each { |saver| method(saver[0]).call }", 0, false, 100000]
+
 entrypoint = method(:pbCallTitle)
 define_method(:pbCallTitle) do
   UNILIB_LOADED.clear
   ret = entrypoint.()
-  EVENT_ON_PLAY.sort! { |a, b| b[1] <=> a[1]}
-  EVENT_ON_SAVE.sort! { |a, b| b[1] <=> a[1]}
-  insertions = Time.now
-  PENDING_INSERTIONS.push([:PokemonLoad, :startPlayingSaveFile, "$game_player.center($game_player.x, $game_player.y)", proc do
-    EVENT_ON_PLAY.each { |fixer| method(fixer[0]).call }
-  end, 0, false, 100000])
-  PENDING_INSERTIONS.push([:PokemonLoad, :pbStartLoadScreen, "saveClientData", proc do
-    EVENT_ON_NEW_FILE.each { |fixer| method(fixer[0]).call }
-  end, 0, false, 100000])
-  PENDING_INSERTIONS.push([:Object, :saveNew, "end", proc do
-    EVENT_ON_SAVE.each { |saver| method(saver[0]).call }
-  end, 0, false, 100000])
-  PENDING_INSERTIONS.sort! { |a, b| b[6] <=> a[6]}
-  PENDING_INSERTIONS.each do |pending|
-    insertion = Time.now
-    out = insert_in_method_internal(pending[0], pending[1], pending[2], pending[3], pending[4], pending[5])
-    # unilib_log("Insertion on class: #{pending[0]} - ", "method: #{pending[1]} - ", "time taken: #{Time.now - insertion} - ", "result: #{out} - ", "target:", pending[2])
+  if defined? $code_injector_aggressive_cache and CACHE_AGGRESSIVE
+    t = Time.now
+    $code_injector_aggressive_cache.each { |clazz, source| clazz.class_eval(source) }
+    unilib_log("aggressive insertion cache compile time:", Time.now - t)
   end
-  deletions = Time.now
-  PENDING_DELETIONS.sort! { |a, b| b[4] <=> a[4]}
-  PENDING_DELETIONS.each do |pending|
-    delete_in_method_internal(pending[0], pending[1], pending[2], pending[3])
-  end
-  method_mods = Time.now
-  METHOD_MODS.each do |clazz, methods|
-    source = ""
-    methods.each do |_, ref|
-      ref[:CODE].each do |num, line|
-        source += line + "\n" unless ref[:DELETE] and ref[:DELETE][num]
-        unless ref[:INJECT].nil?
-          ref[:INJECT][-1].each { |injected| source += injected + "\n" } if num == 0 unless ref[:INJECT][-1].nil?
-          ref[:INJECT][num].each { |injected| source += injected + "\n" } unless ref[:INJECT][num].nil?
-          ref[:INJECT][-2].each { |injected| source += injected + "\n" } if num == ref[:CODE].length - 2 unless ref[:INJECT][-2].nil?
-        end
-      end
-      ref[:INJECT].clear if ref[:INJECT]
-      ref[:DELETE].clear if ref[:DELETE]
+  unless CACHE_AGGRESSIVE and defined? $code_injector_aggressive_cache
+    $code_injector_aggressive_cache = {} if CACHE_AGGRESSIVE
+    EVENT_ON_PLAY.sort! { |a, b| b[1] <=> a[1]}
+    EVENT_ON_SAVE.sort! { |a, b| b[1] <=> a[1]}
+    insertions = Time.now
+    PENDING_INSERTIONS += [LOAD_HOOK_INSERTION, FIXER_HOOK_INSERTION, SAVE_HOOK_INSERTION]
+    PENDING_INSERTIONS.sort! { |a, b| b[6] <=> a[6]}
+    PENDING_INSERTIONS.each { |pending| insert_in_method_internal(pending[0], pending[1], pending[2], pending[3], pending[4], pending[5]) }
+    deletions = Time.now
+    PENDING_DELETIONS.sort! { |a, b| b[4] <=> a[4]}
+    PENDING_DELETIONS.each do |pending|
+      delete_in_method_internal(pending[0], pending[1], pending[2], pending[3])
     end
-    clazz.class_eval(source)
+    method_mods = Time.now
+    METHOD_MODS.each do |clazz, methods|
+      CODE_SOURCE = ""
+      methods.each do |_, ref|
+        ref[:CODE].each do |num, line|
+          CODE_SOURCE += line + "\n" unless ref[:DELETE] and ref[:DELETE][num]
+          unless ref[:INJECT].nil?
+            ref[:INJECT][-1].each { |injected| CODE_SOURCE += injected + "\n" } if num == 0 unless ref[:INJECT][-1].nil?
+            ref[:INJECT][num].each { |injected| CODE_SOURCE += injected + "\n" } unless ref[:INJECT][num].nil?
+            ref[:INJECT][-2].each { |injected| CODE_SOURCE += injected + "\n" } if num == ref[:CODE].length - 2 unless ref[:INJECT][-2].nil?
+          end
+        end
+        ref[:INJECT].clear if ref[:INJECT]
+        ref[:DELETE].clear if ref[:DELETE]
+      end
+      clazz.class_eval(CODE_SOURCE)
+      methods.delete_if { |method| method.is_a? Proc}
+      $code_injector_aggressive_cache[clazz] = CODE_SOURCE if CACHE_AGGRESSIVE
+    end
+    end_compile = Time.now
+    unilib_log("staging insertions=#{deletions - insertions}", "staging deletions=#{method_mods - deletions}", "compilation=#{end_compile - method_mods}")
   end
-  end_compile = Time.now
-  unilib_log("staging insertions=#{deletions - insertions}", "staging deletions=#{method_mods - deletions}", "compilation=#{end_compile - method_mods}")
   ret
 end

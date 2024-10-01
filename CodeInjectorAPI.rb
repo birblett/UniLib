@@ -8,6 +8,7 @@ verify_version(0.4, File.basename(__FILE__).gsub!(".rb", ""))
 # ==================================================== PUBLIC API ==================================================== #
 # ==================================================================================================================== #
 
+CACHE_AGGRESSIVE = false unless defined? CACHE_AGGRESSIVE
 
 <<-DOC
 >> useful functions and event hooks for cross-compatibility and simplicity. embedded in the standard api.
