@@ -16,9 +16,9 @@ UNILIB_BOX_COMMANDS = {}
 
 UNILIB_PAUSE_COMMANDS["unilib_option_menu"] = ["UniLib", proc do |context|
   pbFadeOutIn(99999) {
-    context.instance_variable_get(:@scene).pbRefresh
     PokemonOption.new(UniLibOptionScene.new).pbStartScreen
     pbUpdateSceneMap
+    context.instance_variable_get(:@scene).pbRefresh
   }
   $updateFLHUD = true
 end, proc do |_|
@@ -284,7 +284,7 @@ insert_in_method(:PokemonOption, :pbStartScreen, "@scene.pbOptions", "unilib_sav
 
 insert_in_method(:PokemonMenu, :pbStartPokemonMenu, "commands[cmdOption=commands.length]=_INTL(\"Options\")", "uni_cmds = UNILIB_PAUSE_COMMANDS.reduce({}) { |c, entry| commands[c[entry[0]] = commands.length] = _INTL(entry[1][0]) if entry[1][2].nil? or entry[1][2].call(self); c}")
 
-insert_in_method(:PokemonMenu, :pbStartPokemonMenu, "command=@scene.pbShowCommands(commands)", "uni_cmds.each { |c, idx| UNILIB_PAUSE_COMMANDS[c][1].call(self) if command == idx}")
+insert_in_method(:PokemonMenu, :pbStartPokemonMenu, "command=@scene.pbShowCommands(commands)", "b = false; uni_cmds.each { |c, idx| UNILIB_PAUSE_COMMANDS[c][1].call(self) if b |= command == idx }; next if b")
 
 insert_in_method_before(:PokemonScreen, :pbPokemonScreen, "commands[commands.length]=_INTL(\"Cancel\")", "uni_cmds = UNILIB_PARTY_COMMANDS.reduce({}) { |c, entry| commands[c[entry[0]] = commands.length] = _INTL(entry[1][0]) if entry[1][2].nil? or entry[1][2].call(pkmn); c}")
 
