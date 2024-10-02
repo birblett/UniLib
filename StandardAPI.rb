@@ -17,6 +17,7 @@ UNILIB_CLEAR_INJECTOR_CACHE = false
 used for verifying the correct version of unilib.
 DOC
 def verify_version(version, file)
+  file = File.basename(file).gsub(".rb", "")
   if version > UNILIB_VERSION
     Kernel.pbMessage("UniLib: #{file} is from a future version: #{version} - please update UniLib! (currently #{UNILIB_VERSION})")
   elsif version < UNILIB_VERSION
