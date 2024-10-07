@@ -3,8 +3,6 @@
 # ======================================================================================================================================== #
 
 verify_version(0.5, __FILE__)
-require "Scripts/Rejuv/itemtext"
-require "Scripts/Rejuv/montext"
 
 # ======================================================================================================================================== #
 # ============================================================ INTERNAL/CORE ============================================================= #
@@ -12,6 +10,7 @@ require "Scripts/Rejuv/montext"
 
 CUSTOM_ITEMS = {}
 INVALID_ITEMS = {}
+ITEM_DATA = load_data("Data/items.dat") unless defined? ITEM_DATA
 
 class ItemBuilder
 
@@ -43,7 +42,7 @@ end
 
 def add_items
   $cache.items.each do |item, _|
-    if ITEMHASH[item].nil? and CUSTOM_ITEMS[item].nil?
+    if ITEM_DATA[item].nil? and CUSTOM_ITEMS[item].nil?
       $cache.items.delete(item)
     end
   end
