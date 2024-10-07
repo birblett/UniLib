@@ -27,6 +27,7 @@ class PokeModifier
   >> returns an existing pokemodifier entry, or creates one if it doesn't exist
   DOC
   def self.add(species, form=0, force=false)
+    initial_form = form
     form_str = nil
     if form.class == String
       tmp = FORM_MAP[species][(form_str = form + " Form")]
@@ -34,6 +35,10 @@ class PokeModifier
       tmp = FORM_MAP[species][(form_str = form + " Rotom")] if tmp.nil?
       tmp = FORM_MAP[species][(form_str = form)] if tmp.nil?
       form = tmp
+    end
+    if form.nil?
+      Kernel.pbMessage("Failed to register PokeModifer for species #{species}#{initial_form != 0 ? " with form #{initial_form}." : ""}")
+      exit
     end
     MODIFIED_POKEMON[species] = {} if MODIFIED_POKEMON[species].nil?
     MODIFIED_POKEMON[species][form] = PokeModifier.new(species, form, form_str) if MODIFIED_POKEMON[species][form].nil? or force
