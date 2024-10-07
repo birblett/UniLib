@@ -17,6 +17,7 @@ CREST_STAB_OVERRIDE = {}
 CREST_WEAKNESS_OVERRIDE = {}
 CREST_RESIST_OVERRIDE = {}
 CREST_FORCE_RESIST = {}
+CREST_FORM_RESTRICTION = {}
 
 TYPE_WEAKNESS_MAP = {
   :NORMAL => [:FIGHTING],
@@ -86,9 +87,10 @@ TYPE_RESISTANCE_MAP = {
 
 class CrestBuilder < ItemBuilder
 
-  def initialize(species, hash)
+  def initialize(species, form, hash)
     super((species.to_s + "CREST").to_sym, hash)
     @species = [species]
+    @form = form
     @tier = 1
     @essence = nil
     @secondary = nil
@@ -103,6 +105,8 @@ class CrestBuilder < ItemBuilder
     item = $cache.items[@symbol]
     @species.each do |species|
       PBStuff::POKEMONTOCREST[species] = @symbol
+      CREST_FORM_RESTRICTION[species] = [] if CREST_FORM_RESTRICTION[species].nil?
+      CREST_FORM_RESTRICTION[species].push(@form)
       CREST_STAB_OVERRIDE[species] = @stab_override unless @stab_override.nil?
       CREST_WEAKNESS_OVERRIDE[species] = @weakness_override unless @weakness_override.nil?
       CREST_RESIST_OVERRIDE[species] = @resistance_override unless @resistance_override.nil?
@@ -135,6 +139,20 @@ add_save_event(:write_custom_crest_flags)
 # ======================================================================================================================================== #
 # ================================================================ PATCH ================================================================= #
 # ======================================================================================================================================== #
+
+insert_in_method(:PokeBattle_Battler, :hasCrest?, "return true if @battle.pbGetOwnerItems(@index).include?(:SILVCREST) && crestmon.species == :SILVALLY && !@battle.pbOwnedByPlayer?(@index)", proc do |crestmon|
+  unless CREST_FORM_RESTRICTION[crestmon.species].nil?
+    if CREST_FORM_RESTRICTION[crestmon.species].include?(crestmon.form) and PBStuff::POKEMONTOCREST[crestmon.species]==crestmon.item
+      return crestmon.form == 0 ? true : [crestmon.species, crestmon.form]
+    end
+    return false
+  end
+end)
+
+replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@crested = hasCrest? ? pkmn.species : false", proc do
+  h = hasCrest?
+  @crested = h ? (h.is_a?(Array) ? h : pkmn.species) : false
+end)
 
 insert_in_method(:Cache_Game, :map_load, "end", proc do |mapid|
   if mapid == 168

@@ -18,11 +18,20 @@ class CrestBuilder < ItemBuilder
   @param desc - crest description
   >> creates a new crest builder unless an existing item exists that is already a crest corresponding to :SPECIES_CREST
   DOC
-  def self.add(species, desc)
+  def self.add(species, desc, form=0, name=nil)
     sym = (species.to_s + "CREST").to_sym
+    base_form = FORM_MAP[species][0]
+    form_str = nil
+    if form.class == String
+      tmp = FORM_MAP[species][(form_str = form + " Form")]
+      tmp = FORM_MAP[species][(form_str = form + " Forme")] if tmp.nil?
+      tmp = FORM_MAP[species][(form_str = form + " Rotom")] if tmp.nil?
+      tmp = FORM_MAP[species][(form_str = form)] if tmp.nil?
+      form = tmp
+    end
     if CUSTOM_ITEMS[sym].nil? or !CUSTOM_ITEMS[sym].is_a? CrestBuilder
-      CUSTOM_ITEMS[sym] = CrestBuilder.new(species, {
-        :name => MONHASH[species]["Normal Form"][:name] + " Crest",
+      CUSTOM_ITEMS[sym] = CrestBuilder.new(species, form, {
+        :name => name.nil? ? (POKEMON_DATA[species].name + " Crest#{form_str.nil? ? "" : " (" + form_str + ")"}") : name,
         :desc => desc,
         :crest => true
       }).no_use.no_use_in_battle
