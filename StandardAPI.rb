@@ -125,3 +125,5 @@ def unidev_log(*args)
   args.each {|msg| str_final += msg.to_s + " " }
   File.open(UNILIB_LOG_PATH + "dev.out", "a+") { |f| f.write("#{str_final}\n") }
 end
+
+unilib_include("CodeInjector")
