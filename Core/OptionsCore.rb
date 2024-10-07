@@ -47,7 +47,7 @@ class OptionBase
   end
 
   def update
-    @update.call(@value * @increment + @min) unless @update.nil?
+    @update.call(@value + @min) unless @update.nil?
   end
 
   def get_option
