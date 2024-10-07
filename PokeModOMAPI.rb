@@ -62,4 +62,16 @@ class PokeModifier
     @camo = true
   end
 
+  <<-DOC
+  @param letter - a-z letter
+  >> allows a pokemon to learn all moves starting with the given letter via the move relearner
+  DOC
+  def set_alphabet(letter)
+    if letter.is_a? Array
+      @alphabet |= letter
+    else
+      @alphabet |= [letter]
+    end
+  end
+
 end

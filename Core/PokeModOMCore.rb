@@ -22,10 +22,12 @@ BANNED_ABILITIES = [:COMATOSE,:CONTRARY, :FLUFFY, :FURCOAT, :HUGEPOWER, :ILLUSIO
 PLATE_MAP = {:SILKSCARF => :NORMAL, :FISTPLATE => :FIGHTING, :SKYPLATE => :FLYING, :EARTHPLATE => :GROUND, :TOXICPLATE => :POISON, :STONEPLATE => :ROCK, :INSECTPLATE => :BUG, :SPOOKYPLATE => :GHOST, :IRONPLATE => :STEEL, :FLAMEPLATE => :FIRE, :SPLASHPLATE => :WATER, :MEADOWPLATE => :GRASS, :ZAPPLATE => :ELECTRIC, :MINDPLATE => :PSYCHIC, :ICICLEPLATE => :ICE, :DRACOPLATE => :DRAGON, :DREADPLATE => :DARK, :PIXIEPLATE => :FAIRY}
 CUSTOM_PLATE_MAP = {}
 TYPE_MAPPED_MOVES = {:NORMAL => [], :FIRE => [], :FIGHTING => [], :WATER => [], :FLYING => [], :GRASS => [], :POISON => [], :ELECTRIC => [], :GROUND => [], :PSYCHIC => [], :ROCK => [], :ICE => [], :BUG => [], :DRAGON => [], :GHOST => [], :DARK => [], :STEEL => [], :FAIRY => [], :QMARKS => [], :SHADOW => []}
+ALPHABET_MOVES = ("a".."z").to_a.map.to_h { |letter| [letter, []] }
 
 AAA_POKEMON = {}
 STAB_POKEMON = {}
 PLATE_POKEMON = {}
+ALPHABET_POKEMON = {}
 CUSTOM_ABILITIES = []
 CAMO_PROVIDER_TYPE1 = proc do |pokemon|
   next pokemon.moves[0].type unless pokemon.moves[0].nil?
@@ -38,12 +40,12 @@ end
 
 MOVEHASH.each do |key, value|
   TYPE_MAPPED_MOVES[value[:type]].append(key) unless BANNED_MOVES.include?(key) or value[:ID].nil? or BANNED_MOVES_RANGE.include? value[:ID] rescue nil
+  ALPHABET_MOVES[letter = key.to_s[0].downcase].append(key) unless BANNED_MOVES.include?(key) or value[:ID].nil? or BANNED_MOVES_RANGE.include? value[:ID] rescue nil
 end
 
 ABILHASH.each do |key, value|
   CUSTOM_ABILITIES.push([key, value[:name]]) unless BANNED_ABILITIES.include?(key)
 end
-
 
 class PokeModifier
 
@@ -51,12 +53,14 @@ class PokeModifier
   attr_accessor(:stab)
   attr_accessor(:plates)
   attr_accessor(:camo)
+  attr_accessor(:alphabet)
 
   EVENT_POKEMODIFIER_INIT.push(proc do |modifier|
     modifier.aaa = false
     modifier.stab = false
     modifier.plates = []
     modifier.camo = false
+    modifier.alphabet = []
   end)
 
   EVENT_POKEMODIFIER_POST_BUILD.push(proc do |modifier|
@@ -76,6 +80,7 @@ class PokeModifier
         modifier.compatible_moves(TYPE_MAPPED_MOVES[type2])
       end
     end
+    ALPHABET_POKEMON[modifier.species] = modifier.alphabet if modifier.alphabet.length > 0
     modifier.set_plates_internal(modifier.plates) unless modifier.plates.empty?
     if modifier.camo
       CUSTOM_TYPE1_PROVIDERS[modifier.species] = CAMO_PROVIDER_TYPE1
@@ -141,5 +146,6 @@ insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD, proc do
 end)
 
 insert_in_function_before(:pbGetRelearnableMoves, "return moves|[]", proc do |pokemon, moves|
-  STAB_POKEMON[pokemon.species].each { |type| moves += TYPE_MAPPED_MOVES[type] unless TYPE_MAPPED_MOVES[type].nil? } unless STAB_POKEMON[pokemon.species].nil?
+  STAB_POKEMON[pokemon.species].each { |type| moves |= TYPE_MAPPED_MOVES[type] unless TYPE_MAPPED_MOVES[type].nil? } unless STAB_POKEMON[pokemon.species].nil?
+  ALPHABET_POKEMON[pokemon.species].each { |letter| moves |= ALPHABET_MOVES[letter] unless ALPHABET_MOVES[letter].nil? } unless ALPHABET_POKEMON[pokemon.species].nil?
 end)
