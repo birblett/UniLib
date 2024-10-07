@@ -3,7 +3,6 @@
 # ======================================================================================================================================== #
 
 verify_version(0.5, __FILE__)
-require "Scripts/Rejuv/montext"
 
 # ======================================================================================================================================== #
 # ============================================================ INTERNAL/CORE ============================================================= #
@@ -20,10 +19,12 @@ CUSTOM_TYPE2_PROVIDERS = {}
 LEARN_OVERRIDES = {}
 LEARN_IGNORE_OVERRIDES = {}
 
+POKEMON_DATA = load_data("Data/mons.dat") unless defined? POKEMON_DATA
+
 $force_refresh_abilities = false
 
-MONHASH.each do |species, data|
-  data.keys.each_with_index do |form, index|
+POKEMON_DATA.each do |species, mondata|
+  mondata.forms.each do |index, form|
     FORM_MAP[species] = {} if FORM_MAP[species].nil?
     FORM_MAP[species][form] = index
     FORM_MAP[species][index] = form
@@ -58,17 +59,17 @@ class PokeModifier
     @species = species
     @form = form
     @form_str = form_str
-    @stats = get_hash_data(:BaseStats)
-    @types = {:Type1 => get_hash_data(:Type1), :Type2 => get_hash_data(:Type2)}
-    abil2 = get_hash_data(:Abilities)[2]
-    @abilities = {0 => get_hash_data(:Abilities)[0], 1 =>  get_hash_data(:Abilities)[1], 2 => abil2.nil? ? get_hash_data(:HiddenAbilities) : abil2}
-    @base_learnset = get_hash_data(:Moveset)
+    @stats = get_base_data(:BaseStats)
+    @types = { :Type1 => get_base_data(:Type1), :Type2 => get_base_data(:Type2)}
+    abil2 = get_base_data(:Abilities)[2]
+    @abilities = { 0 => get_base_data(:Abilities)[0], 1 =>  get_base_data(:Abilities)[1], 2 => abil2.nil? ? get_base_data(:HiddenAbilities) : abil2}
+    @base_learnset = get_base_data(:Moveset)
     @base_learnset = [] if @base_learnset.nil?
     @learnset = []
-    @base_egg_moves = get_hash_data(:EggMoves)
+    @base_egg_moves = get_base_data(:EggMoves)
     @base_egg_moves = [] if @base_egg_moves.nil?
     @egg_moves = []
-    @base_compatible_moves = get_hash_data(:compatiblemoves)
+    @base_compatible_moves = get_base_data(:compatiblemoves)
     @base_compatible_moves = [] if @base_compatible_moves.nil?
     @compatible_moves = []
     @learnset_overwrite = false
@@ -85,17 +86,18 @@ class PokeModifier
     end
   end
 
-  def get_hash_data(sym, default=nil)
-    ret = MONHASH[@species][FORM_MAP[@species][@form]][sym] if ret.nil? rescue nil
-    ret = MONHASH[@species][FORM_MAP[@species][0]][sym] if ret.nil? rescue nil
+  def get_base_data(sym, default=nil)
+    ret = POKEMON_DATA[@species].formData[@form_str][sym] if ret.nil? rescue nil
+    ret = POKEMON_DATA[@species].flags[sym] if ret.nil? rescue nil
+    ret = POKEMON_DATA[@species].instance_variable_get(("@" + sym.to_s).to_sym) if ret.nil? rescue nil
     ret.nil? ? default : ret.dup
   end
 
   def get_data(sym)
     if @form == 0
-      mon_data.instance_variable_get(("@" + String(sym)).to_sym)
+      mon_data.instance_variable_get(("@" + sym.to_s).to_sym)
     else
-      mon_data[sym].nil? ? mon_data.instance_variable_get(("@" + String(sym)).to_sym) : mon_data[sym]
+      mon_data[sym].nil? ? mon_data.instance_variable_get(("@" + sym.to_s).to_sym) : mon_data[sym]
     end
   end
 
@@ -116,7 +118,7 @@ class PokeModifier
       next if index > 2 or index < 0 or ability.nil?
       if index == 2 and @form == 0
         ha = get_data(:flags)
-        (ha.nil? or ha[:HiddenAbilities].nil?) ? set_data(:HiddenAbilities, ability) : ha[:HiddenAbilities] = ability
+        ha[:HiddenAbilities] = ability
       else
         ha = get_data(:flags)
         if ha.nil? or ha[:HiddenAbilities].nil?
