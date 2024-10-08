@@ -9,7 +9,8 @@ UNILIB_VERSION = 0.5
 UNILIB_PATH = File.dirname(__FILE__) + "/"
 UNILIB_ASSET_PATH = File.dirname(__FILE__) + "/../UniLibAssets/"
 UNILIB_LIB_PATH = UNILIB_PATH + "Core/"
-UNILIB_LOG_PATH = UNILIB_PATH + "Log/"
+UNILIB_LOG_PATH = UNILIB_PATH + "../UniLibLog/"
+UNILIB_SAVE_PATH = UNILIB_PATH + "../UniLibSave/"
 UNILIB_SESSION_DEBUG = Time.now.strftime("%Y_%m_%d-%H_%M_%S.log") unless defined? UNILIB_SESSION_DEBUG
 UNILIB_CLEAR_INJECTOR_CACHE = false
 
@@ -84,11 +85,10 @@ end
 loads from UniLib/Save/Game_<savenum>_<name>.dat
 DOC
 def unilib_load_data(name, default, saveslot=true)
-  dir = "#{UNILIB_PATH}Save/"
-  Dir.mkdir(dir) unless Dir.exist?(dir)
+  Dir.mkdir(UNILIB_SAVE_PATH) unless Dir.exist?(UNILIB_SAVE_PATH)
   prefix = saveslot ? "Game_#{$Unidata[:saveslot]}_" : ""
   ret = default
-  File.open(dir + prefix + name + ".dat", "rb") { |f| ret = Marshal.load(f.read) } rescue default
+  File.open(UNILIB_SAVE_PATH + prefix + name + ".dat", "rb") { |f| ret = Marshal.load(f.read) } rescue default
   ret
 end
 
@@ -96,10 +96,9 @@ end
 writes to UniLib/Save/Game_<savenum>_<name>.dat
 DOC
 def unilib_save_data(name, data, saveslot=true)
-  dir = "#{UNILIB_PATH}Save/"
-  Dir.mkdir(dir) unless Dir.exist?(dir)
+  Dir.mkdir(UNILIB_SAVE_PATH) unless Dir.exist?(UNILIB_SAVE_PATH)
   prefix = saveslot ? "Game_#{$Unidata[:saveslot]}_" : ""
-  File.open(dir + prefix + name + ".dat", "wb") { |f| f.write(Marshal.dump(data)) }
+  File.open(UNILIB_SAVE_PATH + prefix + name + ".dat", "wb") { |f| f.write(Marshal.dump(data)) }
 end
 
 <<-DOC
