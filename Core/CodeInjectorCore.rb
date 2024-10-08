@@ -51,7 +51,7 @@ def insert_in_method_internal(clazz, method, target, proc, index, prepend)
   return false if insertion_index.nil?
   true
 rescue NoMethodError
-  unidev_log("Failed to insert in method ", method, "of class", clazz, "at target \"", target,"\"")
+  unidev_log("Failed to insert in method", method, "of class", clazz, "at target \"", target,"\" with index", index)
 end
 
 def get_target_index(base, target, index)
