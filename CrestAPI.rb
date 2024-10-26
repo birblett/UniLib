@@ -11,14 +11,15 @@ verify_version(0.5, __FILE__)
 <<-DOC
 >> builder class for creating new crests.
 DOC
-class CrestBuilder < ItemBuilder
+class CrestBuilder
 
   <<-DOC
   @param species - base species id for the crest
+  @param form - the form number or name, optional
   @param desc - crest description
   >> creates a new crest builder unless an existing item exists that is already a crest corresponding to :SPECIES_CREST
   DOC
-  def self.add(species, desc, form=0, name=nil)
+  def self.add(species, desc=nil, form=0, name=nil)
     sym = (species.to_s + "CREST").to_sym
     form_str = nil
     if form.class == String
@@ -28,28 +29,29 @@ class CrestBuilder < ItemBuilder
       tmp = FORM_MAP[species][(form_str = form)] if tmp.nil?
       form = tmp
     end
-    if CUSTOM_ITEMS[sym].nil? or !CUSTOM_ITEMS[sym].is_a? CrestBuilder
-      CUSTOM_ITEMS[sym] = CrestBuilder.new(species, form, {
-        :name => name.nil? ? (POKEMON_DATA[species].name + " Crest#{form_str.nil? ? "" : " (" + form_str + ")"}") : name,
-        :desc => desc,
-        :crest => true
-      }).no_use.no_use_in_battle
-    else
-      CUSTOM_ITEMS[sym].data[:desc] = CUSTOM_ITEMS[sym].data[:desc] + desc
-    end
-    CUSTOM_ITEMS[sym]
+    CUSTOM_ITEMS[sym] = ItemBuilder.add(sym, {
+      :name => name.nil? ? (POKEMON_DATA[species].name + " Crest#{form_str.nil? ? "" : " (" + form_str + ")"}") : name,
+      :desc => desc,
+      :crest => true
+    }).no_use.no_use_in_battle unless desc.nil? or !CUSTOM_ITEMS[sym].nil?
+    CUSTOM_CRESTS[sym] = CrestBuilder.new(species, form) if CUSTOM_CRESTS[sym].nil?
+    CUSTOM_CRESTS[sym]
   end
 
   <<-DOC
-  @param species - pokemon species id (or list of)
+  @param species - pokemon species id
+  @form form - a form number or name.
   >> registers another user of the given crest
   DOC
-  def add_receiver(species)
-    if species.is_a? Array
-      species.each { |specie| @species.push(specie) unless @species.include? specie }
-    else
-      @species.push(species) unless @species.include? species
+  def add_receiver(species, form=0)
+    if form.class == String
+      tmp = FORM_MAP[species][form + " Form"]
+      tmp = FORM_MAP[species][form + " Forme"] if tmp.nil?
+      tmp = FORM_MAP[species][form + " Rotom"] if tmp.nil?
+      tmp = FORM_MAP[species][form] if tmp.nil?
+      form = tmp
     end
+    @species.push([species, form]) unless @species.include? [species, form]
     self
   end
 
@@ -93,6 +95,16 @@ class CrestBuilder < ItemBuilder
 
   <<-DOC
   @param type - type id (or array of type ids)
+  >> equivalent to weakness_override + crest_secondary_type
+  DOC
+  def secondary_no_weakness(type)
+    @secondary = type
+    @weakness_override = type
+    self
+  end
+
+  <<-DOC
+  @param type - type id (or array of type ids)
   >> allows the user to gain the resistances of the given type. if an array of types is given, uses those as resistances instead.
   DOC
   def resistance_override(type)
@@ -120,10 +132,9 @@ class CrestBuilder < ItemBuilder
   end
 
   <<-DOC
-  @param proc - a function returning a base stat array.
-  >> adds a conditional base stat modifier. accepts 2 arguments; the crest holder (PokeBattle_Pokemon) and a 6-number stat array
-     corresponding to the pokemon's current stats in the order hp, atk, def, spa, spd, spe. in-place modifications not recommended - should 
-     return a modified stat array.
+  @param proc - a void function
+  >> adds a conditional base stat modifier. accepts 2 arguments; the crest holder (PokeBattle_Pokemon) and an array of 6 NumberContainers
+     corresponding to hp, atk, def, spa, spd, spe. use the NumberContainers to perform in-place modifications to stats.
   DOC
   def base_stat_mods(proc)
     @base_stat_modifiers.push(proc)
@@ -131,19 +142,20 @@ class CrestBuilder < ItemBuilder
   end
 
   <<-DOC
-  @param proc - a function returning a hash of stat modifiers
-  >> adds a conditional stat modifier. accepts 1 argument, the crest holder (PokeBattle_Battler). should return a dictionary with symbolic 
-     keys corresponding to numeric stat boosts; the keys are :atk, :def, :spa, :spd, :acc, :eva, and :spe.
+  @param proc - a void function
+  >> adds a conditional stat modifier. accepts 2 arguments, the crest holder (PokeBattle_Battler), and an array of 6 NumberContainers
+     corresponding to hp, atk, def, spa, spd, spe. use the NumberContainers to perform in-place modifications to stats.
   DOC
-  def battle_stat_boosts(proc)
+  def battle_stat_mods(proc)
     @battle_stat_modifiers.push(proc)
     self
   end
 
   <<-DOC
   @param proc - a function returning a damage multiplier
-  >> adds a conditional damage multiplier. accepts 4 arguments, user (PokeBattle_Battler), the move used (PokeBattle_Move), the hit number, 
-     and whether the move is being used in a battle AI calculation. should return a single numeric damage multiplier.
+  >> adds a conditional damage multiplier. accepts 5 arguments, attacker (PokeBattle_Battler), target (PokeBattle_Battler), the move used 
+     (PokeBattle_Move), the hit number (or total hit count if being used by battle AI), and whether the move is being used in a battle AI 
+     calculation. should return a single numeric damage multiplier.
   DOC
   def damage_mod(proc)
     @damage_modifiers.push(proc)
@@ -189,6 +201,37 @@ class CrestBuilder < ItemBuilder
   DOC
   def hit_count_mod(proc)
     @hit_number_modifiers.push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a function returning a type.
+  >> adds a conditional move type override. accepts 3 arguments, the user (PokeBattle_Battler), the move (PokeBattle_Move), and the type.
+     should return another type.
+  DOC
+  def move_type_override(proc)
+    @move_type_override.push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a function returning one of :HP, :ATK, :DEF, :SPA, :SPD, :SPE as well as prefixed by opp (i.e. :OPPHP) for the opponent stat
+                or the lowercase equivalents.
+  >> adds a conditional move stat override. accepts 3 arguments, the user (PokeBattle_Battler), the target (PokeBattle_Battler), the move
+     (PokeBattle_Move), and returns a stat symbol. invalid symbols will be ignored.
+  DOC
+  def move_stat_override(proc)
+    @move_stat_override.push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a void function.
+  >> an event hook for when a pokemon enters the field. accepts 3 arguments, the pokemon (PokeBattle_Battler), the battle 
+     (PokeBattle_Battle), and the index of the pokemon entering.
+  DOC
+  def on_battle_entry(proc)
+    @on_battle_entry.push(proc)
     self
   end
 

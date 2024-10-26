@@ -79,11 +79,7 @@ class PokeModifier
   end
 
   def mon_data
-    if @form == 0
-      $cache.pkmn[@species]
-    else
-      $cache.pkmn[@species].formData[$cache.pkmn[@species].forms[@form]]
-    end
+    @form == 0 ? $cache.pkmn[@species] : $cache.pkmn[@species].formData[$cache.pkmn[@species].forms[@form]]
   end
 
   def get_base_data(sym, default=nil)
@@ -102,11 +98,7 @@ class PokeModifier
   end
 
   def set_data(sym, data)
-    if @form == 0
-      mon_data.instance_variable_set(("@" + String(sym)).to_sym, data)
-    else
-      mon_data[sym] = data
-    end
+    @form == 0 ? mon_data.instance_variable_set(("@" + String(sym)).to_sym, data) : mon_data[sym] = data
   end
 
   def set_stats_internal(stats)
