@@ -52,8 +52,8 @@ TYPE_RESISTANCE_MAP = { :NORMAL => [], :FIGHTING => [:ROCK, :BUG, :DARK], :FLYIN
 
 class CrestBuilder
 
-  def initialize(species, form)
-    @symbol = (species.to_s + "CREST").to_sym
+  def initialize(symbol, species, form)
+    @symbol = symbol
     @species = [[species, form]]
     @tier = 1
     @essence = nil
@@ -91,7 +91,7 @@ class CrestBuilder
       key = form == 0 ? species : [species, form]
       unless @secondary.nil?
         add_custom_plate(@symbol, @secondary)
-        PokeModifier.add(species).set_plates(@symbol)
+        PokeModifier.add(species, form).set_plates(@symbol)
       end
       if @base_stat_modifiers.length > 0
         CREST_BASE_STAT_MODS[[species, @symbol]] = [] if CREST_BASE_STAT_MODS[[species, @symbol]].nil?
@@ -159,66 +159,6 @@ class NumberContainer
 
   def initialize(number)
     @number = number
-  end
-
-  def set(other)
-    @number = other
-  end
-
-  def +(other)
-    @number + other
-  end
-
-  def -(other)
-    @number - other
-  end
-
-  def *(other)
-    @number * other
-  end
-
-  def /(other)
-    @number / other
-  end
-
-  def add(other)
-    @number += other
-  end
-
-  def sub(other)
-    @number -= other
-  end
-
-  def mul(other)
-    @number *= other
-  end
-
-  def div(other)
-    @number /= other
-  end
-
-  def ==(other)
-    @number == other
-  end
-
-  def >=(other)
-    @number >= other
-  end
-
-  def <=(other)
-    @number <= other
-  end
-
-  def >(other)
-    @number > other
-  end
-
-  def <(other)
-    @number < other
-  end
-
-  def value
-    @number
   end
 
 end
@@ -428,6 +368,7 @@ end)
 insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "if attacker.ability == :HUSTLE && pbIsPhysical?(type)", proc do |attacker, opponent|
   CREST_MOVE_STAT_OVERRIDES[attacker.crested].each do |mod|
     tmp = mod.call(attacker, opponent, self)
+    tmp = [:hp, :atk, :def, :spa, :spd, :spe][tmp] if tmp.is_a? Integer
     case tmp.downcase
       when :hp then atk = attacker.hp
       when :atk then atk = attacker.attack; atkstage = attacker.stages[PBStats::ATTACK]+6

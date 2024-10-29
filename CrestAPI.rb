@@ -19,7 +19,7 @@ class CrestBuilder
   @param desc - crest description
   >> creates a new crest builder unless an existing item exists that is already a crest corresponding to :SPECIES_CREST
   DOC
-  def self.add(species, desc=nil, form=0, name=nil)
+  def self.add(species, desc, form=0, name=nil)
     sym = (species.to_s + "CREST").to_sym
     form_str = nil
     if form.class == String
@@ -33,9 +33,29 @@ class CrestBuilder
       :name => name.nil? ? (POKEMON_DATA[species].name + " Crest#{form_str.nil? ? "" : " (" + form_str + ")"}") : name,
       :desc => desc,
       :crest => true
-    }).no_use.no_use_in_battle unless desc.nil? or !CUSTOM_ITEMS[sym].nil?
-    CUSTOM_CRESTS[sym] = CrestBuilder.new(species, form) if CUSTOM_CRESTS[sym].nil?
+    }).no_use.no_use_in_battle if CUSTOM_ITEMS[sym].nil?
+    CUSTOM_CRESTS[sym] = CrestBuilder.new(sym, species, form) if CUSTOM_CRESTS[sym].nil?
     CUSTOM_CRESTS[sym]
+  end
+
+
+  <<-DOC
+  @param item - crest item
+  @param species - base species id for the crest
+  @param form - the form number or name, optional
+  >> attaches a crestbuilder instance to an existing item; can be used to modify existing crests or to attach special effects to non-crest
+     items.
+  DOC
+  def self.add_existing(item, species, form=0)
+    if form.class == String
+      tmp = FORM_MAP[species][form + " Form"]
+      tmp = FORM_MAP[species][form + " Forme"] if tmp.nil?
+      tmp = FORM_MAP[species][form + " Rotom"] if tmp.nil?
+      tmp = FORM_MAP[species][form] if tmp.nil?
+      form = tmp
+    end
+    CUSTOM_CRESTS[item] = CrestBuilder.new(item, species, form) if CUSTOM_CRESTS[item].nil?
+    CUSTOM_CRESTS[item]
   end
 
   <<-DOC
@@ -216,7 +236,7 @@ class CrestBuilder
 
   <<-DOC
   @param proc - a function returning one of :HP, :ATK, :DEF, :SPA, :SPD, :SPE as well as prefixed by opp (i.e. :OPPHP) for the opponent stat
-                or the lowercase equivalents.
+                or the lowercase equivalents. can also return an integer corresponding to a stat index.
   >> adds a conditional move stat override. accepts 3 arguments, the user (PokeBattle_Battler), the target (PokeBattle_Battler), the move
      (PokeBattle_Move), and returns a stat symbol. invalid symbols will be ignored.
   DOC
@@ -262,6 +282,70 @@ class CrestBuilder
   def on_turn_end(proc)
     @on_turn_end.push(proc)
     self
+  end
+
+end
+
+class NumberContainer
+
+  def set(other)
+    @number = other
+  end
+
+  def +(other)
+    @number + other
+  end
+
+  def -(other)
+    @number - other
+  end
+
+  def *(other)
+    @number * other
+  end
+
+  def /(other)
+    @number / other
+  end
+
+  def add(other)
+    @number += other
+  end
+
+  def sub(other)
+    @number -= other
+  end
+
+  def mul(other)
+    @number *= other
+  end
+
+  def div(other)
+    @number /= other
+  end
+
+  def ==(other)
+    @number == other
+  end
+
+  def >=(other)
+    @number >= other
+  end
+
+  def <=(other)
+    @number <= other
+  end
+
+  def >(other)
+    @number > other
+  end
+
+  def <(other)
+    @number < other
+  end
+
+  def value
+    @number
   end
 
 end
