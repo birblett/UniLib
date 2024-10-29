@@ -20,6 +20,7 @@ end
 DOC
 #noinspection RubyTooManyInstanceVariablesInspection
 class PokeModifier
+
   <<-DOC
   @param species - pokemon symbolic constant (i.e. :NINETALES)
   @param form - a form, in string representation (i.e. "Alolan", "Mega") - default 0
@@ -27,6 +28,10 @@ class PokeModifier
   >> returns an existing pokemodifier entry, or creates one if it doesn't exist
   DOC
   def self.add(species, form=0, force=false)
+    if POKEMON_DATA[species].nil?
+      Kernel.pbMessage("Failed to register PokeModifer for species #{species}#{initial_form != 0 ? " with form #{initial_form}." : ""}")
+      exit
+    end
     initial_form = form
     form_str = nil
     if form.class == String

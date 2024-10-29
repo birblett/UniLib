@@ -5,7 +5,7 @@
 verify_version(0.5, __FILE__)
 require "Scripts/Rejuv/movetext"
 require "Scripts/Rejuv/abiltext"
-unilib_include "PokeMod"
+unilib_include "Pokemon"
 
 # ======================================================================================================================================== #
 # ================================================================ CONFIG ================================================================ #
@@ -28,7 +28,7 @@ AAA_POKEMON = {}
 STAB_POKEMON = {}
 PLATE_POKEMON = {}
 ALPHABET_POKEMON = {}
-CUSTOM_ABILITIES = []
+CUSTOM_POKEMON_ABILITIES = []
 CAMO_PROVIDER_TYPE1 = proc do |pokemon|
   next pokemon.moves[0].type unless pokemon.moves[0].nil?
   next nil
@@ -44,7 +44,7 @@ MOVEHASH.each do |key, value|
 end
 
 ABILHASH.each do |key, value|
-  CUSTOM_ABILITIES.push([key, value[:name]]) unless BANNED_ABILITIES.include?(key)
+  CUSTOM_POKEMON_ABILITIES.push([key, value[:name]]) unless BANNED_ABILITIES.include?(key)
 end
 
 class PokeModifier
@@ -109,17 +109,11 @@ end
 
 def ability_select(default, list)
   cmdwin=pbListWindow([],200)
-  commands=[] + CUSTOM_ABILITIES
-  list.each do |_, ability|
-    if BANNED_ABILITIES.include?(ability)
-      commands.push([ability, ABILHASH[ability][:name]])
-    end
-  end
+  commands=[] + CUSTOM_POKEMON_ABILITIES
+  list.each { |_, ability| commands.push([ability, ABILHASH[ability][:name]]) if BANNED_ABILITIES.include?(ability) }
   commands.sort! {|a,b| a[1]<=>b[1]}
   realcommands=[]
-  commands.each { |command|
-    realcommands.push(_ISPRINTF("{1:s}", command[1]))
-  }
+  commands.each { |command| realcommands.push(_ISPRINTF("{1:s}", command[1])) }
   ret=pbCommands2(cmdwin,realcommands,-1,default-1,true)
   cmdwin.dispose
   ret>=0 ? commands[ret][0] : 0
