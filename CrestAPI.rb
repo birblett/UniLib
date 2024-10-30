@@ -92,25 +92,7 @@ class CrestBuilder
     if type.class == Symbol
       stab_override(type)
     end
-    resistance_override(type)
-  end
-
-  <<-DOC
-  @param type - type id
-  >> allows the user to receive STAB-bonuses from the given type
-  DOC
-  def stab_override(type)
-    @stab_override = type
-    self
-  end
-
-  <<-DOC
-  @param type - type id (or array of type ids)
-  >> allows the user to no longer be weak to the given type. if an array of types is given, uses those as resistances instead.
-  DOC
-  def weakness_override(type)
-    @weakness_override = type
-    self
+    resistance_fake(type)
   end
 
   <<-DOC
@@ -118,26 +100,45 @@ class CrestBuilder
   >> equivalent to weakness_override + crest_secondary_type
   DOC
   def secondary_no_weakness(type)
-    @secondary = type
-    @weakness_override = type
+    weakness_fake(type)
+    crest_secondary_type(type)
     self
   end
 
   <<-DOC
-  @param type - type id (or array of type ids)
-  >> allows the user to gain the resistances of the given type. if an array of types is given, uses those as resistances instead.
+  @param type - type id
+  >> allows the user to receive STAB-bonuses from the given type
   DOC
-  def resistance_override(type)
-    @resistance_override = type
+  def stab_override(type)
+    @stab_overrides += type.is_a?(Array) ? type : [type]
     self
   end
 
   <<-DOC
   @param type - type id (or array of type ids)
+  >> allows the user to lose the weaknesses of the given type.
+  DOC
+  def weakness_fake(type)
+    @weakness_fakes += type.is_a?(Array) ? type : [type]
+    self
+  end
+
+  <<-DOC
+  @param type - type id (or array of type ids)
+  >> allows the user to gain the resistances of the given type. 
+  DOC
+  def resistance_fake(type)
+    @resistance_fakes += type.is_a?(Array) ? type : [type]
+    self
+  end
+
+  <<-DOC
+  @param type - type id (or array of type ids)
+  @param resistance_level - the amount to resist by (4 => neutral, 2 => 2x resist, 1 => 4x resist)
   >> forces the user resist the given type(s).
   DOC
-  def force_resistance(type)
-    @force_resistance = type
+  def force_resistance(type, resistance_level=2)
+    @forced_resistances[type] = resistance_level
   end
 
   <<-DOC
@@ -230,7 +231,7 @@ class CrestBuilder
      should return another type.
   DOC
   def move_type_override(proc)
-    @move_type_override.push(proc)
+    @move_type_overrides.push(proc)
     self
   end
 
@@ -241,7 +242,7 @@ class CrestBuilder
      (PokeBattle_Move), and returns a stat symbol. invalid symbols will be ignored.
   DOC
   def move_stat_override(proc)
-    @move_stat_override.push(proc)
+    @move_stat_overrides.push(proc)
     self
   end
 
@@ -251,7 +252,7 @@ class CrestBuilder
      (PokeBattle_Battle), and the index of the pokemon entering.
   DOC
   def on_battle_entry(proc)
-    @on_battle_entry.push(proc)
+    @on_battle_entry_events.push(proc)
     self
   end
 

@@ -4,34 +4,16 @@
 
 verify_version(0.5, __FILE__)
 unilib_include "Item"
-unilib_include "Pokemon"
+unilib_include "PokemonOM"
 
 # ======================================================================================================================================== #
 # ============================================================ INTERNAL/CORE ============================================================= #
 # ======================================================================================================================================== #
 
 CUSTOM_CRESTS = {}
+CUSTOM_CREST_MAP = {}
 SHOP_CRESTS = [{}, {}, {}, {}]
 $custom_crest_flags = {}
-
-CREST_STAB_OVERRIDE = {}
-CREST_WEAKNESS_OVERRIDE = {}
-CREST_RESIST_OVERRIDE = {}
-CREST_FORCE_RESIST = {}
-CREST_FORM_RESTRICTION = {}
-CREST_BASE_STAT_MODS = {}
-CREST_BATTLE_STAT_MODS = {}
-CREST_DAMAGE_MODS = {}
-CREST_ACCURACY_MODS = {}
-CREST_PRIORITY_MODS = {}
-CREST_HIT_COUNT_MODS = {}
-CREST_TYPE_MODS = {}
-CREST_MOVE_TYPE_OVERRIDES = {}
-CREST_MOVE_STAT_OVERRIDES = {}
-CREST_BATTLE_ENTRY_EVENTS = {}
-CREST_DEALT_DAMAGE_EVENTS = {}
-CREST_ON_DAMAGE_EVENTS = {}
-CREST_ON_TURN_END_EVENTS = {}
 TYPE_WEAKNESS_MAP = { :NORMAL => [:FIGHTING], :FIGHTING => [:FLYING, :PSYCHIC, :FAIRY], :FLYING => [:ROCK, :ELECTRIC, :ICE],
                       :GROUND => [:WATER, :GRASS, :ICE], :POISON => [:GROUND, :PSYCHIC],
                       :ROCK => [:FIGHTING, :GROUND, :STEEL, :WATER, :GRASS], :BUG => [:FLYING, :ROCK, :FIRE], :GHOST => [:GHOST, :DARK],
@@ -52,16 +34,35 @@ TYPE_RESISTANCE_MAP = { :NORMAL => [], :FIGHTING => [:ROCK, :BUG, :DARK], :FLYIN
 
 class CrestBuilder
 
+  attr_accessor(:secondary)
+  attr_accessor(:stab_overrides)
+  attr_accessor(:resistance_fakes)
+  attr_accessor(:weakness_fakes)
+  attr_accessor(:forced_resistances)
+  attr_accessor(:base_stat_modifiers)
+  attr_accessor(:battle_stat_modifiers)
+  attr_accessor(:damage_modifiers)
+  attr_accessor(:accuracy_modifiers)
+  attr_accessor(:priority_modifiers)
+  attr_accessor(:hit_number_modifiers)
+  attr_accessor(:type_modifiers)
+  attr_accessor(:move_type_overrides)
+  attr_accessor(:move_stat_overrides)
+  attr_accessor(:on_battle_entry_events)
+  attr_accessor(:on_dealt_damage_events)
+  attr_accessor(:on_damage_events)
+  attr_accessor(:on_turn_end)
+
   def initialize(symbol, species, form)
     @symbol = symbol
     @species = [[species, form]]
     @tier = 1
     @essence = nil
     @secondary = nil
-    @resistance_override = nil
-    @stab_override = nil
-    @weakness_override = nil
-    @force_resistance = nil
+    @resistance_fakes = []
+    @stab_overrides = []
+    @weakness_fakes = []
+    @forced_resistances = {}
     @base_stat_modifiers = []
     @battle_stat_modifiers = []
     @damage_modifiers = []
@@ -69,84 +70,28 @@ class CrestBuilder
     @priority_modifiers = []
     @hit_number_modifiers = []
     @type_modifiers = []
-    @move_type_override = []
-    @move_stat_override = []
-    @on_battle_entry = []
+    @move_type_overrides = []
+    @move_stat_overrides = []
+    @on_battle_entry_events = []
     @on_dealt_damage_events = []
     @on_damage_events = []
     @on_turn_end = []
   end
 
+  def affects?(pkmn, form)
+    @species.include? [pkmn, form]
+  end
+
   def build
-    item = $cache.items[@symbol]
+    CUSTOM_CREST_MAP[@symbol] = self
     @species.each do |arr|
       species, form = arr
-      PBStuff::POKEMONTOCREST[species] = @symbol
-      CREST_FORM_RESTRICTION[species] = [] if CREST_FORM_RESTRICTION[species].nil?
-      CREST_FORM_RESTRICTION[species].push(form)
-      CREST_STAB_OVERRIDE[species] = @stab_override unless @stab_override.nil?
-      CREST_WEAKNESS_OVERRIDE[species] = @weakness_override unless @weakness_override.nil?
-      CREST_RESIST_OVERRIDE[species] = @resistance_override unless @resistance_override.nil?
-      CREST_FORCE_RESIST[species] = @force_resistance unless @force_resistance.nil?
-      key = form == 0 ? species : [species, form]
       unless @secondary.nil?
         add_custom_plate(@symbol, @secondary)
         PokeModifier.add(species, form).set_plates(@symbol)
       end
-      if @base_stat_modifiers.length > 0
-        CREST_BASE_STAT_MODS[[species, @symbol]] = [] if CREST_BASE_STAT_MODS[[species, @symbol]].nil?
-        CREST_BASE_STAT_MODS[[species, @symbol]] += @base_stat_modifiers
-      end
-      if @battle_stat_modifiers.length > 0
-        CREST_BATTLE_STAT_MODS[key] = [] if CREST_BATTLE_STAT_MODS[key].nil?
-        CREST_BATTLE_STAT_MODS[key] += @battle_stat_modifiers
-      end
-      if @damage_modifiers.length > 0
-        CREST_DAMAGE_MODS[key] = [] if CREST_DAMAGE_MODS[key].nil?
-        CREST_DAMAGE_MODS[key] += @damage_modifiers
-      end
-      if @accuracy_modifiers.length > 0
-        CREST_ACCURACY_MODS[key] = [] if CREST_ACCURACY_MODS[key].nil?
-        CREST_ACCURACY_MODS[key] += @accuracy_modifiers
-      end
-      if @priority_modifiers.length > 0
-        CREST_PRIORITY_MODS[key] = [] if CREST_PRIORITY_MODS[key].nil?
-        CREST_PRIORITY_MODS[key] += @priority_modifiers
-      end
-      if @hit_number_modifiers.length > 0
-        CREST_HIT_COUNT_MODS[key] = [] if CREST_HIT_COUNT_MODS[key].nil?
-        CREST_HIT_COUNT_MODS[key] += @hit_number_modifiers
-      end
-      if @type_modifiers.length > 0
-        CREST_TYPE_MODS[key] = [] if CREST_TYPE_MODS[key].nil?
-        CREST_TYPE_MODS[key] += @type_modifiers
-      end
-      if @move_type_override.length > 0
-        CREST_MOVE_TYPE_OVERRIDES[key] = [] if CREST_MOVE_TYPE_OVERRIDES[key].nil?
-        CREST_MOVE_TYPE_OVERRIDES[key] += @move_type_override
-      end
-      if @move_stat_override.length > 0
-        CREST_MOVE_STAT_OVERRIDES[key] = [] if CREST_MOVE_STAT_OVERRIDES[key].nil?
-        CREST_MOVE_STAT_OVERRIDES[key] += @move_stat_override
-      end
-      if @on_battle_entry.length > 0
-        CREST_BATTLE_ENTRY_EVENTS[key] = [] if CREST_BATTLE_ENTRY_EVENTS[key].nil?
-        CREST_BATTLE_ENTRY_EVENTS[key] += @on_battle_entry
-      end
-      if @on_dealt_damage_events.length > 0
-        CREST_DEALT_DAMAGE_EVENTS[key] = [] if CREST_DEALT_DAMAGE_EVENTS[key].nil?
-        CREST_DEALT_DAMAGE_EVENTS[key] += @on_dealt_damage_events
-      end
-      if @on_damage_events.length > 0
-        CREST_ON_DAMAGE_EVENTS[key] = [] if CREST_ON_DAMAGE_EVENTS[key].nil?
-        CREST_ON_DAMAGE_EVENTS[key] += @on_damage_events
-      end
-      if @on_turn_end.length > 0
-        CREST_ON_TURN_END_EVENTS[key] = [] if CREST_ON_TURN_END_EVENTS[key].nil?
-        CREST_ON_TURN_END_EVENTS[key] += @on_turn_end
-      end
     end
-    (@tier..4).each { |tier| SHOP_CRESTS[tier - 1][@symbol] = [item, @essence]} unless @essence.nil?
+    (@tier..4).each { |tier| SHOP_CRESTS[tier - 1][@symbol] = [$cache.items[@symbol], @essence]} unless @essence.nil?
   end
 
 end
@@ -183,14 +128,7 @@ add_save_event(:write_custom_crest_flags)
 # ================================================================ PATCH ================================================================= #
 # ======================================================================================================================================== #
 
-insert_in_method(:PokeBattle_Battler, :hasCrest?, "return true if @battle.pbGetOwnerItems(@index).include?(:SILVCREST) && crestmon.species == :SILVALLY && !@battle.pbOwnedByPlayer?(@index)", proc do |crestmon|
-  unless CREST_FORM_RESTRICTION[crestmon.species].nil?
-    if CREST_FORM_RESTRICTION[crestmon.species].include?(crestmon.form) and PBStuff::POKEMONTOCREST[crestmon.species]==crestmon.item
-      return crestmon.form == 0 ? true : [crestmon.species, crestmon.form]
-    end
-    return false
-  end
-end)
+insert_in_method(:PokeBattle_Battler, :hasCrest?, "return true if @battle.pbGetOwnerItems(@index).include?(:SILVCREST) && crestmon.species == :SILVALLY && !@battle.pbOwnedByPlayer?(@index)", "return crestmon.form == 0 ? true : [crestmon.species, crestmon.form] if !CUSTOM_CREST_MAP[crestmon.item].nil? and CUSTOM_CREST_MAP[crestmon.item].affects?(crestmon.species, crestmon.form)")
 
 replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@crested = hasCrest? ? pkmn.species : false", proc do
   h = hasCrest?
@@ -257,116 +195,100 @@ replace_in_method(:Interpreter, :command_111, "@branch[@list[@index].indent] = r
   @branch[@list[@index].indent] = result
 end)
 
+def check_type(type, vtypes, map)
+  vtypes.each { |vtype| return map[vtype].include?(type) unless map[vtype].nil? }
+  nil
+end
+
 insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponent.crested", proc do |opponent, type, typemod|
-  if opponent.crested
-    vtype = CREST_WEAKNESS_OVERRIDE[opponent.species]
-    b = check_type(type, vtype, TYPE_WEAKNESS_MAP)
-    typemod /= 2 if b
+  if opponent.crested and CUSTOM_CREST_MAP[opponent.item]
+    typemod = CUSTOM_CREST_MAP[opponent.item].forced_resistances[type] if (b = !CUSTOM_CREST_MAP[opponent.item].forced_resistances[type].nil?)
     unless b
-      vtype = CREST_RESIST_OVERRIDE[opponent.species]
-      b = check_type(type, vtype, TYPE_RESISTANCE_MAP)
-      typemod /= 2 if b
+      typemod /= 2 if (b = check_type(type, CUSTOM_CREST_MAP[opponent.item].weakness_fakes, TYPE_WEAKNESS_MAP))
       unless b
-        vtype = CREST_FORCE_RESIST[opponent.species]
-        typemod = 2 if check_type(type, vtype, TYPE_RESISTANCE_MAP)
+        typemod /= 2 if check_type(type, CUSTOM_CREST_MAP[opponent.item].resistance_fakes, TYPE_RESISTANCE_MAP)
       end
     end
   end
 end)
 
 insert_in_method(:PokeBattle_Move, :pbCalcDamage, "typecrest = false", proc do |attacker, type|
-  typecrest = true if type == CREST_STAB_OVERRIDE[attacker.crested]
+  typecrest = true if attacker.crested and !CUSTOM_CREST_MAP[attacker.item].nil? and CUSTOM_CREST_MAP[attacker.item].stab_overrides == type
 end)
 
-def check_type(type, vtype, map)
-  (vtype.class == Array and vtype.include?(type)) or (map[vtype].include?(type) unless vtype.nil? or map[vtype].nil?)
-end
-
-insert_in_method_before(:PokeBattle_AI, :pbRoughDamage, "case attacker.crested", proc do |attacker, typecrest, type|
-  if attacker.crested
-    vtype = CREST_WEAKNESS_OVERRIDE[attacker.species]
-    typecrest = true if check_type(type, vtype, TYPE_WEAKNESS_MAP)
-    unless typecrest
-      vtype = CREST_RESIST_OVERRIDE[attacker.species]
-      typecrest = true if check_type(type, vtype, TYPE_RESISTANCE_MAP)
-      unless typecrest
-        vtype = CREST_FORCE_RESIST[attacker.species]
-        typecrest = true if check_type(type, vtype, TYPE_RESISTANCE_MAP)
-      end
-    end
-  end
+insert_in_method_before(:PokeBattle_AI, :pbRoughDamage, "case attacker.crested", proc do |attacker, type|
+  typecrest = true if attacker.crested and !CUSTOM_CREST_MAP[attacker.item].nil? and CUSTOM_CREST_MAP[attacker.item].stab_overrides == type
 end, 1)
 
 insert_in_method(:PokeBattle_Pokemon, :calcStats, "bs=self.baseStats", proc do |bs|
-  unless CREST_BASE_STAT_MODS[[@species, @item]].nil?
+  if CUSTOM_CREST_MAP[@item].affects?(@species, @form)
     stats = NumberContainer.of(*bs)
-    CREST_BASE_STAT_MODS[[@species, @item]].each { |mod| mod.call(self, stats) }
+    CUSTOM_CREST_MAP[@item].base_stat_modifiers.each { |mod| mod.call(self, stats) }
     bs = stats.map { |n| n.value }
-  end
+  end unless CUSTOM_CREST_MAP[@item].nil?
 end)
 
 insert_in_method(:PokeBattle_Battler, :crestStats, :HEAD, proc do
-  unless CREST_BATTLE_STAT_MODS[self.crested].nil?
+  if @crested
     stats = NumberContainer.of(@hp, @attack, @defense, @spatk, @spdef, @speed)
-    CREST_BATTLE_STAT_MODS[self.crested].each { |mod| mod.call(self, stats) }
+    CUSTOM_CREST_MAP[@item].battle_stat_modifiers.each { |mod| mod.call(self, stats) }
     @hp, @attack, @defense, @spatk, @spdef, @speed = *stats.map { |n| n.value }
-  end
+  end unless CUSTOM_CREST_MAP[@item].nil?
 end)
 
 insert_in_method_before(:PokeBattle_AI, :pbRoughDamage, "case attacker.crested", proc do |attacker, opponent|
-  CREST_DAMAGE_MODS[attacker.crested].each do |mod|
+  CUSTOM_CREST_MAP[attacker.item].damage_modifiers.each do |mod|
     modifier = mod.call(attacker, opponent, self, self.pbNumHits, true)
     basemult *= modifier unless modifier.nil?
-  end unless CREST_DAMAGE_MODS[attacker.crested].nil?
+  end if attacker.crested unless CUSTOM_CREST_MAP[attacker.item].nil?
 end, 1)
 
 insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "case attacker.ability", proc do |attacker, opponent, hitnum|
-  CREST_DAMAGE_MODS[attacker.crested].each do |mod|
+  CUSTOM_CREST_MAP[attacker.item].damage_modifiers.each do |mod|
     modifier = mod.call(attacker, opponent, self, hitnum, false)
     basemult *= modifier unless modifier.nil?
-  end unless CREST_DAMAGE_MODS[attacker.crested].nil?
+  end if attacker.crested unless CUSTOM_CREST_MAP[attacker.item].nil?
 end)
 
 replace_in_method(:PokeBattle_Move, :pbAccuracyCheck, "return @battle.pbRandom(100)<(baseaccuracy*accuracy/evasion)", proc do |attacker, baseaccuracy, accuracy, evasion|
-  CREST_ACCURACY_MODS[attacker.crested].each do |mod|
+  CUSTOM_CREST_MAP[attacker.item].accuracy_modifiers.each do |mod|
     modified = mod.call(attacker, self, baseaccuracy, accuracy, evasion)
-    baseaccuracy, accuracy, evasion = modified[0], modified[1], modified[2] unless modified.nil?
-  end unless CREST_ACCURACY_MODS[attacker.crested].nil?
+    baseaccuracy, accuracy, evasion = *modified unless modified.nil?
+  end if attacker.crested unless CUSTOM_CREST_MAP[attacker.item].nil?
   return @battle.pbRandom(100) < (baseaccuracy * accuracy / evasion)
 end)
 
-
 insert_in_method(:PokeBattle_Move, :priorityCheck, "pri -= 1 if @battle.FE == :DEEPEARTH && @move == :COREENFORCER", proc do |attacker|
-  CREST_PRIORITY_MODS[attacker.crested].each do |mod|
+  CUSTOM_CREST_MAP[attacker.item].priority_modifiers.each do |mod|
     modifier = mod.call(attacker, self)
-    pri += modifier unless modifier.nil? or modifier == 0
-  end unless CREST_PRIORITY_MODS[attacker.crested].nil?
+    pri += modifier unless modifier.nil?
+  end if attacker.crested unless CUSTOM_CREST_MAP[attacker.item].nil?
 end)
 
 insert_in_method(:PokeBattle_Battle, :pbPriority, "pri += 3 if @battlers[i].ability == :TRIAGE && (PBStuff::HEALFUNCTIONS).include?(@choices[i][2].function)", proc do
   attacker, move = @battlers[i], @choices[i][2]
-  CREST_PRIORITY_MODS[attacker.crested].each do |mod|
+  CUSTOM_CREST_MAP[attacker.item].priority_modifiers.each do |mod|
     modifier = mod.call(attacker, move)
-    pri += modifier unless modifier.nil? or modifier == 0
-  end unless CREST_PRIORITY_MODS[attacker.crested].nil?
+    pri += modifier unless modifier.nil?
+  end if attacker.crested unless CUSTOM_CREST_MAP[attacker.item].nil?
 end)
 
 insert_in_method_before(:PokeBattle_Battler, :pbUseMove, "target.damagestate.reset", proc do |target, basemove|
-  CREST_HIT_COUNT_MODS[self.crested].each do |mod|
+  CUSTOM_CREST_MAP[@item].hit_number_modifiers.each do |mod|
     modifier = mod.call(self, target, basemove)
-    numhits += modifier unless modifier.nil? or modifier == 0
-  end unless CREST_HIT_COUNT_MODS[self.crested].nil?
+    numhits += modifier unless modifier.nil?
+  end if @crested unless CUSTOM_CREST_MAP[@item].nil?
 end)
 
 insert_in_method(:PokeBattle_Move, :pbType, :HEAD, proc do |attacker, type|
-  CREST_MOVE_TYPE_OVERRIDES[attacker.crested].each do |mod|
+  CUSTOM_CREST_MAP[attacker.item].move_type_overrides.each do |mod|
     tmp = mod.call(attacker, self, type)
     type = tmp unless tmp.nil?
-  end unless CREST_MOVE_TYPE_OVERRIDES[attacker.crested].nil?
+  end if attacker.crested unless CUSTOM_CREST_MAP[attacker.item].nil?
 end)
 
 insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "if attacker.ability == :HUSTLE && pbIsPhysical?(type)", proc do |attacker, opponent|
-  CREST_MOVE_STAT_OVERRIDES[attacker.crested].each do |mod|
+  CUSTOM_CREST_MAP[attacker.item].move_stat_overrides.each do |mod|
     tmp = mod.call(attacker, opponent, self)
     tmp = [:hp, :atk, :def, :spa, :spd, :spe][tmp] if tmp.is_a? Integer
     case tmp.downcase
@@ -383,24 +305,24 @@ insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "if attacker.ability ==
       when :oppspd then atk = opponent.spdef; atkstage = opponent.stages[PBStats::SPDEF]+6
       when :oppspe then atk = opponent.speed; atkstage = opponent.stages[PBStats::SPEED]+6
     end if tmp.is_a? Symbol
-  end unless CREST_MOVE_STAT_OVERRIDES[attacker.crested].nil?
+  end if attacker.crested unless CUSTOM_CREST_MAP[attacker.item].nil?
 end)
 
 insert_in_method_before(:PokeBattle_Battle, :pbCrestEffects, "case @battlers[index].crested", proc do |index|
     pkmn = @battlers[index]
-    CREST_BATTLE_ENTRY_EVENTS[pkmn.crested].each { |event| event.call(pkmn, pkmn.battle, index) } unless CREST_BATTLE_ENTRY_EVENTS[pkmn.crested].nil?
+    CUSTOM_CREST_MAP[pkmn.item].on_battle_entry_events.each { |event| event.call(pkmn, pkmn.battle, index) } if pkmn.crested unless CUSTOM_CREST_MAP[pkmn.item].nil?
 end)
 
 insert_in_method(:PokeBattle_Battler, :pbEffectsOnDealingDamage, "return if target.nil?", proc do |user, target, move, damage|
-  CREST_DEALT_DAMAGE_EVENTS[user.crested].each { |event| event.call(user, target, move, damage) } unless CREST_DEALT_DAMAGE_EVENTS[user.crested].nil?
-  CREST_ON_DAMAGE_EVENTS[target.crested].each { |event| event.call(user, target, move, damage) } unless CREST_ON_DAMAGE_EVENTS[target.crested].nil?
+  CUSTOM_CREST_MAP[user.item].on_damage_dealt.each { |event| event.call(user, target, move, damage) } if user.crested unless CUSTOM_CREST_MAP[user.item].nil?
+  CUSTOM_CREST_MAP[target.item].on_damage_taken.each { |event| event.call(user, target, move, damage) } if user.crested unless CUSTOM_CREST_MAP[target.item].nil?
 end)
 
-insert_in_method_before(:PokeBattle_Battle, :__clauses__pbEndOfRoundPhase, "if i.crested == :VESPIQUEN", "CREST_ON_TURN_END_EVENTS[i.crested].each { |event| event.call(i) } unless CREST_ON_TURN_END_EVENTS[i.crested].nil?")
+insert_in_method_before(:PokeBattle_Battle, :__clauses__pbEndOfRoundPhase, "if i.crested == :VESPIQUEN", "CUSTOM_CREST_MAP[i.item].on_turn_end.each { |event| event.call(i) } if i.crested unless CUSTOM_CREST_MAP[i.item].nil?")
 
 insert_in_method_before(:PokeBattle_Move, :pbTypeModifier, "return mod1*mod2", proc do |attacker, opponent, atype, mod1, mod2|
-  CREST_TYPE_MODS[attacker.crested].each do |mod|
+  CUSTOM_CREST_MAP[attacker.item].type_modifiers.each do |mod|
     modifiers = mod.call(attacker, opponent, atype, mod1, mod2)
     mod1, mod2 = modifiers[0], modifiers[1] unless modifiers.nil?
-  end unless CREST_TYPE_MODS[attacker.crested].nil?
+  end if attacker.crested unless CUSTOM_CREST_MAP[attacker.item].nil?
 end)
