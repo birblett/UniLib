@@ -79,7 +79,7 @@ class PokeModifier
   end
 
   def mon_data
-    @form == 0 ? $cache.pkmn[@species] : $cache.pkmn[@species].formData[$cache.pkmn[@species].forms[@form]]
+    @form == 0 ? POKEMON_DATA[@species] : POKEMON_DATA[@species].formData[POKEMON_DATA[@species].forms[@form]]
   end
 
   def get_base_data(sym, default=nil)
