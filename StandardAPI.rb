@@ -8,6 +8,7 @@ UNILIB_DEBUG_ENABLED = false
 UNILIB_VERSION = 0.5
 UNILIB_PATH = File.dirname(__FILE__) + "/"
 UNILIB_ASSET_PATH = File.dirname(__FILE__) + "/../UniLibAssets/"
+UNILIB_API_PATH = UNILIB_PATH + "API/"
 UNILIB_LIB_PATH = UNILIB_PATH + "Core/"
 UNILIB_LOG_PATH = UNILIB_PATH + "../UniLibLog/"
 UNILIB_SAVE_PATH = UNILIB_PATH + "../UniLibSave/"
@@ -40,7 +41,7 @@ def unilib_include(path_relative)
   unilib_include("CodeInjector") if path_relative != "CodeInjector"
   load UNILIB_LIB_PATH + path_relative + "Core.rb" if File.exists?(UNILIB_LIB_PATH + path_relative + "Core.rb") unless UNILIB_LOADED[path_relative]
   load UNILIB_LIB_PATH + path_relative + "Lib.rb" if File.exists?(UNILIB_LIB_PATH + path_relative + "Lib.rb") unless UNILIB_LOADED[path_relative]
-  load UNILIB_PATH + path_relative + "API.rb" if File.exists?(UNILIB_PATH + path_relative + "API.rb") unless UNILIB_LOADED[path_relative]
+  load UNILIB_API_PATH + path_relative + "API.rb" if File.exists?(UNILIB_API_PATH + path_relative + "API.rb") unless UNILIB_LOADED[path_relative]
   UNILIB_LOADED[path_relative] = true
 end
 
