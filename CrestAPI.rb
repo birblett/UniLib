@@ -38,7 +38,6 @@ class CrestBuilder
     CUSTOM_CRESTS[sym]
   end
 
-
   <<-DOC
   @param item - crest item
   @param species - base species id for the crest
@@ -283,70 +282,6 @@ class CrestBuilder
   def on_turn_end(proc)
     @on_turn_end.push(proc)
     self
-  end
-
-end
-
-class NumberContainer
-
-  def set(other)
-    @number = other
-  end
-
-  def +(other)
-    @number + other
-  end
-
-  def -(other)
-    @number - other
-  end
-
-  def *(other)
-    @number * other
-  end
-
-  def /(other)
-    @number / other
-  end
-
-  def add(other)
-    @number += other
-  end
-
-  def sub(other)
-    @number -= other
-  end
-
-  def mul(other)
-    @number *= other
-  end
-
-  def div(other)
-    @number /= other
-  end
-
-  def ==(other)
-    @number == other
-  end
-
-  def >=(other)
-    @number >= other
-  end
-
-  def <=(other)
-    @number <= other
-  end
-
-  def >(other)
-    @number > other
-  end
-
-  def <(other)
-    @number < other
-  end
-
-  def value
-    @number
   end
 
 end
