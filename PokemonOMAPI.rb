@@ -74,4 +74,12 @@ class PokeModifier
     end
   end
 
+  <<-DOC
+  >> when set, all the pokemon's abilities will be active at once
+  DOC
+  def set_pokebilities
+    multibility_handler(POKEBILITY_PROC)
+    @pokebilities = true
+  end
+
 end
