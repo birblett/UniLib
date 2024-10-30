@@ -1,13 +1,28 @@
+# ======================================================================================================================================== #
+# ============================================================= DEPENDENCIES ============================================================= #
+# ======================================================================================================================================== #
+
+verify_version(0.5, __FILE__)
+
+# ======================================================================================================================================== #
+# ============================================================== PUBLIC API ============================================================== #
+# ======================================================================================================================================== #
+
 class AbilityContainer
+
+  def set(abilities)
+    @abilities = abilities.is_a?(Array) ? abilities : [abilities]
+  end
 
   def add(ability)
     ability = [ability] unless ability.is_a? Array
     @abilities += ability
   end
 
-  def self.add_handler(species, handler)
-    MULTIBILITY_HANDLERS[species] = [] if MULTIBILITY_HANDLERS[species].nil?
-    MULTIBILITY_HANDLERS[species].push(handler)
+  def self.add_handler(species, handler, form=0)
+    key = [species, form]
+    MULTIBILITY_HANDLERS[key] = [] if MULTIBILITY_HANDLERS[key].nil?
+    MULTIBILITY_HANDLERS[key].push(handler)
   end
 
   def abilities
@@ -23,7 +38,7 @@ end
 class PokeModifier
 
   def multibility_handler(handler)
-    AbilityContainer.add_handler(@species, handler)
+    AbilityContainer.add_handler(@species, handler, @form)
   end
 
 end

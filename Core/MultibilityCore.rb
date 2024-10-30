@@ -1,3 +1,13 @@
+# ======================================================================================================================================== #
+# ============================================================= DEPENDENCIES ============================================================= #
+# ======================================================================================================================================== #
+
+verify_version(0.5, __FILE__)
+
+# ======================================================================================================================================== #
+# ============================================================ INTERNAL/CORE ============================================================= #
+# ======================================================================================================================================== #
+
 MULTIBILITY_HANDLERS = {}
 
 class PokeBattle_Battler
@@ -16,10 +26,11 @@ class AbilityContainer
     @pokemon = pkmn
     @abilities = ability.is_a?(Array) ? ability.dup : [ability]
     @ctx = ability
-    MULTIBILITY_HANDLERS[pkmn.species].each do |handler|
+    key = [pkmn.species, pkmn.form]
+    MULTIBILITY_HANDLERS[key].each do |handler|
       extra = handler.call(@pokemon, @abilities)
-      @abilities += extra.is_a?(Array) ? extra : [extra]
-    end unless MULTIBILITY_HANDLERS[pkmn.species].nil?
+      @abilities += (extra.is_a?(Array) ? extra : [extra]) - @abilities unless extra.nil?
+    end unless MULTIBILITY_HANDLERS[key].nil?
   end
 
   def ==(other)
@@ -44,13 +55,11 @@ end
 
 replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@ability      = pkmn.ability", "@ability = AbilityContainer.new(pkmn, pkmn.ability)")
 
-replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@backupability      = pkmn.ability", "@backupability = @ability.copy")
+replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@backupability= pkmn.ability", "@backupability = @ability.copy")
 
-replace_in_method(:PokeBattle_Battler, :pbUpdate, "@ability = @pokemon.ability if !@ability.nil? && !((@crested == :SILVALLY || @crested == :ZOROARK))", proc do
-  @ability = AbilityContainer.new(@pokemon, @pokemon.ability) if !@ability.nil? && !((@crested == :SILVALLY || @crested == :ZOROARK))
-end)
+replace_in_method(:PokeBattle_Battler, :pbUpdate, "@ability = @pokemon.ability if !@ability.nil? && !((@crested == :SILVALLY || @crested == :ZOROARK))", "@ability = AbilityContainer.new(@pokemon, @pokemon.ability) if !@ability.nil? && !((@crested == :SILVALLY || @crested == :ZOROARK))")
 
-insert_in_function(:getAbilityName, :HEAD, "abil = abil.ctx.nil? ? abil.abilities[0] : abil.ctx if abil.is_a?(AbilityContainer)")
+insert_in_function(:getAbilityName, :HEAD, "abil = abil.ctx.nil? ? abil.abilities[0] : abil.ctx if abil.is_a? AbilityContainer")
 
 replace_in_function(:pbShowBattleStats, "report.push(_INTL(\"Ability: {1}\",pkmn.ability.nil? ? \"Ability Negated\" : getAbilityName(shownmon.ability)))", proc do |report, pkmn, shownmon|
   if pkmn.ability == nil
