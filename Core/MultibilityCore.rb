@@ -53,6 +53,16 @@ class Symbol
 
 end
 
+module Ability_Cache
+
+  def [](key)
+    super key.is_a?(AbilityContainer) ? key.ctx : key
+  end
+
+end
+
+$cache.abil.extend(Ability_Cache)
+
 replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@ability      = pkmn.ability", "@ability = AbilityContainer.new(pkmn, pkmn.ability)")
 
 replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@backupability= pkmn.ability", "@backupability = @ability.copy")
