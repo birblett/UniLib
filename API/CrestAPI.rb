@@ -280,7 +280,7 @@ class CrestBuilder
   >> an event hook for when a the current turn ends. accepts a single PokeBattle_Battler argument.
   DOC
   def on_turn_end(proc)
-    @on_turn_end.push(proc)
+    @on_turn_end_events.push(proc)
     self
   end
 

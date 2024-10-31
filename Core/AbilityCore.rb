@@ -31,7 +31,7 @@ class AbilityModifier
   attr_accessor(:on_battle_entry_events)
   attr_accessor(:on_dealt_damage_events)
   attr_accessor(:on_damage_events)
-  attr_accessor(:on_turn_end)
+  attr_accessor(:on_turn_end_events)
 
   def initialize(symbol, name, desc, fulldesc=nil)
     @sym = symbol
@@ -54,7 +54,7 @@ class AbilityModifier
     @on_battle_entry_events = []
     @on_dealt_damage_events = []
     @on_damage_events = []
-    @on_turn_end = []
+    @on_turn_end_events = []
   end
 
   def build
@@ -201,7 +201,7 @@ insert_in_method(:PokeBattle_Battler, :pbEffectsOnDealingDamage, "return if targ
   target.ability.abilities.each { |ability| CUSTOM_ABILITIES[ability].on_damage_events.each { |event| event.call(user, target, move, damage) } unless CUSTOM_ABILITIES[ability].nil? }")
 
 insert_in_method_before(:PokeBattle_Battle, :__clauses__pbEndOfRoundPhase,
-  "if i.crested == :VESPIQUEN", "i.ability.abilities.each { |ability| CUSTOM_ABILITIES[ability].on_turn_end.each { |event| event.call(i) } unless CUSTOM_ABILITIES[ability].nil? }")
+  "if i.crested == :VESPIQUEN", "i.ability.abilities.each { |ability| CUSTOM_ABILITIES[ability].on_turn_end_events.each { |event| event.call(i) } unless CUSTOM_ABILITIES[ability].nil? }")
 
 insert_in_method_before(:PokeBattle_Move, :pbTypeModifier, "return mod1*mod2",
   "attacker.ability.abilities.each do |ability|

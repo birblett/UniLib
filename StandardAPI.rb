@@ -126,4 +126,4 @@ def unidev_log(*args)
   File.open(UNILIB_LOG_PATH + "dev.out", "a+") { |f| f.write("#{str_final}\n") }
 end
 
-unilib_include("CodeInjector")
+unilib_include "CodeInjector"

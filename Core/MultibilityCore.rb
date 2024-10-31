@@ -61,13 +61,12 @@ replace_in_method(:PokeBattle_Battler, :pbUpdate, "@ability = @pokemon.ability i
 
 insert_in_function(:getAbilityName, :HEAD, "abil = abil.ctx.nil? ? abil.abilities[0] : abil.ctx if abil.is_a? AbilityContainer")
 
-replace_in_function(:pbShowBattleStats, "report.push(_INTL(\"Ability: {1}\",pkmn.ability.nil? ? \"Ability Negated\" : getAbilityName(shownmon.ability)))", proc do |report, pkmn, shownmon|
-  if pkmn.ability == nil
-    report.push(_INTL("Ability: Ability Negated"))
+replace_in_function(:pbShowBattleStats, "report.push(_INTL(\"Ability: {1}\",pkmn.ability.nil? ? \"Ability Negated\" : getAbilityName(shownmon.ability)))",
+  "if pkmn.ability == nil
+    report.push(_INTL(\"Ability: Ability Negated\"))
   elsif shownmon.ability.is_multiple?
-    report.push(_INTL("Abilities:"))
-    shownmon.ability.abilities.each { |ability| report.push(_INTL("- {1}", getAbilityName(ability))) }
+    report.push(_INTL(\"Abilities: \"))
+    shownmon.ability.abilities.each { |ability| report.push(_INTL(\"- {1}\", getAbilityName(ability))) }
   else
-    report.push(_INTL("Ability: {1}", getAbilityName(shownmon.ability.abilities[0])))
-  end
-end)
+    report.push(_INTL(\"Ability: {1}\", getAbilityName(shownmon.ability.abilities[0])))
+  end")

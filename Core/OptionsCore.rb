@@ -273,12 +273,11 @@ add_new_file_event(:read_option_data)
 # ================================================================ PATCH ================================================================= #
 # ======================================================================================================================================== #
 
-insert_in_method_before(:PokemonOptionScene, :pbStartScene, "for i in 0...OptionList.length", proc do
-  if SEPARATE_UNILIB_OPTIONS == 0 and UNILIB_CUSTOM_OPTIONS.length > 0
+insert_in_method_before(:PokemonOptionScene, :pbStartScene, "for i in 0...OptionList.length",
+  "if SEPARATE_UNILIB_OPTIONS == 0 and UNILIB_CUSTOM_OPTIONS.length > 0
     UNILIB_CUSTOM_OPTIONS.each { |option| OptionList.push(option.get_option) unless option.get_option.nil? or OptionList.include?(option.get_option)}
     OptionList.push(SEPARATE_UNILIB_OPTIONS.get_option) unless OptionList.include?(SEPARATE_UNILIB_OPTIONS.get_option)
-  end
-end)
+  end")
 
 insert_in_method(:PokemonOption, :pbStartScreen, "@scene.pbOptions", "unilib_save_data(\"options\", UNILIB_CUSTOM_OPTIONS + OLD_OPTIONS + [SEPARATE_UNILIB_OPTIONS], false)")
 

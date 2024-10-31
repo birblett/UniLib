@@ -126,55 +126,48 @@ end
 # ================================================================ PATCH ================================================================= #
 # ======================================================================================================================================== #
 
-insert_in_function(ItemHandlers::UseOnPokemon.instance_variable_get(:@hash)[:ABILITYCAPSULE], :HEAD, proc do |pokemon, scene|
-  key = [pokemon.species, pokemon.form]
+insert_in_function(ItemHandlers::UseOnPokemon.instance_variable_get(:@hash)[:ABILITYCAPSULE], :HEAD,
+  "key = [pokemon.species, pokemon.form]
   if POKEBILITIES_POKEMON[key]
-    scene.pbDisplay(_INTL("It won't have any effect."))
+    scene.pbDisplay(_INTL(\"It won't have any effect.\"))
     next false
   end
   unless AAA_POKEMON[key].nil?
     i = ability_select(1, pokemon.getAbilityList)
     if i != 0
       pokemon.setAbility(i)
-      scene.pbDisplay(_INTL("{1}'s ability was changed to {2}!", pokemon.name, getAbilityName(pokemon.ability)))
+      scene.pbDisplay(_INTL(\"{1}'s ability was changed to {2}!\", pokemon.name, getAbilityName(pokemon.ability)))
     end
     next true
-  end
-end)
+  end")
 
-insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD, proc do
-  key = [@species, @form]
+insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
+  "key = [@species, @form]
   return PLATE_MAP[@item] if !PLATE_POKEMON[key].nil? and PLATE_POKEMON[key].include?(@item) and PLATE_MAP.include?(@item)
-  return CUSTOM_PLATE_MAP[@item] if !PLATE_POKEMON[key].nil? and PLATE_POKEMON[key].include?(@item) and CUSTOM_PLATE_MAP.include?(@item)
-end)
+  return CUSTOM_PLATE_MAP[@item] if !PLATE_POKEMON[key].nil? and PLATE_POKEMON[key].include?(@item) and CUSTOM_PLATE_MAP.include?(@item)")
 
-insert_in_function_before(:pbGetRelearnableMoves, "return moves|[]", proc do |pokemon, moves|
-  key = [pokemon.species, pokemon.form]
+insert_in_function_before(:pbGetRelearnableMoves, "return moves|[]",
+  "key = [pokemon.species, pokemon.form]
   STAB_POKEMON[key].each { |type| moves |= TYPE_MAPPED_MOVES[type] unless TYPE_MAPPED_MOVES[type].nil? } unless STAB_POKEMON[key].nil?
-  ALPHABET_POKEMON[key].each { |letter| moves |= ALPHABET_MOVES[letter] unless ALPHABET_MOVES[letter].nil? } unless ALPHABET_POKEMON[key].nil?
-end)
+  ALPHABET_POKEMON[key].each { |letter| moves |= ALPHABET_MOVES[letter] unless ALPHABET_MOVES[letter].nil? } unless ALPHABET_POKEMON[key].nil?")
 
-insert_in_method(:PokemonSummaryScene, :drawAbilPage, "memo+=_INTL(\"<c3=F8F8F8,686868>Ability:<c3=404040,B0B0B0>\n\")", proc do
-  abilname = "Pokebilities" if POKEBILITIES_POKEMON[[@pokemon.species, @pokemon.form]]
-end)
+insert_in_method(:PokemonSummaryScene, :drawAbilPage, "memo+=_INTL(\"<c3=F8F8F8,686868>Ability:<c3=404040,B0B0B0>\n\")", "abilname = \"Pokebilities\" if POKEBILITIES_POKEMON[[@pokemon.species, @pokemon.form]]")
 
-insert_in_method(:PokemonSummaryScene, :drawPageThree, "abilitydesc = abil.nil? ? (@pokemon.ability.nil? ? NoAbilDesc : NotRealAbil) : abil.desc.nil? ? MissingAbilDesc : abil.desc", proc do
-  if POKEBILITIES_POKEMON[[@pokemon.species, @pokemon.form]]
-    abilityname = "Pokebilities"
+insert_in_method(:PokemonSummaryScene, :drawPageThree, "abilitydesc = abil.nil? ? (@pokemon.ability.nil? ? NoAbilDesc : NotRealAbil) : abil.desc.nil? ? MissingAbilDesc : abil.desc",
+  "if POKEBILITIES_POKEMON[[@pokemon.species, @pokemon.form]]
+    abilityname = \"Pokebilities\"
     list = @pokemon.getAbilityList
     abilitydesc = ""
-    list.each { |abil| abilitydesc += getAbilityName(abil, true) + (abil != list.last ? " + " : ".")}
-  end
-end)
+    list.each { |abil| abilitydesc += getAbilityName(abil, true) + (abil != list.last ? \" + \" : \".\")}
+  end")
 
-insert_in_method(:PokemonSummaryScene, :drawPageFour, "abilitydesc = abil.nil? ? (pokemon.ability.nil? ? NoAbilDesc : NotRealAbil) : abil.desc.nil? ? MissingAbilDesc : abil.desc", proc do |pokemon|
-  if POKEBILITIES_POKEMON[[pokemon.species, pokemon.form]]
-    abilityname = "Pokebilities"
+insert_in_method(:PokemonSummaryScene, :drawPageFour, "abilitydesc = abil.nil? ? (pokemon.ability.nil? ? NoAbilDesc : NotRealAbil) : abil.desc.nil? ? MissingAbilDesc : abil.desc",
+  "if POKEBILITIES_POKEMON[[pokemon.species, pokemon.form]]
+    abilityname = \"Pokebilities\"
     list = pokemon.getAbilityList
     abilitydesc = ""
-    list.each { |abil| abilitydesc += getAbilityName(abil, true) + (abil != list.last ? " + " : ".")}
-  end
-end)
+    list.each { |abil| abilitydesc += getAbilityName(abil, true) + (abil != list.last ? \" + \" : \".\")}
+  end")
 
 insert_in_method(:PokemonStorageScene, :pbUpdateOverlay, "abilityname=getAbilityName(pokemon.ability)", "abilityname = \"Pokebilities\" if POKEBILITIES_POKEMON[[pokemon.species, pokemon.form]]")
 

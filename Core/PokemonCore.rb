@@ -214,19 +214,17 @@ end
 
 add_play_event(:register_modified_pokemon)
 
-insert_in_method(:PokeBattle_Pokemon, :type1, :HEAD, proc do
-  provider = CUSTOM_TYPE1_PROVIDERS[@species]
+insert_in_method(:PokeBattle_Pokemon, :type1, :HEAD,
+  "provider = CUSTOM_TYPE1_PROVIDERS[@species]
   unless provider.nil?
     ret = provider.call(self)
     return ret unless ret.nil?
-  end
-end)
+  end")
 
-insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD, proc do
-  provider = CUSTOM_TYPE2_PROVIDERS[@species]
+insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
+  "provider = CUSTOM_TYPE2_PROVIDERS[@species]
   unless provider.nil?
     ret = provider.call(self)
     return nil if ret == type1
     return ret unless ret.nil?
-  end
-end)
+  end")

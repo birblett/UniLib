@@ -105,10 +105,9 @@ add_save_event(:write_invalid_items)
 # ================================================================ PATCH ================================================================= #
 # ======================================================================================================================================== #
 
-insert_in_function(:pbItemIconFile, :HEAD, proc do
-  unless CUSTOM_ITEMS[item].nil?
+insert_in_function(:pbItemIconFile, :HEAD,
+  "unless CUSTOM_ITEMS[item].nil?
     Dir.mkdir(UNILIB_ASSET_PATH) rescue nil
-    name = "Data/Mods/UniLibAssets/#{item.to_s.gsub("_","").downcase}.png"
+    name = \"Data/Mods/UniLibAssets/\#{item.to_s.gsub(\"_\", \"\").downcase}.png\"
     return name if File.file?(name)
-  end
-end)
+  end")

@@ -52,7 +52,7 @@ class CrestBuilder
   attr_accessor(:on_battle_entry_events)
   attr_accessor(:on_dealt_damage_events)
   attr_accessor(:on_damage_events)
-  attr_accessor(:on_turn_end)
+  attr_accessor(:on_turn_end_events)
 
   def initialize(symbol, species, form)
     @symbol = symbol
@@ -76,7 +76,7 @@ class CrestBuilder
     @on_battle_entry_events = []
     @on_dealt_damage_events = []
     @on_damage_events = []
-    @on_turn_end = []
+    @on_turn_end_events = []
     @ability_providers = []
   end
 
@@ -296,7 +296,7 @@ insert_in_method(:PokeBattle_Battler, :pbEffectsOnDealingDamage, "return if targ
   CUSTOM_CREST_MAP[target.item].on_damage_events.each { |event| event.call(user, target, move, damage) } if user.crested unless CUSTOM_CREST_MAP[target.item].nil?")
 
 insert_in_method_before(:PokeBattle_Battle, :__clauses__pbEndOfRoundPhase,
-  "if i.crested == :VESPIQUEN", "CUSTOM_CREST_MAP[i.item].on_turn_end.each { |event| event.call(i) } if i.crested unless CUSTOM_CREST_MAP[i.item].nil?")
+  "if i.crested == :VESPIQUEN", "CUSTOM_CREST_MAP[i.item].on_turn_end_events.each { |event| event.call(i) } if i.crested unless CUSTOM_CREST_MAP[i.item].nil?")
 
 insert_in_method_before(:PokeBattle_Move, :pbTypeModifier, "return mod1*mod2",
   "CUSTOM_CREST_MAP[attacker.item].type_modifiers.each do |mod|
