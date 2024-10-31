@@ -284,4 +284,14 @@ class CrestBuilder
     self
   end
 
+  <<-DOC
+  @param proc - a function returning an ability symbol (or array of them).
+  >> a conditional ability provider. accepts 2 arguments, the user (PokeBattle_Pokemon) and its current abilities (array of symbols).
+     return an ability symbol or array of them; nil return values are ignored. the user will act as if it also has the returned ability(s).
+  DOC
+  def ability_provider(proc)
+    @ability_providers.push(proc)
+    self
+  end
+
 end

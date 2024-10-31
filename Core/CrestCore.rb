@@ -77,6 +77,7 @@ class CrestBuilder
     @on_dealt_damage_events = []
     @on_damage_events = []
     @on_turn_end = []
+    @ability_providers = []
   end
 
   def affects?(pkmn, form)
@@ -91,8 +92,10 @@ class CrestBuilder
         add_custom_plate(@symbol, @secondary)
         PokeModifier.add(species, form).set_plates(@symbol)
       end
+      @ability_providers.each { |provider| AbilityContainer.add_handler(species, provider, form) }
     end
     (@tier..4).each { |tier| SHOP_CRESTS[tier - 1][@symbol] = [$cache.items[@symbol], @essence]} unless @essence.nil?
+
   end
 
 end
