@@ -146,7 +146,7 @@ insert_in_method(:PokeBattle_Move, :priorityCheck, "pri -= 1 if @battle.FE == :D
       modifier = mod.call(attacker, self)
       pri += modifier unless modifier.nil?
     end unless CUSTOM_ABILITIES[ability].nil?
-  end")
+  end if attacker.ability.is_a?(AbilityContainer)")
 
 insert_in_method(:PokeBattle_Battle, :pbPriority, "pri += 3 if @battlers[i].ability == :TRIAGE && (PBStuff::HEALFUNCTIONS).include?(@choices[i][2].function)",
   "attacker, move = @battlers[i], @choices[i][2]
@@ -155,7 +155,7 @@ insert_in_method(:PokeBattle_Battle, :pbPriority, "pri += 3 if @battlers[i].abil
       modifier = mod.call(attacker, move)
       pri += modifier unless modifier.nil?
     end unless CUSTOM_ABILITIES[ability].nil?
-  end")
+  end if attacker.ability.is_a?(AbilityContainer)")
 
 insert_in_method_before(:PokeBattle_Battler, :pbUseMove, "target.damagestate.reset",
   "CUSTOM_ABILITIES[@ability].hit_number_modifiers.each do |mod|
