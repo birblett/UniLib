@@ -33,11 +33,12 @@ class AbilityModifier
   attr_accessor(:on_damage_events)
   attr_accessor(:on_turn_end_events)
 
-  def initialize(symbol, name, desc, fulldesc=nil)
+  def initialize(symbol, name=nil, desc=nil, fulldesc=nil)
     @sym = symbol
     @name = name
+    @full_name = nil
     @desc = desc
-    @fulldesc = fulldesc.nil? ? desc : fulldesc
+    @full_desc = fulldesc.nil? ? desc : fulldesc
     @secondary = nil
     @resistance_fakes = []
     @stab_overrides = []
@@ -58,7 +59,16 @@ class AbilityModifier
   end
 
   def build
-    $cache.abil[@sym] = AbilityData.new(@sym, { :name => @name, :desc => @desc, :fulldesc => @fulldesc })
+    a = $cache.abil[@sym]
+    if a.nil? or (!@name.nil? and a.name != @name) or (!@full_name.nil? and a.fullName != @full_name) or (!@desc.nil? and a.desc != @desc) or (!@full_desc.nil? and a.fullDesc != @fullDesc)
+      unless a.nil?
+        @name = a.name if @name.nil?
+        @full_name = a.fullName if @full_name.nil?
+        @desc = a.desc if @desc.nil?
+        @full_desc = a.fullDesc if @full_desc.nil?
+      end
+      $cache.abil[@sym] = AbilityData.new(@sym, { :name => @name, :fullName => @full_name, :desc => @desc, :fullDesc => @full_desc })
+    end
   end
 
 end

@@ -8,9 +8,17 @@ verify_version(0.5, __FILE__)
 # ============================================================== PUBLIC API ============================================================== #
 # ======================================================================================================================================== #
 
+module AbilityBuilder
+
+  def self.add(symbol, name, desc, fulldesc)
+    AbilityModifier.add(symbol, name, desc, fulldesc)
+  end
+
+end
+
 class AbilityModifier
 
-  def self.add(symbol, name, desc, fulldesc=nil)
+  def self.add(symbol, name=nil, desc=nil, fulldesc=nil)
     CUSTOM_ABILITIES[symbol] = AbilityModifier.new(symbol, name, desc, fulldesc) if CUSTOM_ABILITIES[symbol].nil?
     CUSTOM_ABILITIES[symbol]
   end
