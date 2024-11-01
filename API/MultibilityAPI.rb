@@ -21,8 +21,8 @@ class AbilityContainer
 
   def self.add_handler(species, handler, form=0)
     key = [species, form]
-    MULTIBILITY_HANDLERS[key] = [] if MULTIBILITY_HANDLERS[key].nil?
-    MULTIBILITY_HANDLERS[key].push(handler)
+    UniLib::MULTIBILITY_HANDLERS[key] = [] if UniLib::MULTIBILITY_HANDLERS[key].nil?
+    UniLib::MULTIBILITY_HANDLERS[key].push(handler)
   end
 
   def abilities

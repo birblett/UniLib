@@ -8,7 +8,11 @@ UniLib.verify_version(0.5, __FILE__)
 # ============================================================ INTERNAL/CORE ============================================================= #
 # ======================================================================================================================================== #
 
-MULTIBILITY_HANDLERS = {}
+module UniLib
+
+  MULTIBILITY_HANDLERS = {}
+
+end
 
 class PokeBattle_Battler
 
@@ -27,10 +31,10 @@ class AbilityContainer
     @abilities = ability.is_a?(Array) ? ability.dup : [ability]
     @ctx = ability
     key = [pkmn.species, pkmn.form]
-    MULTIBILITY_HANDLERS[key].each do |handler|
+    UniLib::MULTIBILITY_HANDLERS[key].each do |handler|
       extra = handler.call(@pokemon, @abilities)
       @abilities += (extra.is_a?(Array) ? extra : [extra]) - @abilities unless extra.nil?
-    end unless MULTIBILITY_HANDLERS[key].nil?
+    end unless UniLib::MULTIBILITY_HANDLERS[key].nil?
   end
 
   def ==(other)
