@@ -4,8 +4,6 @@
 
 verify_version(0.5, __FILE__)
 unilib_include "Item"
-unilib_include "PokemonOM"
-unilib_include "NumberContainer"
 
 # ======================================================================================================================================== #
 # ============================================================ INTERNAL/CORE ============================================================= #
@@ -38,7 +36,6 @@ class CrestBuilder < ItemModifier
     super(symbol, hash)
     @tier = 1
     @essence = nil
-    @secondary = nil
   end
 
   def build
@@ -47,10 +44,6 @@ class CrestBuilder < ItemModifier
     @species.each do |arr|
       species, form = arr
       VALID_CRESTS[@symbol].push([species, form])
-      unless @secondary.nil?
-        add_custom_plate(@symbol, @secondary)
-        PokeModifier.add(species, form).set_plates(@symbol)
-      end
     end
     (@tier..4).each { |tier| SHOP_CRESTS[tier - 1][@symbol] = [$cache.items[@symbol], @essence]} unless @essence.nil?
 

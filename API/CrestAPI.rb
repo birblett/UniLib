@@ -45,23 +45,4 @@ class CrestBuilder
     self
   end
 
-  <<-DOC
-  @param type - type id
-  >> gives the users the secondary type while holding the crest.
-  DOC
-  def crest_secondary_type(type)
-    @secondary = type
-    self
-  end
-
-  <<-DOC
-  @param type - type id (or array of type ids)
-  >> equivalent to weakness_override + crest_secondary_type
-  DOC
-  def secondary_no_weakness(type)
-    weakness_fake(type)
-    crest_secondary_type(type)
-    self
-  end
-
 end
