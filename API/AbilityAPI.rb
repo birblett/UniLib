@@ -95,6 +95,7 @@ class AbilityModifier
      corresponding to hp, atk, def, spa, spd, spe. use the NumberContainers to perform in-place modifications to stats.
   DOC
   def battle_stat_mods(proc)
+    unilib_include "NumberContainer"
     @battle_stat_modifiers.push(proc)
     self
   end
