@@ -10,7 +10,7 @@ verify_version(0.5, __FILE__)
 
 module AbilityBuilder
 
-  def self.add(symbol, name, desc, fulldesc)
+  def self.add(symbol, name, desc, fulldesc=desc)
     AbilityModifier.add(symbol, name, desc, fulldesc)
   end
 
@@ -77,6 +77,15 @@ class AbilityModifier
   DOC
   def resistance_fake(type)
     @resistance_fakes += type.is_a?(Array) ? type : [type]
+    self
+  end
+
+  <<-DOC
+  @param proc - a function returning a numeric multiplier
+  >> adds a conditional type effectiveness provider. accepts 2 arguments, defender (PokeBattle_Battler) and attack type (symbol).
+  DOC
+  def type_effectiveness_provider(proc)
+    @type_effectiveness_providers.push(proc)
     self
   end
 

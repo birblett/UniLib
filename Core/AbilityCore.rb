@@ -17,6 +17,7 @@ class AbilityModifier
   attr_accessor(:secondary)
   attr_accessor(:stab_overrides)
   attr_accessor(:resistance_fakes)
+  attr_accessor(:type_effectiveness_providers)
   attr_accessor(:weakness_fakes)
   attr_accessor(:forced_resistances)
   attr_accessor(:battle_stat_modifiers)
@@ -40,6 +41,7 @@ class AbilityModifier
     @full_desc = fulldesc.nil? ? desc : fulldesc
     @secondary = nil
     @resistance_fakes = []
+    @type_effectiveness_providers = []
     @stab_overrides = []
     @weakness_fakes = []
     @forced_resistances = {}
@@ -93,6 +95,7 @@ insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponent.crest
       typemod = CUSTOM_ABILITIES[ability].forced_resistances[type] if (b = !CUSTOM_ABILITIES[ability].forced_resistances[type].nil?)
       typemod /= 2 if (b = check_type(type, CUSTOM_ABILITIES[ability].weakness_fakes, TYPE_WEAKNESS_MAP)) unless b
       typemod /= 2 if check_type(type, CUSTOM_ABILITIES[ability].resistance_fakes, TYPE_RESISTANCE_MAP) unless b
+      CUSTOM_ABILITIES[ability].type_effectiveness_providers.each { |provider| typemod *= provider.call(opponent, type) unless provider.call(opponent, type).nil? }
     end
   end")
 
