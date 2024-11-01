@@ -15,33 +15,47 @@ module UniLib
 
   unless lib_loaded(__FILE__)
 
-    BANNED_MOVES = [:ACUPRESSURE, :BELLYDRUM, :CHATTER, :EXTREMESPEED, :GEOMANCY, :LOVELYKISS, :SHELLSMASH, :SHIFTGEAR, :SPORE, :THOUSANDARROWS, :THOUSANDWAVES, :PSYCHICTERRAIN, :ELECTRICTERRAIN, :GRASSYTERRAIN, :MISTYTERRAIN, :TOPSYTURVY, :DECIMATION, :FUTUREDUMMY, :DOOMDUMMY, :BOLTBEAK, :FISHIOUSREND, :CLANGOROUSSOUL, :DECIMATION, :SOLARFLARE, :HOARFROSTMOON, :PROBOPOG, :THUNDERRAID2, :THUNDERRAID3]
+    BANNED_ATTACKS = [:ASTRALBARRAGE, :BOLTBEAK, :CHATTER, :CLANGOROUSSOUL, :DECIMATION, :DOUBLEIRONBASH, :EXTREMESPEED, :FISHIOUSREND,
+                      :THOUSANDARROWS, :THOUSANDWAVES, :VCREATE]
+    BANNED_SETUP_MOVES = [:ACUPRESSURE, :BELLYDRUM, :GEOMANCY, :QUIVERDANCE, :SHELLSMASH, :SHIFTGEAR, :TAILGLOW]
+    BANNED_INCOMPETITIVE_MOVES = [:DARKVOID, :FISSURE, :GRASSWHISTLE, :GUILLOTINE, :HORNDRILL, :HYPNOSIS, :LOVELYKISS, :SHEERCOLD,
+                                  :SLEEPPOWDER, :SPORE]
+    BANNED_TERRAIN_MOVES = [:PSYCHICTERRAIN, :ELECTRICTERRAIN, :GRASSYTERRAIN, :MISTYTERRAIN, :TOPSYTURVY]
+    BANNED_ILLEGAL_MOVES = [:COMEUPPANCE, :DOOMDUMMY, :FUTUREDUMMY, :HOARFROSTMOON, :SOLARFLARE, :PROBOPOG, :STRUGGLE, :SPARKLEON,
+                            :THUNDERRAID2, :THUNDERRAID3, :ULTRAMEGADEATH]
+
+    BANNED_MOVES = BANNED_SETUP_MOVES + BANNED_INCOMPETITIVE_MOVES + BANNED_ATTACKS + BANNED_TERRAIN_MOVES + BANNED_ILLEGAL_MOVES
+
     BANNED_MOVES_RANGE = (641..658).to_a
-    BANNED_ABILITIES = [:COMATOSE,:CONTRARY, :FLUFFY, :FURCOAT, :HUGEPOWER, :ILLUSION, :IMPOSTER, :INNARDSOUT, :PARENTALBOND, :PROTEAN, :PUREPOWER, :SIMPLE, :SPEEDBOOST, :STAKEOUT, :WATERBUBBLE, :WONDERGUARD, :DELTASTREAM, :DESOLATELAND, :PRIMORDIALSEA, :DROUGHT, :DRIZZLE, :SNOWWARNING, :SANDSTREAM, :MISTYSURGE, :PSYCHICSURGE, :ELECTRICSURGE, :GRASSYSURGE, :SURGESURFER, :TELEPATHY, :SWIFTSWIM, :CHLOROPHYLL, :SANDRUSH, :SLUSHRUSH, :MOODY, :SHADOWTAG, :ARENATRAP, :DISGUISE, :STANCECHANGE]
-    PLATE_MAP = {:SILKSCARF => :NORMAL, :FISTPLATE => :FIGHTING, :SKYPLATE => :FLYING, :EARTHPLATE => :GROUND, :TOXICPLATE => :POISON, :STONEPLATE => :ROCK, :INSECTPLATE => :BUG, :SPOOKYPLATE => :GHOST, :IRONPLATE => :STEEL, :FLAMEPLATE => :FIRE, :SPLASHPLATE => :WATER, :MEADOWPLATE => :GRASS, :ZAPPLATE => :ELECTRIC, :MINDPLATE => :PSYCHIC, :ICICLEPLATE => :ICE, :DRACOPLATE => :DRAGON, :DREADPLATE => :DARK, :PIXIEPLATE => :FAIRY}
-    TYPE_MAPPED_MOVES = {:NORMAL => [], :FIRE => [], :FIGHTING => [], :WATER => [], :FLYING => [], :GRASS => [], :POISON => [], :ELECTRIC => [], :GROUND => [], :PSYCHIC => [], :ROCK => [], :ICE => [], :BUG => [], :DRAGON => [], :GHOST => [], :DARK => [], :STEEL => [], :FAIRY => [], :QMARKS => [], :SHADOW => []}
+
+    TYPE_MAPPED_MOVES = {:NORMAL => [], :FIRE => [], :FIGHTING => [], :WATER => [], :FLYING => [], :GRASS => [], :POISON => [],
+                         :ELECTRIC => [], :GROUND => [], :PSYCHIC => [], :ROCK => [], :ICE => [], :BUG => [], :DRAGON => [],
+                         :GHOST => [], :DARK => [], :STEEL => [], :FAIRY => [], :QMARKS => [], :SHADOW => []}
+
     ALPHABET_MOVES = ("a".."z").to_a.map.to_h { |letter| [letter, []] }
-    CUSTOM_POKEMON_ABILITIES = []
-    CAMO_PROVIDER_TYPE1 = proc do |pokemon|
-      next pokemon.moves[0].type unless pokemon.moves[0].nil?
-      next nil
-    end
-    CAMO_PROVIDER_TYPE2 = proc do |pokemon|
-      next pokemon.moves[1].type unless pokemon.moves[1].nil?
-      next nil
-    end
-    POKEBILITY_PROC = proc { |pkmn, _| next pkmn.getAbilityList }
 
     MOVE_DATA.each do |key, value|
       TYPE_MAPPED_MOVES[value.type].append(key) unless BANNED_MOVES.include?(key) or value.flags[:ID].nil? or BANNED_MOVES_RANGE.include? value.flags[:ID] rescue nil
       ALPHABET_MOVES[letter = key.to_s[0].downcase].append(key) unless BANNED_MOVES.include?(key) or value.flags[:ID].nil? or BANNED_MOVES_RANGE.include? value.flags[:ID] rescue nil
     end
 
-    UniLib::ABILITY_DATA.each do |key, value|
-      CUSTOM_POKEMON_ABILITIES.push([key, value.name]) unless BANNED_ABILITIES.include?(key)
-    end
+    BANNED_OVERPOWERED_ABILITIES = [:CONTRARY, :FLUFFY, :FURCOAT, :GORILLATACTICS, :HUGEPOWER, :INTREPIDSWORD, :LIBERO, :PARENTALBOND,
+                                    :PROTEAN, :PUREPOWER, :SIMPLE, :SPEEDBOOST, :STAKEOUT, :WATERBUBBLE]
+    BANNED_UNCOMPETITIVE_ABILITIES = [:ARENATRAP, :COMATOSE, :ILLUSION, :IMPOSTER, :INNARDSOUT, :MOODY, :SHADOWTAG, :WONDERGUARD, :TRIAGE]
+    BANNED_SPEED_ABILITIES = [:CHLOROPHYLL, :SANDRUSH, :SLUSHRUSH, :SURGESURFER, :SWIFTSWIM, :TELEPATHY]
+    BANNED_SETTING_ABILITIES = [:DELTASTREAM, :DESOLATELAND, :DRIZZLE, :DROUGHT, :ELECTRICSURGE, :GRASSYSURGE, :MISTYSURGE,
+                                :PRIMORDIALSEA, :PSYCHICSURGE, :SANDSTREAM, :SNOWWARNING]
+    BANNED_USELESS_ABILITIES = [:DISGUISE, :FLOWERGIFT, :GULPMISSILE, :HUNGERSWITCH, :ICEFACE, :MULTITYPE, :RKSSYSTEM, :POWERCONSTRUCT,
+                                :SHIELDSDOWN, :STANCECHANGE, :ZENMODE]
+    BANNED_ILLEGAL_ABILITIES = [:ACCUMULATION, :EXECUTION, :INEXORABLE, :LUNARIDOL, :NEUTRALIZINGGAS, :PRISMPOWER, :REFLECTOR,
+                                :SOLARIDOL, :STOPPN, :TEMPEST, :TEMPORALSHIFT, :TRUESHOT, :WORLDOFNIGHTMARES]
 
-    def ability_select(default, list)
+    BANNED_ABILITIES = BANNED_OVERPOWERED_ABILITIES + BANNED_UNCOMPETITIVE_ABILITIES + BANNED_SPEED_ABILITIES + BANNED_SETTING_ABILITIES +
+      BANNED_USELESS_ABILITIES + BANNED_ILLEGAL_ABILITIES
+
+    POKEBILITY_PROC = proc { |pkmn, _| next pkmn.getAbilityList }
+
+    def self.ability_select(default, list)
       cmdwin=pbListWindow([], 200)
       commands=[] + CUSTOM_POKEMON_ABILITIES
       list.each { |_, ability| commands.push([ability, UniLib::ABILITY_DATA[ability].name]) if BANNED_ABILITIES.include?(ability) }
@@ -53,6 +67,21 @@ module UniLib
       ret>=0 ? commands[ret][0] : 0
     end
 
+    PLATE_MAP = {:SILKSCARF => :NORMAL, :FISTPLATE => :FIGHTING, :SKYPLATE => :FLYING, :EARTHPLATE => :GROUND, :TOXICPLATE => :POISON,
+                 :STONEPLATE => :ROCK, :INSECTPLATE => :BUG, :SPOOKYPLATE => :GHOST, :IRONPLATE => :STEEL, :FLAMEPLATE => :FIRE,
+                 :SPLASHPLATE => :WATER, :MEADOWPLATE => :GRASS, :ZAPPLATE => :ELECTRIC, :MINDPLATE => :PSYCHIC, :ICICLEPLATE => :ICE,
+                 :DRACOPLATE => :DRAGON, :DREADPLATE => :DARK, :PIXIEPLATE => :FAIRY}
+
+    CAMO_PROVIDER_TYPE1 = proc do |pokemon|
+      next pokemon.moves[0].type unless pokemon.moves[0].nil?
+      next nil
+    end
+
+    CAMO_PROVIDER_TYPE2 = proc do |pokemon|
+      next pokemon.moves[1].type unless pokemon.moves[1].nil?
+      next nil
+    end
+
   end
 
   AAA_POKEMON = {}
@@ -60,7 +89,12 @@ module UniLib
   PLATE_POKEMON = {}
   CUSTOM_PLATE_MAP = {}
   ALPHABET_POKEMON = {}
+  CUSTOM_POKEMON_ABILITIES = []
   POKEBILITIES_POKEMON = {}
+
+  UniLib::ABILITY_DATA.each do |key, value|
+    CUSTOM_POKEMON_ABILITIES.push([key, value.name]) unless BANNED_ABILITIES.include?(key)
+  end
 
 end
 
@@ -68,6 +102,7 @@ class PokeModifier
 
   attr_accessor(:aaa)
   attr_accessor(:stab)
+  attr_accessor(:stab_types)
   attr_accessor(:plates)
   attr_accessor(:camo)
   attr_accessor(:alphabet)
@@ -76,6 +111,7 @@ class PokeModifier
   OM_MODIFIER_INIT = proc do |modifier|
     modifier.aaa = false
     modifier.stab = false
+    modifier.stab_types = []
     modifier.plates = []
     modifier.camo = false
     modifier.alphabet = []
@@ -93,12 +129,20 @@ class PokeModifier
         UniLib::STAB_POKEMON[key].push(type1)
         modifier.egg_moves(UniLib::TYPE_MAPPED_MOVES[type1])
         modifier.compatible_moves(UniLib::TYPE_MAPPED_MOVES[type1])
+        modifier.stab_types -= [type1]
       end
       unless type2.nil?
         UniLib::STAB_POKEMON[key].push(type2)
         modifier.egg_moves(UniLib::TYPE_MAPPED_MOVES[type2])
         modifier.compatible_moves(UniLib::TYPE_MAPPED_MOVES[type2])
+        modifier.stab_types -= [type2]
       end
+      modifier.stab_types.each do |type|
+        UniLib::STAB_POKEMON[key].push(type)
+        modifier.egg_moves(UniLib::TYPE_MAPPED_MOVES[type2])
+        modifier.compatible_moves(UniLib::TYPE_MAPPED_MOVES[type2])
+      end
+
     end
     UniLib::ALPHABET_POKEMON[key] = modifier.alphabet if modifier.alphabet.length > 0
     modifier.set_plates_internal(modifier.plates) unless modifier.plates.empty?
@@ -134,12 +178,9 @@ PokeModifier::EVENT_POKEMODIFIER_POST_BUILD.push(PokeModifier::OM_MODIFIER_BUILD
 
 UniLib.insert_in_function(ItemHandlers::UseOnPokemon.instance_variable_get(:@hash)[:ABILITYCAPSULE], :HEAD,
  "key = [pokemon.species, pokemon.form]
-  if UniLib::POKEBILITIES_POKEMON[key]
-    scene.pbDisplay(_INTL(\"It won't have any effect.\"))
-    next false
-  end
   unless UniLib::AAA_POKEMON[key].nil?
-    i = UniLib.ability_select(1, pokemon.getAbilityList)
+    list = UniLib::POKEBILITIES_POKEMON[key] ? [] : pokemon.getAbilityList
+    i = UniLib.ability_select(1, list)
     if i != 0
       pokemon.setAbility(i)
       scene.pbDisplay(_INTL(\"{1}'s ability was changed to {2}!\", pokemon.name, getAbilityName(pokemon.ability)))
@@ -163,16 +204,18 @@ UniLib.insert_in_method(:PokemonSummaryScene, :drawPageThree, "abilitydesc = abi
    "if UniLib::POKEBILITIES_POKEMON[[@pokemon.species, @pokemon.form]]
     abilityname = \"Pokebilities\"
     list = @pokemon.getAbilityList
-    abilitydesc = ""
-    list.each { |abil| abilitydesc += getAbilityName(abil, true) + (abil != list.last ? \" + \" : \".\")}
+    abilitydesc = \"\"
+    list.each { |abil| abilitydesc += getAbilityName(abil, true) + (abil != list.last ? \" + \" : \".\") }
+    abilitydesc += \" + \" + getAbilityName(pokemon.ability) if !list.include?(pokemon.ability)
   end")
 
 UniLib.insert_in_method(:PokemonSummaryScene, :drawPageFour, "abilitydesc = abil.nil? ? (pokemon.ability.nil? ? NoAbilDesc : NotRealAbil) : abil.desc.nil? ? MissingAbilDesc : abil.desc",
   "if UniLib::POKEBILITIES_POKEMON[[pokemon.species, pokemon.form]]
     abilityname = \"Pokebilities\"
     list = pokemon.getAbilityList
-    abilitydesc = ""
+    abilitydesc = \"\"
     list.each { |abil| abilitydesc += getAbilityName(abil, true) + (abil != list.last ? \" + \" : \".\")}
+    abilitydesc += \" + \" + getAbilityName(pokemon.ability) if !list.include?(pokemon.ability)
   end")
 
 UniLib.insert_in_method(:PokemonStorageScene, :pbUpdateOverlay, "abilityname=getAbilityName(pokemon.ability)", "abilityname = \"Pokebilities\" if UniLib::POKEBILITIES_POKEMON[[pokemon.species, pokemon.form]]")

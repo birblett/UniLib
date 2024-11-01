@@ -201,7 +201,7 @@ unless UniLib.lib_loaded(__FILE__)
   def is_valid_for_ability_override(pokemon)
     return false if pokemon.nil?
     return false unless UniLib::MODIFIED_POKEMON.include?(pokemon::species) and UniLib::MODIFIED_POKEMON[pokemon::species].include?(pokemon::form)
-    UniLib::MODIFIED_POKEMON[pokemon::species][pokemon::form].ability_override and pokemon.getAbilityList.include?(pokemon::ability)
+    UniLib::MODIFIED_POKEMON[pokemon::species][pokemon::form].ability_override and pokemon..include?(pokemon::ability)
   end
 
   def register_modified_pokemon
@@ -226,7 +226,6 @@ unless UniLib.lib_loaded(__FILE__)
 end
 
 UniLib.add_play_event(:register_modified_pokemon)
-
 
 # ======================================================================================================================================== #
 # ================================================================ PATCH ================================================================= #

@@ -43,6 +43,16 @@ class PokeModifier
   end
 
   <<-DOC
+  @param stab - varargs for multiple type symbols
+  >> add additional types to get stab from.
+  DOC
+  def add_stab_types(*types)
+    @stab = true
+    @stab_types += types
+    self
+  end
+
+  <<-DOC
   @param plates - single item or list of items corresponding to an arceus plate.
   >> allows specified pokemon to change their secondary type while holding a valid plate
   DOC
