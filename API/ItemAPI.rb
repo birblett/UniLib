@@ -227,6 +227,8 @@ class ItemModifier
   >> allows battle items to be proc'd with this pokemon
   DOC
   def add_receiver(holder, form = 0)
+    @species = :ALL if holder == :ALL
+    return self if @species == :ALL
     if form.class == String
       tmp = FORM_MAP[holder][form + " Form"]
       tmp = FORM_MAP[holder][form + " Forme"] if tmp.nil?
@@ -239,12 +241,42 @@ class ItemModifier
   end
 
   <<-DOC
+  @param type - type id (or array of type ids)
+  >> equivalent to weakness_override + secondary_type
+  DOC
+  def secondary_no_weakness(type)
+    weakness_fake(type)
+    secondary_type(type)
+    self
+  end
+
+  <<-DOC
   @param type - type id, or array of type ids
   >> gives user STAB and resistances of the given type(s)
   DOC
   def type_fake(type)
     stab_override(type)
     resistance_fake(type)
+  end
+
+  <<-DOC
+  @param type - type id
+  >> gives the users the secondary type while holding the item.
+  DOC
+  def primary_type(type)
+    @has_event = true
+    @primary = type
+    self
+  end
+
+  <<-DOC
+  @param type - type id
+  >> gives the users the secondary type while holding the item.
+  DOC
+  def secondary_type(type)
+    @has_event = true
+    @secondary = type
+    self
   end
 
   <<-DOC

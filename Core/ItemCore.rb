@@ -3,6 +3,7 @@
 # ======================================================================================================================================== #
 
 verify_version(0.5, __FILE__)
+unilib_include "NumberContainer"
 
 # ======================================================================================================================================== #
 # ============================================================ INTERNAL/CORE ============================================================= #
@@ -32,6 +33,8 @@ class ItemModifier
 
   attr_accessor(:symbol)
   attr_accessor(:data)
+  attr_accessor(:primary)
+  attr_accessor(:secondary)
   attr_accessor(:stab_overrides)
   attr_accessor(:resistance_fakes)
   attr_accessor(:weakness_fakes)
@@ -51,10 +54,22 @@ class ItemModifier
   attr_accessor(:on_turn_end_events)
   attr_accessor(:event_conditions)
 
+  CONSUMED_ITEM = []
+
+  def self.set_consumed_item(pkmn)
+    CONSUMED_ITEM.push(pkmn)
+  end
+
+  def self.consume_items
+    CONSUMED_ITEM.each { |pkmn| pkmn.pbDisposeItem(pbIsBerry?(pkmn.item)) }
+  end
+
   def initialize(symbol, hash={})
     @symbol = symbol
     @data = hash
     @species = []
+    @primary = nil
+    @secondary = nil
     @resistance_fakes = []
     @stab_overrides = []
     @weakness_fakes = []
@@ -85,7 +100,8 @@ class ItemModifier
 
   def affects?(pkmn)
     @event_conditions.each { |cond| return false unless cond.call(pkmn) } if @event_conditions.length > 0
-    @species.include? [pkmn.species, pkmn.form]
+    unidev_log(@species)
+    @species == :ALL or @species.include? [pkmn.species, pkmn.form]
   end
 
   def build
@@ -93,7 +109,7 @@ class ItemModifier
     @species.each do |arr|
       species, form = arr
       @ability_providers.each { |provider| AbilityContainer.add_handler(species, provider, form) }
-    end
+    end unless @species == :ALL
     $cache.items[@symbol].nil? ? $cache.items[@symbol] = ItemData.new(@symbol, @data) : $cache.items[@symbol].override(@data)
   end
 
@@ -187,13 +203,21 @@ def check_type(type, vtypes, map)
   nil
 end
 
-# base stat modifiers
+# base stat modifier
 insert_in_method(:PokeBattle_Pokemon, :calcStats, "bs=self.baseStats",
   "if ItemModifier.affects?(@item, self)
     stats = NumberContainer.of(*bs)
     EVENT_ITEMS[@item].base_stat_modifiers.each { |mod| mod.call(self, stats) }
     bs = stats.map { |n| n.value }
   end")
+
+# type modifier
+insert_in_method(:PokeBattle_Pokemon, :type1, :HEAD,
+  "return EVENT_ITEMS[@item].primary if ItemModifier.affects?(@item, self) and EVENT_ITEMS[@item].primary", 1001)
+
+# type modifier
+insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
+  "(return EVENT_ITEMS[@item].secondary == self.type1 ? nil : EVENT_ITEMS[@item].secondary) if ItemModifier.affects?(@item, self) and EVENT_ITEMS[@item].secondary", 1001)
 
 # resistance modifiers and overrides
 insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponent.crested",
@@ -239,14 +263,16 @@ insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "case attacker.ability"
   "EVENT_ITEMS[attacker.item].damage_modifiers.each do |mod|
     modifier = mod.call(attacker, opponent, self, self.pbNumHits, true)
     basemult *= modifier unless modifier.nil?
-  end if ItemModifier.affects?(attacker.item, attacker)")
+  end if ItemModifier.affects?(attacker.item, attacker)
+  ItemModifier.consume_items")
 
 # move accuracy modifier
 insert_in_method_before(:PokeBattle_Move, :pbAccuracyCheck, "return @battle.pbRandom(100)<(baseaccuracy*accuracy/evasion)",
   "EVENT_ITEMS[attacker.item].accuracy_modifiers.each do |mod|
     modified = mod.call(attacker, self, baseaccuracy, accuracy, evasion)
     baseaccuracy, accuracy, evasion = *modified unless modified.nil?
-  end if ItemModifier.affects?(attacker.item, attacker)")
+  end if ItemModifier.affects?(attacker.item, attacker)
+  ItemModifier.consume_items")
 
 # move priority modifier
 insert_in_method(:PokeBattle_Move, :priorityCheck, "pri -= 1 if @battle.FE == :DEEPEARTH && @move == :COREENFORCER",
@@ -261,21 +287,24 @@ insert_in_method(:PokeBattle_Battle, :pbPriority, "pri += 3 if @battlers[i].abil
   EVENT_ITEMS[attacker.item].priority_modifiers.each do |mod|
     modifier = mod.call(attacker, move)
     pri += modifier unless modifier.nil?
-  end if ItemModifier.affects?(attacker.item, attacker)")
+  end if ItemModifier.affects?(attacker.item, attacker)
+  ItemModifier.consume_items")
 
-# hit nummber modifier
+# hit number modifier
 insert_in_method_before(:PokeBattle_Battler, :pbUseMove, "target.damagestate.reset",
   "EVENT_ITEMS[self.item].hit_number_modifiers.each do |mod|
     modifier = mod.call(self, target, basemove)
     numhits += modifier unless modifier.nil?
-  end if ItemModifier.affects?(self.item, self)")
+  end if ItemModifier.affects?(self.item, self)
+  ItemModifier.consume_items")
 
 # move type override
 insert_in_method(:PokeBattle_Move, :pbType, :HEAD,
   "EVENT_ITEMS[attacker.item].move_type_overrides.each do |mod|
     tmp = mod.call(attacker, self, type)
     type = tmp unless tmp.nil?
-  end if ItemModifier.affects?(attacker.item, attacker)")
+  end if ItemModifier.affects?(attacker.item, attacker)
+  ItemModifier.consume_items")
 
 # attacking stat modifier
 insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "if attacker.ability == :HUSTLE && pbIsPhysical?(type)",
@@ -296,24 +325,35 @@ insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "if attacker.ability ==
     when :oppspd then atk = opponent.spdef; atkstage = opponent.stages[PBStats::SPDEF]+6
     when :oppspe then atk = opponent.speed; atkstage = opponent.stages[PBStats::SPEED]+6
     end if tmp.is_a? Symbol
-  end if ItemModifier.affects?(attacker.item, attacker)")
+  end if ItemModifier.affects?(attacker.item, attacker)
+  ItemModifier.consume_items")
 
 # move type effectiveness modifier
 insert_in_method_before(:PokeBattle_Move, :pbTypeModifier, "return mod1*mod2",
   "EVENT_ITEMS[attacker.item].type_modifiers.each do |mod|
     modifiers = mod.call(attacker, opponent, atype, mod1, mod2)
     mod1, mod2 = modifiers[0], modifiers[1] unless modifiers.nil?
-  end if ItemModifier.affects?(attacker.item, attacker)")
+  end if ItemModifier.affects?(attacker.item, attacker)
+  ItemModifier.consume_items")
 
 # switch in event
 insert_in_method_before(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "if self.ability == :INTIMIDATE && onactive",
-  "EVENT_ITEMS[self.item].on_battle_entry_events.each { |event| event.call(self, self.battle, index) } if ItemModifier.affects?(self.item, self) and onactive")
+  "EVENT_ITEMS[self.item].on_battle_entry_events.each { |event| event.call(self, self.battle, index) } if ItemModifier.affects?(self.item, self) and onactive
+  ItemModifier.consume_items")
 
 # damage taken/dealt events
 insert_in_method(:PokeBattle_Battler, :pbEffectsOnDealingDamage, "return if target.nil?",
   "EVENT_ITEMS[user.item].on_dealt_damage_events.each { |event| event.call(user, target, move, damage) } if ItemModifier.affects?(user.item, user)
-  EVENT_ITEMS[target.item].on_damage_events.each { |event| event.call(user, target, move, damage) } if ItemModifier.affects?(target.item, target)")
+  EVENT_ITEMS[target.item].on_damage_events.each { |event| event.call(user, target, move, damage) } if ItemModifier.affects?(target.item, target)
+  ItemModifier.consume_items")
 
 # turn end event handler
-insert_in_method_before(:PokeBattle_Battle, :__clauses__pbEndOfRoundPhase,
-  "if i.crested == :VESPIQUEN", "EVENT_ITEMS[i.item].on_turn_end_events.each { |event| event.call(i) } if ItemModifier.affects?(i.item, i)")
+insert_in_method_before(:PokeBattle_Battle, :__clauses__pbEndOfRoundPhase, "if i.crested == :VESPIQUEN",
+  "EVENT_ITEMS[i.item].on_turn_end_events.each { |event| event.call(i) } if ItemModifier.affects?(i.item, i)
+  ItemModifier.consume_items")
+
+# item update
+insert_in_method(:PokeBattle_Battler, :pbDisposeItem, :HEAD, "b = !@item.nil? and EVENT_ITEMS[@item]")
+
+# item update
+insert_in_method(:PokeBattle_Battler, :pbDisposeItem, :TAIL, "self.pbUpdate(true) if b")
