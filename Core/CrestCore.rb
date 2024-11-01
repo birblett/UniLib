@@ -2,36 +2,20 @@
 # ============================================================= DEPENDENCIES ============================================================= #
 # ======================================================================================================================================== #
 
-verify_version(0.5, __FILE__)
-unilib_include "Item"
+UniLib.verify_version(0.5, __FILE__)
+UniLib.include "Item"
 
 # ======================================================================================================================================== #
 # ============================================================ INTERNAL/CORE ============================================================= #
 # ======================================================================================================================================== #
 
-VALID_CRESTS = {}
-SHOP_CRESTS = [{}, {}, {}, {}]
-$custom_crest_flags = {}
+module UniLib
 
-TYPE_WEAKNESS_MAP = { :NORMAL => [:FIGHTING], :FIGHTING => [:FLYING, :PSYCHIC, :FAIRY], :FLYING => [:ROCK, :ELECTRIC, :ICE],
-                      :GROUND => [:WATER, :GRASS, :ICE], :POISON => [:GROUND, :PSYCHIC],
-                      :ROCK => [:FIGHTING, :GROUND, :STEEL, :WATER, :GRASS], :BUG => [:FLYING, :ROCK, :FIRE], :GHOST => [:GHOST, :DARK],
-                      :STEEL => [:FIGHTING, :GROUND, :FIRE], :QMARKS => [], :FIRE => [:GROUND, :ROCK, :WATER],
-                      :WATER => [:GRASS, :ELECTRIC], :GRASS => [:FLYING, :POISON, :BUG, :FIRE, :ICE], :ELECTRIC => [:GROUND],
-                      :PSYCHIC => [:BUG, :GHOST, :DARK], :ICE => [:FIGHTING, :ROCK, :STEEL, :FIRE], :DRAGON => [:ICE, :DRAGON, :FAIRY],
-                      :DARK => [:FIGHTING, :BUG, :FAIRY], :FAIRY => [:POISON, :STEEL] }
+  VALID_CRESTS = {}
+  SHOP_CRESTS = [{}, {}, {}, {}]
+  $custom_crest_flags = {}
 
-TYPE_IMMUNITY_MAP = { :NORMAL => [:GHOST], :FIGHTING => [], :FLYING => [:GROUND], :GROUND => [:ELECTRIC], :POISON => [], :ROCK => [],
-                      :BUG => [], :GHOST => [:NORMAL, :FIGHTING], :STEEL => [:POISON], :QMARKS => [], :FIRE => [], :WATER => [],
-                      :GRASS => [], :ELECTRIC => [], :PSYCHIC => [], :ICE => [], :DRAGON => [], :DARK => [:PSYCHIC], :FAIRY => [:DRAGON] }
-
-TYPE_RESISTANCE_MAP = { :NORMAL => [], :FIGHTING => [:ROCK, :BUG, :DARK], :FLYING => [:FIGHTING, :BUG, :GRASS], :GROUND => [:POISON, :ROCK],
-                        :POISON => [:FIGHTING, :POISON, :BUG, :GRASS], :ROCK => [:NORMAL, :FLYING], :BUG => [:GROUND, :GRASS],
-                        :STEEL => [:NORMAL, :FLYING, :ROCK, :BUG, :STEEL, :GRASS, :PSYCHIC, :ICE, :DRAGON, :FAIRY],
-                        :QMARKS => [], :FIRE => [:BUG, :FIRE, :GRASS, :ICE], :WATER => [:FIRE, :STEEL, :WATER, :ICE],
-                        :GRASS => [:GROUND, :WATER, :GRASS, :ELECTRIC], :ELECTRIC => [:FLYING, :ELECTRIC],
-                        :PSYCHIC => [:FIGHTING, :PSYCHIC], :ICE => [:ICE], :DRAGON => [:FIRE, :WATER, :GRASS, :ELECTRIC],
-                        :DARK => [:GHOST, :DARK], :FAIRY => [:FIGHTING, :BUG, :DARK], :GHOST => [:BUG] }
+end
 
 class CrestBuilder < ItemModifier
 
@@ -59,27 +43,27 @@ end
 # ======================================================================================================================================== #
 
 def read_custom_crest_flags
-  $custom_crest_flags = unilib_load_data("custom_crest_flags", {})
+  $custom_crest_flags = UniLib.restore_data("custom_crest_flags", {})
 end
 
 def write_custom_crest_flags
-  unilib_save_data("custom_crest_flags", $custom_crest_flags)
+  UniLib.save_data("custom_crest_flags", $custom_crest_flags)
 end
 
-add_play_event(:read_custom_crest_flags)
-add_save_event(:write_custom_crest_flags)
+UniLib.add_play_event(:read_custom_crest_flags)
+UniLib.add_save_event(:write_custom_crest_flags)
 
 # ======================================================================================================================================== #
 # ================================================================ PATCH ================================================================= #
 # ======================================================================================================================================== #
 
-insert_in_method(:PokeBattle_Battler, :hasCrest?, "return true if @battle.pbGetOwnerItems(@index).include?(:SILVCREST) && crestmon.species == :SILVALLY && !@battle.pbOwnedByPlayer?(@index)", "return crestmon.form == 0 ? true : [crestmon.species, crestmon.form] if !VALID_CRESTS[crestmon.item].nil? and VALID_CRESTS[crestmon.item].include?([crestmon.species, crestmon.form])")
+UniLib.insert_in_method(:PokeBattle_Battler, :hasCrest?, "return true if @battle.pbGetOwnerItems(@index).include?(:SILVCREST) && crestmon.species == :SILVALLY && !@battle.pbOwnedByPlayer?(@index)", "return crestmon.form == 0 ? true : [crestmon.species, crestmon.form] if !UniLib::VALID_CRESTS[crestmon.item].nil? and UniLib::VALID_CRESTS[crestmon.item].include?([crestmon.species, crestmon.form])")
 
-replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@crested = hasCrest? ? pkmn.species : false",
+UniLib.replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@crested = hasCrest? ? pkmn.species : false",
   "h = hasCrest?
   @crested = h ? (h.is_a?(Array) ? h : pkmn.species) : false")
 
-insert_in_method(:Cache_Game, :map_load, "end", proc do |mapid|
+UniLib.insert_in_method(:Cache_Game, :map_load, "end", proc do |mapid|
   if mapid == 168
     @cachedmaps[mapid] = load_data(sprintf("Data/Map%03d.rxdata", mapid))
     chmap = [0, 6, 10, 14, 15]
@@ -92,7 +76,7 @@ insert_in_method(:Cache_Game, :map_load, "end", proc do |mapid|
         arr[0].gsub!(", None]", "").nil?
       end
       count = 0
-      SHOP_CRESTS[i - 1].each do |symbol, item|
+      UniLib::SHOP_CRESTS[i - 1].each do |symbol, item|
         arr[0] += ", #{item[0].name}"
         current = []
         (112..144).each { |j| current.push(Marshal.load(Marshal.dump(@cachedmaps[mapid].events[16].pages[1].list[j]))) }
@@ -128,11 +112,11 @@ insert_in_method(:Cache_Game, :map_load, "end", proc do |mapid|
   end
 end)
 
-insert_in_method(:Interpreter, :command_111, "result = false",
+UniLib.insert_in_method(:Interpreter, :command_111, "result = false",
   "if (@parameters[1].is_a? Symbol) and @parameters[1].to_s.start_with?(\"UNILIB_CREST_\")
     result = !$custom_crest_flags[@parameters[1]].nil?
   else")
 
-replace_in_method(:Interpreter, :command_111, "@branch[@list[@index].indent] = result",
+UniLib.replace_in_method(:Interpreter, :command_111, "@branch[@list[@index].indent] = result",
   "end
   @branch[@list[@index].indent] = result")

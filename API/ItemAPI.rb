@@ -2,7 +2,7 @@
 # ============================================================= DEPENDENCIES ============================================================= #
 # ======================================================================================================================================== #
 
-verify_version(0.5, __FILE__)
+UniLib.verify_version(0.5, __FILE__)
 
 # ======================================================================================================================================== #
 # ============================================================== PUBLIC API ============================================================== #
@@ -325,7 +325,7 @@ class ItemModifier
      corresponding to hp, atk, def, spa, spd, spe. use the NumberContainers to perform in-place modifications to stats.
   DOC
   def base_stat_mods(proc)
-    unilib_include "NumberContainer"
+    UniLib.include "NumberContainer"
     @has_event = true
     @base_stat_modifiers.push(proc)
     self
@@ -337,7 +337,7 @@ class ItemModifier
      corresponding to hp, atk, def, spa, spd, spe. use the NumberContainers to perform in-place modifications to stats.
   DOC
   def battle_stat_mods(proc)
-    unilib_include "NumberContainer"
+    UniLib.include "NumberContainer"
     @has_event = true
     @battle_stat_modifiers.push(proc)
     self

@@ -2,7 +2,7 @@
 # ============================================================= DEPENDENCIES ============================================================= #
 # ======================================================================================================================================== #
 
-verify_version(0.5, __FILE__)
+UniLib.verify_version(0.5, __FILE__)
 
 # ======================================================================================================================================== #
 # ============================================================== PUBLIC API ============================================================== #
@@ -83,26 +83,30 @@ COMMON - commands
 @param predicate - a proc or function returning a boolean value which determines if this should show up in the option menu or not.
 DOC
 
-<<-DOC
-@param executes @param predicate - takes the scene context as an argument
-adds a command to the pause menu below the Options command, or below the UniLib command if enabled
-DOC
-def add_pause_command(id, text, executes, predicate=nil)
-  UNILIB_PAUSE_COMMANDS[id] = [text, executes, predicate]
-end
+module UniLib
 
-<<-DOC
-@param executes @param predicate - takes the selected pokemon as an argument
-adds a command to the menu when selecting a pokemon in the party. appears at the bottom, above the cancel command.
-DOC
-def add_party_command(id, text, executes, predicate=nil)
-  UNILIB_PARTY_COMMANDS[id] = [text, executes, predicate]
-end
+  <<-DOC
+  @param executes @param predicate - takes the scene context as an argument
+  adds a command to the pause menu below the Options command, or below the UniLib command if enabled
+  DOC
+  def self.add_pause_command(id, text, executes, predicate=nil)
+    UNILIB_PAUSE_COMMANDS[id] = [text, executes, predicate]
+  end
 
-<<-DOC
-@param executes @param predicate - takes the selected pokemon as argument 1, and whether it is held or not as argument 2
-adds a command to the menu when selecting a pokemon in the box. appears at the bottom, below either the cancel or debug command.
-DOC
-def add_box_command(id, text, executes, predicate=nil)
-  UNILIB_BOX_COMMANDS[id] = [text, executes, predicate]
+  <<-DOC
+  @param executes @param predicate - takes the selected pokemon as an argument
+  adds a command to the menu when selecting a pokemon in the party. appears at the bottom, above the cancel command.
+  DOC
+  def self.add_party_command(id, text, executes, predicate=nil)
+    UNILIB_PARTY_COMMANDS[id] = [text, executes, predicate]
+  end
+
+  <<-DOC
+  @param executes @param predicate - takes the selected pokemon as argument 1, and whether it is held or not as argument 2
+  adds a command to the menu when selecting a pokemon in the box. appears at the bottom, below either the cancel or debug command.
+  DOC
+  def self.add_box_command(id, text, executes, predicate=nil)
+    UNILIB_BOX_COMMANDS[id] = [text, executes, predicate]
+  end
+
 end

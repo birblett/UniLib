@@ -2,15 +2,20 @@
 # ============================================================= DEPENDENCIES ============================================================= #
 # ======================================================================================================================================== #
 
-verify_version(0.5, __FILE__)
-unilib_include "Multibility"
+UniLib.verify_version(0.5, __FILE__)
+UniLib.include  "Multibility"
+UniLib.include "Constants"
 
 # ======================================================================================================================================== #
 # ============================================================ INTERNAL/CORE ============================================================= #
 # ======================================================================================================================================== #
 
-ABILITY_DATA = load_data("Data/abil.dat") unless defined? ABILITY_DATA
-CUSTOM_ABILITIES = {}
+module UniLib
+
+  ABILITY_DATA = load_data("Data/abil.dat") unless defined? ABILITY_DATA
+  CUSTOM_ABILITIES = {}
+
+end
 
 class AbilityModifier
 
@@ -79,108 +84,108 @@ end
 # ======================================================================================================================================== #
 
 def add_abilities
-  $cache.abil.each { |ab, _| $cache.abil.delete(ab) if ABILITY_DATA[ab].nil? and CUSTOM_ABILITIES[ab].nil? }
-  CUSTOM_ABILITIES.each { |_, ability_builder| ability_builder.build }
+  $cache.abil.each { |ab, _| $cache.abil.delete(ab) if UniLib::ABILITY_DATA[ab].nil? and UniLib::CUSTOM_ABILITIES[ab].nil? }
+  UniLib::CUSTOM_ABILITIES.each { |_, ability_builder| ability_builder.build }
 end
 
-add_play_event(:add_abilities, 1001)
+UniLib.add_play_event(:add_abilities, 1001)
 
 # ======================================================================================================================================== #
 # ================================================================ PATCH ================================================================= #
 # ======================================================================================================================================== #
 
-insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponent.crested",
+UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponent.crested",
   "opponent.ability.abilities.each do |ability|
-    if CUSTOM_ABILITIES[ability]
-      typemod = CUSTOM_ABILITIES[ability].forced_resistances[type] if (b = !CUSTOM_ABILITIES[ability].forced_resistances[type].nil?)
-      typemod /= 2 if (b = check_type(type, CUSTOM_ABILITIES[ability].weakness_fakes, TYPE_WEAKNESS_MAP)) unless b
-      typemod /= 2 if check_type(type, CUSTOM_ABILITIES[ability].resistance_fakes, TYPE_RESISTANCE_MAP) unless b
-      CUSTOM_ABILITIES[ability].type_effectiveness_modifiers.each { |provider| typemod *= provider.call(opponent, type) unless provider.call(opponent, type).nil? }
+    if UniLib::CUSTOM_ABILITIES[ability]
+      typemod = UniLib::CUSTOM_ABILITIES[ability].forced_resistances[type] if (b = !UniLib::CUSTOM_ABILITIES[ability].forced_resistances[type].nil?)
+      typemod /= 2 if (b = check_type(type, UniLib::CUSTOM_ABILITIES[ability].weakness_fakes, UniLib::TYPE_WEAKNESS_MAP)) unless b
+      typemod /= 2 if check_type(type, UniLib::CUSTOM_ABILITIES[ability].resistance_fakes, UniLib::TYPE_RESISTANCE_MAP) unless b
+      UniLib::CUSTOM_ABILITIES[ability].type_effectiveness_modifiers.each { |provider| typemod *= provider.call(opponent, type) unless provider.call(opponent, type).nil? }
     end
   end")
 
-insert_in_method(:PokeBattle_Move, :pbCalcDamage, "typecrest = false",
-  "attacker.ability.abilities.each { |ability| basemult *= 1.5 if !CUSTOM_ABILITIES[ability].nil? and CUSTOM_ABILITIES[ability].stab_overrides == type }")
+UniLib.insert_in_method(:PokeBattle_Move, :pbCalcDamage, "typecrest = false",
+  "attacker.ability.abilities.each { |ability| basemult *= 1.5 if !UniLib::CUSTOM_ABILITIES[ability].nil? and UniLib::CUSTOM_ABILITIES[ability].stab_overrides == type }")
 
-insert_in_method_before(:PokeBattle_AI, :pbRoughDamage, "case attacker.crested",
-  "attacker.ability.abilities.each { |ability| basemult *= 1.5 if !CUSTOM_ABILITIES[ability].nil? and CUSTOM_ABILITIES[ability].stab_overrides == type }", 1)
+UniLib.insert_in_method_before(:PokeBattle_AI, :pbRoughDamage, "case attacker.crested",
+  "attacker.ability.abilities.each { |ability| basemult *= 1.5 if !UniLib::CUSTOM_ABILITIES[ability].nil? and UniLib::CUSTOM_ABILITIES[ability].stab_overrides == type }", 1)
 
-insert_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "crestStats if @crested",
+UniLib.insert_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "crestStats if @crested",
   "@ability.abilities.each do |ability|
-    if CUSTOM_ABILITIES[ability]
+    if UniLib::CUSTOM_ABILITIES[ability]
       stats = NumberContainer.of(@hp, @attack, @defense, @spatk, @spdef, @speed)
-      CUSTOM_ABILITIES[ability].battle_stat_modifiers.each { |mod| mod.call(self, stats) }
+      UniLib::CUSTOM_ABILITIES[ability].battle_stat_modifiers.each { |mod| mod.call(self, stats) }
       @hp, @attack, @defense, @spatk, @spdef, @speed = *stats.map { |n| n.value }
     end
   end")
 
-insert_in_method(:PokeBattle_Battler, :pbUpdate, "crestStats if @crested",
+UniLib.insert_in_method(:PokeBattle_Battler, :pbUpdate, "crestStats if @crested",
   "@ability.abilities.each do |ability|
-    if CUSTOM_ABILITIES[ability]
+    if UniLib::CUSTOM_ABILITIES[ability]
       stats = NumberContainer.of(@hp, @attack, @defense, @spatk, @spdef, @speed)
-      CUSTOM_ABILITIES[ability].battle_stat_modifiers.each { |mod| mod.call(self, stats) }
+      UniLib::CUSTOM_ABILITIES[ability].battle_stat_modifiers.each { |mod| mod.call(self, stats) }
       @hp, @attack, @defense, @spatk, @spdef, @speed = *stats.map { |n| n.value }
     end
   end")
 
-insert_in_method_before(:PokeBattle_AI, :pbRoughDamage, "case attacker.crested",
+UniLib.insert_in_method_before(:PokeBattle_AI, :pbRoughDamage, "case attacker.crested",
   "attacker.ability.abilities.each do |ability|
-    CUSTOM_ABILITIES[ability].damage_modifiers.each do |mod|
+    UniLib::CUSTOM_ABILITIES[ability].damage_modifiers.each do |mod|
       modifier = mod.call(attacker, opponent, self, self.pbNumHits, true)
       basemult *= modifier unless modifier.nil?
-    end unless CUSTOM_ABILITIES[ability].nil?
+    end unless UniLib::CUSTOM_ABILITIES[ability].nil?
   end", 1)
 
-insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "case attacker.ability",
+UniLib.insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "case attacker.ability",
   "attacker.ability.abilities.each do |ability|
-    CUSTOM_ABILITIES[ability].damage_modifiers.each do |mod|
+    UniLib::CUSTOM_ABILITIES[ability].damage_modifiers.each do |mod|
       modifier = mod.call(attacker, opponent, self, hitnum, false)
       basemult *= modifier unless modifier.nil?
-    end unless CUSTOM_ABILITIES[ability].nil?
+    end unless UniLib::CUSTOM_ABILITIES[ability].nil?
   end")
 
-insert_in_method_before(:PokeBattle_Move, :pbAccuracyCheck, "return @battle.pbRandom(100)<(baseaccuracy*accuracy/evasion)",
+UniLib.insert_in_method_before(:PokeBattle_Move, :pbAccuracyCheck, "return @battle.pbRandom(100)<(baseaccuracy*accuracy/evasion)",
   "attacker.ability.abilities.each do |ability|
-    CUSTOM_ABILITIES[ability].accuracy_modifiers.each do |mod|
+    UniLib::CUSTOM_ABILITIES[ability].accuracy_modifiers.each do |mod|
       modified = mod.call(attacker, self, baseaccuracy, accuracy, evasion)
       baseaccuracy, accuracy, evasion = *modified unless modified.nil?
-    end unless CUSTOM_ABILITIES[ability].nil?
+    end unless UniLib::CUSTOM_ABILITIES[ability].nil?
   end")
 
-insert_in_method(:PokeBattle_Move, :priorityCheck, "pri -= 1 if @battle.FE == :DEEPEARTH && @move == :COREENFORCER",
+UniLib.insert_in_method(:PokeBattle_Move, :priorityCheck, "pri -= 1 if @battle.FE == :DEEPEARTH && @move == :COREENFORCER",
   "attacker.ability.abilities.each do |ability|
-    CUSTOM_ABILITIES[ability].priority_modifiers.each do |mod|
+    UniLib::CUSTOM_ABILITIES[ability].priority_modifiers.each do |mod|
       modifier = mod.call(attacker, self)
       pri += modifier unless modifier.nil?
-    end unless CUSTOM_ABILITIES[ability].nil?
+    end unless UniLib::CUSTOM_ABILITIES[ability].nil?
   end if attacker.ability.is_a?(AbilityContainer)")
 
-insert_in_method(:PokeBattle_Battle, :pbPriority, "pri += 3 if @battlers[i].ability == :TRIAGE && (PBStuff::HEALFUNCTIONS).include?(@choices[i][2].function)",
+UniLib.insert_in_method(:PokeBattle_Battle, :pbPriority, "pri += 3 if @battlers[i].ability == :TRIAGE && (PBStuff::HEALFUNCTIONS).include?(@choices[i][2].function)",
   "attacker, move = @battlers[i], @choices[i][2]
   attacker.ability.abilities.each do |ability|
-    CUSTOM_ABILITIES[ability].priority_modifiers.each do |mod|
+    UniLib::CUSTOM_ABILITIES[ability].priority_modifiers.each do |mod|
       modifier = mod.call(attacker, move)
       pri += modifier unless modifier.nil?
-    end unless CUSTOM_ABILITIES[ability].nil?
+    end unless UniLib::CUSTOM_ABILITIES[ability].nil?
   end if attacker.ability.is_a?(AbilityContainer)")
 
-insert_in_method_before(:PokeBattle_Battler, :pbUseMove, "target.damagestate.reset",
-  "CUSTOM_ABILITIES[@ability].hit_number_modifiers.each do |mod|
+UniLib.insert_in_method_before(:PokeBattle_Battler, :pbUseMove, "target.damagestate.reset",
+  "UniLib::CUSTOM_ABILITIES[@ability].hit_number_modifiers.each do |mod|
     modifier = mod.call(self, target, basemove)
     numhits += modifier unless modifier.nil?
-  end unless CUSTOM_ABILITIES[@ability].nil?")
+  end unless UniLib::CUSTOM_ABILITIES[@ability].nil?")
 
-insert_in_method(:PokeBattle_Move, :pbType, :HEAD,
+UniLib.insert_in_method(:PokeBattle_Move, :pbType, :HEAD,
   "attacker.ability.abilities.each do |ability|
-    CUSTOM_ABILITIES[ability].move_type_overrides.each do |mod|
+    UniLib::CUSTOM_ABILITIES[ability].move_type_overrides.each do |mod|
       tmp = mod.call(attacker, self, type)
       type = tmp unless tmp.nil?
-    end unless CUSTOM_ABILITIES[ability].nil?
+    end unless UniLib::CUSTOM_ABILITIES[ability].nil?
   end")
 
-insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "if attacker.ability == :HUSTLE && pbIsPhysical?(type)",
+UniLib.insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "if attacker.ability == :HUSTLE && pbIsPhysical?(type)",
   "attacker.ability.abilities.each do |ability|
-    CUSTOM_ABILITIES[ability].move_stat_overrides.each do |mod|
+    UniLib::CUSTOM_ABILITIES[ability].move_stat_overrides.each do |mod|
       tmp = mod.call(attacker, opponent, self)
       tmp = [:hp, :atk, :def, :spa, :spd, :spe][tmp] if tmp.is_a? Integer
       case tmp.downcase
@@ -197,24 +202,24 @@ insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "if attacker.ability ==
       when :oppspd then atk = opponent.spdef; atkstage = opponent.stages[PBStats::SPDEF]+6
       when :oppspe then atk = opponent.speed; atkstage = opponent.stages[PBStats::SPEED]+6
       end if tmp.is_a? Symbol
-    end unless CUSTOM_ABILITIES[ability].nil?
+    end unless UniLib::CUSTOM_ABILITIES[ability].nil?
   end")
 
-insert_in_method_before(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "if self.ability == :INTIMIDATE && onactive",
-  "self.ability.abilities.each { |ability| CUSTOM_ABILITIES[ability].on_battle_entry_events.each { |event| event.call(self, self.battle, index) } unless CUSTOM_ABILITIES[ability].nil? } if onactive")
+UniLib.insert_in_method_before(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "if self.ability == :INTIMIDATE && onactive",
+  "self.ability.abilities.each { |ability| UniLib::CUSTOM_ABILITIES[ability].on_battle_entry_events.each { |event| event.call(self, self.battle, index) } unless UniLib::CUSTOM_ABILITIES[ability].nil? } if onactive")
 
-insert_in_method(:PokeBattle_Battler, :pbEffectsOnDealingDamage, "return if target.nil?",
-  "user.ability.abilities.each { |ability| CUSTOM_ABILITIES[ability].on_dealt_damage_events.each { |event| event.call(user, target, move, damage) } unless CUSTOM_ABILITIES[ability].nil? }
-  target.ability.abilities.each { |ability| CUSTOM_ABILITIES[ability].on_damage_events.each { |event| event.call(user, target, move, damage) } unless CUSTOM_ABILITIES[ability].nil? }")
+UniLib.insert_in_method(:PokeBattle_Battler, :pbEffectsOnDealingDamage, "return if target.nil?",
+  "user.ability.abilities.each { |ability| UniLib::CUSTOM_ABILITIES[ability].on_dealt_damage_events.each { |event| event.call(user, target, move, damage) } unless UniLib::CUSTOM_ABILITIES[ability].nil? }
+  target.ability.abilities.each { |ability| UniLib::CUSTOM_ABILITIES[ability].on_damage_events.each { |event| event.call(user, target, move, damage) } unless UniLib::CUSTOM_ABILITIES[ability].nil? }")
 
-insert_in_method_before(:PokeBattle_Battle, :__clauses__pbEndOfRoundPhase,
-  "if i.crested == :VESPIQUEN", "i.ability.abilities.each { |ability| CUSTOM_ABILITIES[ability].on_turn_end_events.each { |event| event.call(i) } unless CUSTOM_ABILITIES[ability].nil? }")
+UniLib.insert_in_method_before(:PokeBattle_Battle, :__clauses__pbEndOfRoundPhase,
+  "if i.crested == :VESPIQUEN", "i.ability.abilities.each { |ability| UniLib::CUSTOM_ABILITIES[ability].on_turn_end_events.each { |event| event.call(i) } unless UniLib::CUSTOM_ABILITIES[ability].nil? }")
 
-insert_in_method_before(:PokeBattle_Move, :pbTypeModifier, "return mod1*mod2",
+UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModifier, "return mod1*mod2",
   "attacker.ability.abilities.each do |ability|
-    CUSTOM_ABILITIES[ability].type_modifiers.each do |mod|
+    UniLib::CUSTOM_ABILITIES[ability].type_modifiers.each do |mod|
       modifiers = mod.call(attacker, opponent, atype, mod1, mod2)
       mod1, mod2 = modifiers[0], modifiers[1] unless modifiers.nil?
-    end unless CUSTOM_ABILITIES[ability].nil?
+    end unless UniLib::CUSTOM_ABILITIES[ability].nil?
   end")
 

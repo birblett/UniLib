@@ -2,19 +2,23 @@
 # ============================================================= DEPENDENCIES ============================================================= #
 # ======================================================================================================================================== #
 
-verify_version(0.5, __FILE__)
+UniLib.verify_version(0.5, __FILE__)
 
 # ======================================================================================================================================== #
 # ============================================================== PUBLIC API ============================================================== #
 # ======================================================================================================================================== #
 
-<<-DOC
-@param item - an item id
-@param type - a type id
->> adds an custom item-type mapping
-DOC
-def add_custom_plate(item, type)
-  CUSTOM_PLATE_MAP[item] = type
+module UniLib
+
+  <<-DOC
+  @param item - an item id
+  @param type - a type id
+  >> adds an custom item-type mapping
+  DOC
+  def self.add_custom_plate(item, type)
+    CUSTOM_PLATE_MAP[item] = type
+  end
+
 end
 
 <<-DOC
@@ -78,7 +82,7 @@ class PokeModifier
   >> when set, all the pokemon's abilities will be active at once
   DOC
   def set_pokebilities
-    multibility_handler(POKEBILITY_PROC)
+    multibility_handler(UniLib::POKEBILITY_PROC)
     @pokebilities = true
   end
 

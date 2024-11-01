@@ -2,7 +2,7 @@
 # ============================================================= DEPENDENCIES ============================================================= #
 # ======================================================================================================================================== #
 
-verify_version(0.5, __FILE__)
+UniLib.verify_version(0.5, __FILE__)
 
 # ======================================================================================================================================== #
 # ============================================================== PUBLIC API ============================================================== #
@@ -17,6 +17,8 @@ module AbilityBuilder
 end
 
 class AbilityModifier
+
+  include UniLib
 
   def self.add(symbol, name=nil, desc=nil, fulldesc=nil)
     CUSTOM_ABILITIES[symbol] = AbilityModifier.new(symbol, name, desc, fulldesc) if CUSTOM_ABILITIES[symbol].nil?
@@ -95,7 +97,7 @@ class AbilityModifier
      corresponding to hp, atk, def, spa, spd, spe. use the NumberContainers to perform in-place modifications to stats.
   DOC
   def battle_stat_mods(proc)
-    unilib_include "NumberContainer"
+    UniLib.include "NumberContainer"
     @battle_stat_modifiers.push(proc)
     self
   end

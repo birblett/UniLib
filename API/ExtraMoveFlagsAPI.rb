@@ -1,14 +1,11 @@
 class PokeBattle_Move
 
-  KICKING_MOVES = [:DOUBLEKICK, :MEGAKICK, :JUMPKICK, :ROLLINGKICK, :LOWKICK, :HIJUMPKICK, :TRIPLEKICK, :BLAZEKICK, :TROPKICK, :THUNDEROUSKICK, :TRIPLEAXEL]
-  HAND_MOVES = [:BREAKINGSWIPE, :BRICKBREAK, :CROSSCHOP, :CRUSHCLAW, :CRUSHGRIP, :DOUBLEHIT, :DOUBLESLAP, :DUALCHOP, :FALSESWIPE, :FURYSWIPES, :KNOCKOFF, :METALCLAW, :POISONJAB, :SKYUPPERCUT, :WAKEUPSLAP]
-
   def is_kicking_move?
-    KICKING_MOVES.include?(self.move)
+    UniLib::KICKING_MOVES.include?(self.move)
   end
 
   def is_hand_move?
-    HAND_MOVES.include?(self.move)
+    UniLib::HAND_MOVES.include?(self.move)
   end
 
   def is_bite_move?

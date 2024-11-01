@@ -2,38 +2,37 @@
 # ============================================================= DEPENDENCIES ============================================================= #
 # ======================================================================================================================================== #
 
-verify_version(0.5, __FILE__)
+UniLib.verify_version(0.5, __FILE__)
 
 # ======================================================================================================================================== #
 # ============================================================ INTERNAL/CORE ============================================================= #
 # ======================================================================================================================================== #
 
-TYPES = [:NORMAL, :FIGHTING, :FLYING, :GROUND, :POISON, :ROCK, :BUG, :GHOST, :STEEL, :QMARKS, :FIRE, :WATER, :GRASS,
-         :ELECTRIC, :PSYCHIC, :ICE, :DRAGON, :DARK, :FAIRY, :SHADOW]
-STAT_INDEX = {:HP => 0, :ATK => 1, :DEF => 2, :SPA => 3, :SPD => 4, :SPE => 5}
+module UniLib
 
-FORM_MAP = {}
-MODIFIED_POKEMON = {}
-CUSTOM_TYPE1_PROVIDERS = {}
-CUSTOM_TYPE2_PROVIDERS = {}
-LEARN_OVERRIDES = {}
-LEARN_IGNORE_OVERRIDES = {}
-
-POKEMON_DATA = load_data("Data/mons.dat") if !defined? POKEMON_DATA or POKEMON_DATA.nil?
-
-$force_refresh_abilities = false
-
-POKEMON_DATA.each do |species, mondata|
-  mondata.forms.each do |index, form|
-    FORM_MAP[species] = {} if FORM_MAP[species].nil?
-    FORM_MAP[species][form] = index
-    FORM_MAP[species][index] = form
+  POKEMON_DATA = load_data("Data/mons.dat") if !defined? POKEMON_DATA or POKEMON_DATA.nil?
+  STAT_INDEX = {:HP => 0, :ATK => 1, :DEF => 2, :SPA => 3, :SPD => 4, :SPE => 5}
+  FORM_MAP = {}
+  POKEMON_DATA.each do |species, mondata|
+    mondata.forms.each do |index, form|
+      FORM_MAP[species] = {} if FORM_MAP[species].nil?
+      FORM_MAP[species][form] = index
+      FORM_MAP[species][index] = form
+    end
   end
+
+  MODIFIED_POKEMON = {}
+  CUSTOM_TYPE1_PROVIDERS = {}
+  CUSTOM_TYPE2_PROVIDERS = {}
+  LEARN_OVERRIDES = {}
+  LEARN_IGNORE_OVERRIDES = {}
+  $force_refresh_abilities = false
+
 end
 
-$pokemon_api_loaded = false
-
 class PokeModifier
+
+  include UniLib
 
   EVENT_POKEMODIFIER_INIT = []
   EVENT_POKEMODIFIER_PRE_BUILD = []
@@ -190,12 +189,12 @@ end
 
 def is_valid_for_ability_override(pokemon)
   return false if pokemon.nil?
-  return false unless MODIFIED_POKEMON.include?(pokemon::species) and MODIFIED_POKEMON[pokemon::species].include?(pokemon::form)
-  MODIFIED_POKEMON[pokemon::species][pokemon::form].ability_override and pokemon.getAbilityList.include?(pokemon::ability)
+  return false unless UniLib::MODIFIED_POKEMON.include?(pokemon::species) and UniLib::MODIFIED_POKEMON[pokemon::species].include?(pokemon::form)
+  UniLib::MODIFIED_POKEMON[pokemon::species][pokemon::form].ability_override and pokemon.getAbilityList.include?(pokemon::ability)
 end
 
 def register_modified_pokemon
-  MODIFIED_POKEMON.each do |_, forms|
+  UniLib::MODIFIED_POKEMON.each do |_, forms|
     forms.each do |_, builder|
       builder.build
     end
@@ -210,20 +209,25 @@ def register_modified_pokemon
       pokemon.initAbility if !pokemon.nil? and $force_refresh_abilities and is_valid_for_ability_override(pokemon)
     end
   end
-  MODIFIED_POKEMON.clear
+  UniLib::MODIFIED_POKEMON.clear
 end
 
-add_play_event(:register_modified_pokemon)
+UniLib.add_play_event(:register_modified_pokemon)
 
-insert_in_method(:PokeBattle_Pokemon, :type1, :HEAD,
-  "provider = CUSTOM_TYPE1_PROVIDERS[@species]
+
+# ======================================================================================================================================== #
+# ================================================================ PATCH ================================================================= #
+# ======================================================================================================================================== #
+
+UniLib.insert_in_method(:PokeBattle_Pokemon, :type1, :HEAD,
+ "provider = UniLib::CUSTOM_TYPE1_PROVIDERS[@species]
   unless provider.nil?
     ret = provider.call(self)
     return ret unless ret.nil?
   end")
 
-insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
-  "provider = CUSTOM_TYPE2_PROVIDERS[@species]
+UniLib.insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
+ "provider = UniLib::CUSTOM_TYPE2_PROVIDERS[@species]
   unless provider.nil?
     ret = provider.call(self)
     return nil if ret == type1

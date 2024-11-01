@@ -2,7 +2,7 @@
 # ============================================================= DEPENDENCIES ============================================================= #
 # ======================================================================================================================================== #
 
-verify_version(0.5, __FILE__)
+UniLib.verify_version(0.5, __FILE__)
 
 # ======================================================================================================================================== #
 # ============================================================ INTERNAL/CORE ============================================================= #
@@ -61,17 +61,21 @@ module Ability_Cache
 
 end
 
+# ======================================================================================================================================== #
+# ================================================================ PATCH ================================================================= #
+# ======================================================================================================================================== #
+
 $cache.abil.extend(Ability_Cache)
 
-replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@ability      = pkmn.ability", "@ability = AbilityContainer.new(pkmn, pkmn.ability)")
+UniLib.replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@ability      = pkmn.ability", "@ability = AbilityContainer.new(pkmn, pkmn.ability)")
 
-replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@backupability= pkmn.ability", "@backupability = @ability.copy")
+UniLib.replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@backupability= pkmn.ability", "@backupability = @ability.copy")
 
-replace_in_method(:PokeBattle_Battler, :pbUpdate, "@ability = @pokemon.ability if !@ability.nil? && !((@crested == :SILVALLY || @crested == :ZOROARK))", "@ability = AbilityContainer.new(@pokemon, @pokemon.ability) if !@ability.nil? && !((@crested == :SILVALLY || @crested == :ZOROARK))")
+UniLib.replace_in_method(:PokeBattle_Battler, :pbUpdate, "@ability = @pokemon.ability if !@ability.nil? && !((@crested == :SILVALLY || @crested == :ZOROARK))", "@ability = AbilityContainer.new(@pokemon, @pokemon.ability) if !@ability.nil? && !((@crested == :SILVALLY || @crested == :ZOROARK))")
 
-insert_in_function(:getAbilityName, :HEAD, "abil = abil.ctx.nil? ? abil.abilities[0] : abil.ctx if abil.is_a? AbilityContainer")
+UniLib.insert_in_function(:getAbilityName, :HEAD, "abil = abil.ctx.nil? ? abil.abilities[0] : abil.ctx if abil.is_a? AbilityContainer")
 
-replace_in_function(:pbShowBattleStats, "report.push(_INTL(\"Ability: {1}\",pkmn.ability.nil? ? \"Ability Negated\" : getAbilityName(shownmon.ability)))",
+UniLib.replace_in_function(:pbShowBattleStats, "report.push(_INTL(\"Ability: {1}\",pkmn.ability.nil? ? \"Ability Negated\" : getAbilityName(shownmon.ability)))",
   "if pkmn.ability == nil
     report.push(_INTL(\"Ability: Ability Negated\"))
   elsif shownmon.ability.is_multiple?

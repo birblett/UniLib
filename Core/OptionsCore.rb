@@ -2,36 +2,38 @@
 # ============================================================= DEPENDENCIES ============================================================= #
 # ======================================================================================================================================== #
 
-verify_version(0.5, __FILE__)
+UniLib.verify_version(0.5, __FILE__)
 
 # ======================================================================================================================================== #
 # ============================================================ INTERNAL/CORE ============================================================= #
 # ======================================================================================================================================== #
 
-UNILIB_CUSTOM_OPTIONS = []
-OLD_OPTIONS = []
-UNILIB_PAUSE_COMMANDS = {}
-UNILIB_PARTY_COMMANDS = {}
-UNILIB_BOX_COMMANDS = {}
+module UniLib
 
-UNILIB_PAUSE_COMMANDS["unilib_option_menu"] = ["UniLib", proc do |context|
-  pbFadeOutIn(99999) {
-    PokemonOption.new(UniLibOptionScene.new).pbStartScreen
-    pbUpdateSceneMap
-    context.instance_variable_get(:@scene).pbRefresh
-  }
-  $updateFLHUD = true
-end, proc do |_|
-  if $queue_option_removal
-    arr = (UNILIB_CUSTOM_OPTIONS + [SEPARATE_UNILIB_OPTIONS]).map { |opt| opt.get_option }
-    PokemonOptionScene::OptionList.delete_if { |v| arr.include?(v) }
-  end
-  SEPARATE_UNILIB_OPTIONS == 1
-end]
+  UNILIB_CUSTOM_OPTIONS = []
+  OLD_OPTIONS = []
+  UNILIB_PAUSE_COMMANDS = {"UniLib.option_menu" => ["UniLib", proc do |context|
+    pbFadeOutIn(99999) {
+      PokemonOption.new(UniLibOptionScene.new).pbStartScreen
+      pbUpdateSceneMap
+      context.instance_variable_get(:@scene).pbRefresh
+    }
+    $updateFLHUD = true
+  end, proc do |_|
+    if $queue_option_removal
+      arr = (UNILIB_CUSTOM_OPTIONS + [SEPARATE_UNILIB_OPTIONS]).map { |opt| opt.get_option }
+      PokemonOptionScene::OptionList.delete_if { |v| arr.include?(v) }
+    end
+    SEPARATE_UNILIB_OPTIONS == 1
+  end]}
+  UNILIB_PARTY_COMMANDS = {}
+  UNILIB_BOX_COMMANDS = {}
 
-$options_init = false
+end
 
 class OptionBase
+
+  include UniLib
 
   attr_accessor(:name)
   attr_accessor(:value)
@@ -176,11 +178,17 @@ end
 
 $queue_option_removal = false
 
-SEPARATE_UNILIB_OPTIONS = UniStringOption.new("UniLib Option Menu", "Moves UniLib options to their own menu.", %w[Off On], proc { |value| $queue_option_removal = value == 1 }, 1)
-UNILIB_CUSTOM_OPTIONS -= [SEPARATE_UNILIB_OPTIONS]
+module UniLib
+
+  SEPARATE_UNILIB_OPTIONS = UniStringOption.new("UniLib Option Menu", "Moves UniLib options to their own menu.", %w[Off On], proc { |value| $queue_option_removal = value == 1 }, 1)
+  UNILIB_CUSTOM_OPTIONS -= [SEPARATE_UNILIB_OPTIONS]
+
+end
 
 #noinspection RubyInstanceMethodNamingConvention
 class UniLibOptionScene
+
+  include UniLib
 
   attr_accessor(:viewport)
   OptionList = []
@@ -248,47 +256,54 @@ end
 # ======================================================================================================================================== #
 
 def read_option_data
-  options = unilib_load_data("options", [], false)
+  options = UniLib.restore_data("options", [], false)
   options.each do |option|
-    if option == SEPARATE_UNILIB_OPTIONS
-      SEPARATE_UNILIB_OPTIONS.value = option.value
-      SEPARATE_UNILIB_OPTIONS.update
+    if option == UniLib::SEPARATE_UNILIB_OPTIONS
+      UniLib::SEPARATE_UNILIB_OPTIONS.value = option.value
+      UniLib::SEPARATE_UNILIB_OPTIONS.update
     else
-      i = UNILIB_CUSTOM_OPTIONS.index(option)
+      i = UniLib::UNILIB_CUSTOM_OPTIONS.index(option)
       if i
-        UNILIB_CUSTOM_OPTIONS[i].value = option.value
-        UNILIB_CUSTOM_OPTIONS[i].update
+        UniLib::UNILIB_CUSTOM_OPTIONS[i].value = option.value
+        UniLib::UNILIB_CUSTOM_OPTIONS[i].update
       else
-        OLD_OPTIONS.push(option)
+        UniLib::OLD_OPTIONS.push(option)
       end
     end
 
   end
 end
 
-add_play_event(:read_option_data)
-add_new_file_event(:read_option_data)
+UniLib.add_play_event(:read_option_data)
+UniLib.add_new_file_event(:read_option_data)
 
 # ======================================================================================================================================== #
 # ================================================================ PATCH ================================================================= #
 # ======================================================================================================================================== #
 
-insert_in_method_before(:PokemonOptionScene, :pbStartScene, "for i in 0...OptionList.length",
-  "if SEPARATE_UNILIB_OPTIONS == 0 and UNILIB_CUSTOM_OPTIONS.length > 0
-    UNILIB_CUSTOM_OPTIONS.each { |option| OptionList.push(option.get_option) unless option.get_option.nil? or OptionList.include?(option.get_option)}
-    OptionList.push(SEPARATE_UNILIB_OPTIONS.get_option) unless OptionList.include?(SEPARATE_UNILIB_OPTIONS.get_option)
+UniLib.insert_in_method_before(:PokemonOptionScene, :pbStartScene, "for i in 0...OptionList.length",
+  "if UniLib::SEPARATE_UNILIB_OPTIONS == 0 and UniLib::UNILIB_CUSTOM_OPTIONS.length > 0
+    UniLib::UNILIB_CUSTOM_OPTIONS.each { |option| OptionList.push(option.get_option) unless option.get_option.nil? or OptionList.include?(option.get_option)}
+    OptionList.push(UniLib::SEPARATE_UNILIB_OPTIONS.get_option) unless OptionList.include?(UniLib::SEPARATE_UNILIB_OPTIONS.get_option)
   end")
 
-insert_in_method(:PokemonOption, :pbStartScreen, "@scene.pbOptions", "unilib_save_data(\"options\", UNILIB_CUSTOM_OPTIONS + OLD_OPTIONS + [SEPARATE_UNILIB_OPTIONS], false)")
+UniLib.insert_in_method(:PokemonOption, :pbStartScreen, "@scene.pbOptions",
+  "UniLib.save_data(\"options\", UniLib::UNILIB_CUSTOM_OPTIONS + UniLib::OLD_OPTIONS + [UniLib::SEPARATE_UNILIB_OPTIONS], false)")
 
-insert_in_method(:PokemonMenu, :pbStartPokemonMenu, "commands[cmdOption=commands.length]=_INTL(\"Options\")", "uni_cmds = UNILIB_PAUSE_COMMANDS.reduce({}) { |c, entry| commands[c[entry[0]] = commands.length] = _INTL(entry[1][0]) if entry[1][2].nil? or entry[1][2].call(self); c}")
+UniLib.insert_in_method(:PokemonMenu, :pbStartPokemonMenu, "commands[cmdOption=commands.length]=_INTL(\"Options\")",
+  "uni_cmds = UniLib::UNILIB_PAUSE_COMMANDS.reduce({}) { |c, entry| commands[c[entry[0]] = commands.length] = _INTL(entry[1][0]) if entry[1][2].nil? or entry[1][2].call(self); c}")
 
-insert_in_method(:PokemonMenu, :pbStartPokemonMenu, "command=@scene.pbShowCommands(commands)", "b = false; uni_cmds.each { |c, idx| UNILIB_PAUSE_COMMANDS[c][1].call(self) if b |= command == idx }; next if b")
+UniLib.insert_in_method(:PokemonMenu, :pbStartPokemonMenu, "command=@scene.pbShowCommands(commands)",
+  "b = false; uni_cmds.each { |c, idx| UniLib::UNILIB_PAUSE_COMMANDS[c][1].call(self) if b |= command == idx }; next if b")
 
-insert_in_method_before(:PokemonScreen, :pbPokemonScreen, "commands[commands.length]=_INTL(\"Cancel\")", "uni_cmds = UNILIB_PARTY_COMMANDS.reduce({}) { |c, entry| commands[c[entry[0]] = commands.length] = _INTL(entry[1][0]) if entry[1][2].nil? or entry[1][2].call(pkmn); c}")
+UniLib.insert_in_method_before(:PokemonScreen, :pbPokemonScreen, "commands[commands.length]=_INTL(\"Cancel\")",
+  "uni_cmds = UniLib::UNILIB_PARTY_COMMANDS.reduce({}) { |c, entry| commands[c[entry[0]] = commands.length] = _INTL(entry[1][0]) if entry[1][2].nil? or entry[1][2].call(pkmn); c}")
 
-insert_in_method_before(:PokemonScreen, :pbPokemonScreen, "if cmdSummary>=0 && command==cmdSummary", "uni_cmds.each { |c, idx| UNILIB_PARTY_COMMANDS[c][1].call(pkmn) if command == idx }")
+UniLib.insert_in_method_before(:PokemonScreen, :pbPokemonScreen, "if cmdSummary>=0 && command==cmdSummary",
+  "uni_cmds.each { |c, idx| UniLib::UNILIB_PARTY_COMMANDS[c][1].call(pkmn) if command == idx }")
 
-insert_in_method_before(:PokemonStorageScreen, :pbStartScreen, "command=pbShowCommands(helptext,commands)", "uni_cmds = UNILIB_BOX_COMMANDS.reduce({}) { |c, entry| commands[c[entry[0]] = commands.length] = _INTL(entry[1][0]) if entry[1][2].nil? or entry[1][2].call(heldpoke ? heldpoke : pokemon, selected[0] == -1); c} if heldpoke or pokemon")
+UniLib.insert_in_method_before(:PokemonStorageScreen, :pbStartScreen, "command=pbShowCommands(helptext,commands)",
+  "uni_cmds = UniLib::UNILIB_BOX_COMMANDS.reduce({}) { |c, entry| commands[c[entry[0]] = commands.length] = _INTL(entry[1][0]) if entry[1][2].nil? or entry[1][2].call(heldpoke ? heldpoke : pokemon, selected[0] == -1); c} if heldpoke or pokemon")
 
-insert_in_method(:PokemonStorageScreen, :pbStartScreen, "command=pbShowCommands(helptext,commands)", "uni_cmds.each { |c, idx| UNILIB_PARTY_COMMANDS[c][1].call(heldpoke ? heldpoke : pokemon, selected[0] == -1) if command == idx }")
+UniLib.insert_in_method(:PokemonStorageScreen, :pbStartScreen, "command=pbShowCommands(helptext,commands)",
+  "uni_cmds.each { |c, idx| UniLib::UNILIB_PARTY_COMMANDS[c][1].call(heldpoke ? heldpoke : pokemon, selected[0] == -1) if command == idx }")
