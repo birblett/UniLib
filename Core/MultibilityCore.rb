@@ -43,7 +43,7 @@ class AbilityContainer
     AbilityContainer.new(@pokemon, @abilities)
   end
 
-end
+end unless UniLib.lib_loaded(__FILE__)
 
 class Symbol
 
@@ -59,7 +59,7 @@ module Ability_Cache
     super key.is_a?(AbilityContainer) ? key.ctx : key
   end
 
-end
+end unless UniLib.lib_loaded(__FILE__)
 
 # ======================================================================================================================================== #
 # ================================================================ PATCH ================================================================= #

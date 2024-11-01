@@ -5,6 +5,7 @@
 
 module UniLib
 
+  LOADED_LIBRARIES = {} unless defined? LOADED_LIBRARIES
   LOADED_FILES = {} unless defined? LOADED_FILES
   DEBUG_ENABLED = false
   VERSION = 0.5
@@ -65,12 +66,20 @@ module UniLib
   DOC
   def self.include(path_relative)
     self.include("CodeInjector") if path_relative != "CodeInjector"
+    dev_log(path_relative)
     unless LOADED_FILES[path_relative]
       load LIB_PATH + path_relative + "Core.rb" if File.exists?(LIB_PATH + path_relative + "Core.rb")
       load LIB_PATH + path_relative + "Lib.rb" if File.exists?(LIB_PATH + path_relative + "Lib.rb")
-      load API_PATH + path_relative + "API.rb" if File.exists?(API_PATH + path_relative + "API.rb")
+      load API_PATH + path_relative + "API.rb" if File.exists?(API_PATH + path_relative + "API.rb") unless LOADED_LIBRARIES[path_relative]
     end
-    LOADED_FILES[path_relative] = true
+    LOADED_LIBRARIES[path_relative] = (LOADED_FILES[path_relative] = true)
+  end
+
+  <<-DOC
+  used mainly for internals; check if a library has been loaded at any point.
+  DOC
+  def self.lib_loaded(file)
+    LOADED_LIBRARIES[File.basename(file).gsub(".rb", "").gsub(/(Lib|API|Core)/,"")]
   end
 
   <<-DOC

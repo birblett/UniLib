@@ -4,3 +4,23 @@
 
 UniLib.verify_version(0.5, __FILE__)
 UniLib.include "Constants"
+
+# ======================================================================================================================================== #
+# ============================================================ INTERNAL/CORE ============================================================= #
+# ======================================================================================================================================== #
+
+class PokeBattle_Move
+
+  def is_kicking_move?
+    UniLib::KICKING_MOVES.include?(self.move)
+  end
+
+  def is_hand_move?
+    UniLib::HAND_MOVES.include?(self.move)
+  end
+
+  def is_bite_move?
+    PBStuff::BITEMOVE.include?(@move)
+  end
+
+end

@@ -16,7 +16,7 @@ module UniLib
   def add_invalid_item(item, count=1)
     INVALID_ITEMS[item] = 0 if INVALID_ITEMS[item].nil?
     INVALID_ITEMS[item] += count
-  end
+  end unless UniLib.lib_loaded(__FILE__)
 
   CUSTOM_ITEMS = {}
   EVENT_ITEMS = {}
@@ -125,67 +125,71 @@ class ItemModifier
     $cache.items[@symbol].nil? ? $cache.items[@symbol] = ItemData.new(@symbol, @data) : $cache.items[@symbol].override(@data)
   end
 
-end
+end unless UniLib.lib_loaded(__FILE__)
 
 # ======================================================================================================================================== #
 # ================================================================ EVENTS ================================================================ #
 # ======================================================================================================================================== #
 
-def add_items
-  $cache.items.each do |item, _|
-    if UniLib::ITEM_DATA[item].nil? and UniLib::CUSTOM_ITEMS[item].nil?
-      $cache.items.delete(item)
-    end
-  end
-  UniLib::CUSTOM_ITEMS.each { |_, item_builder| item_builder.build }
-  data = UniLib.restore_data("item_backup", {})
-  data.each do |i, c|
-    unless UniLib::CUSTOM_ITEMS[i].nil?
-      $PokemonBag.pbStoreItem(i, c)
-      UniLib::INVALID_ITEMS[i] = "true"
-    end
-  end
-end
+unless UniLib.lib_loaded(__FILE__)
 
-def remove_invalid_items
-  $Trainer.party.each do |pokemon|
-    item = pokemon.instance_variable_get(:@item)
-    if !item.nil? and $cache.items[item].nil?
-      UniLib::add_invalid_item(item, 1)
-      pokemon.instance_variable_set(:@item, nil)
+  def add_items
+    $cache.items.each do |item, _|
+      if UniLib::ITEM_DATA[item].nil? and UniLib::CUSTOM_ITEMS[item].nil?
+        $cache.items.delete(item)
+      end
+    end
+    UniLib::CUSTOM_ITEMS.each { |_, item_builder| item_builder.build }
+    data = UniLib.restore_data("item_backup", {})
+    data.each do |i, c|
+      unless UniLib::CUSTOM_ITEMS[i].nil?
+        $PokemonBag.pbStoreItem(i, c)
+        UniLib::INVALID_ITEMS[i] = "true"
+      end
     end
   end
-  $PokemonStorage.boxes.each do |box|
-    box.each do |pokemon|
+
+  def remove_invalid_items
+    $Trainer.party.each do |pokemon|
       item = pokemon.instance_variable_get(:@item)
       if !item.nil? and $cache.items[item].nil?
         UniLib::add_invalid_item(item, 1)
         pokemon.instance_variable_set(:@item, nil)
       end
     end
-  end
-  $PokemonBag.pockets.each do |pocket|
-    pocket.each_with_index do |item, index|
-      if $cache.items[item].nil?
-        UniLib::add_invalid_item(item, $PokemonBag.contents[item])
-        $PokemonBag.contents.delete(item)
-        $PokemonBag.instance_variable_get(:@choices).delete(item)
-        pocket.delete_at(index)
+    $PokemonStorage.boxes.each do |box|
+      box.each do |pokemon|
+        item = pokemon.instance_variable_get(:@item)
+        if !item.nil? and $cache.items[item].nil?
+          UniLib::add_invalid_item(item, 1)
+          pokemon.instance_variable_set(:@item, nil)
+        end
+      end
+    end
+    $PokemonBag.pockets.each do |pocket|
+      pocket.each_with_index do |item, index|
+        if $cache.items[item].nil?
+          UniLib::add_invalid_item(item, $PokemonBag.contents[item])
+          $PokemonBag.contents.delete(item)
+          $PokemonBag.instance_variable_get(:@choices).delete(item)
+          pocket.delete_at(index)
+        end
       end
     end
   end
-end
 
-def write_invalid_items
-  data = UniLib.restore_data("item_backup", {})
-  UniLib::INVALID_ITEMS.each do |i, c|
-    if c != "true"
-      data[i] = data[i].nil? ? c : data[i] + c
-    else
-      data.delete(i)
+  def write_invalid_items
+    data = UniLib.restore_data("item_backup", {})
+    UniLib::INVALID_ITEMS.each do |i, c|
+      if c != "true"
+        data[i] = data[i].nil? ? c : data[i] + c
+      else
+        data.delete(i)
+      end
     end
+    UniLib.save_data("item_backup", data)
   end
-  UniLib.save_data("item_backup", data)
+
 end
 
 UniLib.add_play_event(:add_items, 1001)
@@ -199,7 +203,7 @@ UniLib.add_save_event(:write_invalid_items)
 def check_type(type, vtypes, map)
   vtypes.each { |vtype| return map[vtype].include?(type) unless map[vtype].nil? }
   nil
-end
+end unless UniLib.lib_loaded(__FILE__)
 
 UniLib.insert_in_function(:pbItemIconFile, :HEAD,
   "unless UniLib::CUSTOM_ITEMS[item].nil?

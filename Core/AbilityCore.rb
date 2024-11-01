@@ -77,7 +77,7 @@ class AbilityModifier
     end
   end
 
-end
+end unless UniLib.lib_loaded(__FILE__)
 
 # ======================================================================================================================================== #
 # ================================================================ EVENTS ================================================================ #
@@ -86,7 +86,7 @@ end
 def add_abilities
   $cache.abil.each { |ab, _| $cache.abil.delete(ab) if UniLib::ABILITY_DATA[ab].nil? and UniLib::CUSTOM_ABILITIES[ab].nil? }
   UniLib::CUSTOM_ABILITIES.each { |_, ability_builder| ability_builder.build }
-end
+end unless UniLib.lib_loaded(__FILE__)
 
 UniLib.add_play_event(:add_abilities, 1001)
 

@@ -36,18 +36,22 @@ class CrestBuilder < ItemModifier
 
   end
 
-end
+end unless UniLib.lib_loaded(__FILE__)
 
 # ======================================================================================================================================== #
 # ================================================================ EVENTS ================================================================ #
 # ======================================================================================================================================== #
 
-def read_custom_crest_flags
-  $custom_crest_flags = UniLib.restore_data("custom_crest_flags", {})
-end
+unless UniLib.lib_loaded(__FILE__)
 
-def write_custom_crest_flags
-  UniLib.save_data("custom_crest_flags", $custom_crest_flags)
+  def read_custom_crest_flags
+    $custom_crest_flags = UniLib.restore_data("custom_crest_flags", {})
+  end
+
+  def write_custom_crest_flags
+    UniLib.save_data("custom_crest_flags", $custom_crest_flags)
+  end
+
 end
 
 UniLib.add_play_event(:read_custom_crest_flags)

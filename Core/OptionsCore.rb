@@ -28,155 +28,158 @@ module UniLib
   end]}
   UNILIB_PARTY_COMMANDS = {}
   UNILIB_BOX_COMMANDS = {}
+  $queue_option_removal = false
 
 end
 
-class OptionBase
+unless UniLib.lib_loaded(__FILE__)
 
-  include UniLib
+  class OptionBase
 
-  attr_accessor(:name)
-  attr_accessor(:value)
-  attr_accessor(:option)
+    include UniLib
 
-  def initialize(name, desc, on_update_proc=nil)
-    @name = name
-    @desc = desc
-    @update = on_update_proc
-    @increment = 1
-    @min = 0
-    UNILIB_CUSTOM_OPTIONS.push(self) unless UNILIB_CUSTOM_OPTIONS.include?(self)
+    attr_accessor(:name)
+    attr_accessor(:value)
+    attr_accessor(:option)
+
+    def initialize(name, desc, on_update_proc=nil)
+      @name = name
+      @desc = desc
+      @update = on_update_proc
+      @increment = 1
+      @min = 0
+      UNILIB_CUSTOM_OPTIONS.push(self) unless UNILIB_CUSTOM_OPTIONS.include?(self)
+    end
+
+    def update
+      @update.call(@value + @min) unless @update.nil?
+    end
+
+    def get_option
+      @option
+    end
+
+    def ==(other)
+      (other.is_a?(OptionBase) ? @name == other.name : (@value + @min) == other)
+    end
+
+    def !=(other)
+      (other.is_a?(OptionBase) ? @name != other.name : (@value + @min) != other)
+    end
+
+    def >(other)
+      (other.is_a?(OptionBase) ? @value > other.value : (@value + @min) > other)
+    end
+
+    def <(other)
+      (other.is_a?(OptionBase) ? @value < other.value  : (@value + @min) < other)
+    end
+
+    def >=(other)
+      (other.is_a?(OptionBase) ? @value >= other.value : (@value + @min) >= other)
+    end
+
+    def <=(other)
+      (other.is_a?(OptionBase) ? @value <= other.value  : (@value + @min) <= other)
+    end
+
+    def +(other)
+      (other.is_a?(Integer) || other.is_a?(Float)) ? @value + @min + other : 0
+    end
+
+    def -(other)
+      (other.is_a?(Integer) || other.is_a?(Float)) ? @value + @min - other : 0
+    end
+
+    def *(other)
+      (other.is_a?(Integer) || other.is_a?(Float)) ? (@value + @min) * other : 0
+    end
+
+    def /(other)
+      (other.is_a?(Integer) || other.is_a?(Float)) ? (@value + @min) / other : 0
+    end
+
+    def &(other)
+      (other.is_a?(Integer) || other.is_a?(Float)) ? (@value + @min) & other : 0
+    end
+
+    def marshal_dump
+      [@name, @value]
+    end
+
+    def marshal_load(data)
+      @name = data[0]
+      @value = data[1]
+    end
+
   end
 
-  def update
-    @update.call(@value + @min) unless @update.nil?
+  class IncrementNumberOption < NumberOption
+
+    def initialize(name, format, min, max, getter, setter, increment, description="")
+      super(name, format, min, max, getter, setter, description)
+      @increment = increment
+    end
+
+    def next(current)
+      index = current + @optstart + @increment * (Input.press?(Input::SHIFT) ? 10 : 1)
+      index = @optstart if index>@optend
+      index - @optstart
+    end
+
+    def prev(current)
+      index = current + @optstart - @increment * (Input.press?(Input::SHIFT) ? 10 : 1)
+      index = @optend if index < @optstart
+      index - @optstart
+    end
+
   end
 
-  def get_option
-    @option
+  class UniStringOption < OptionBase
+
+    def initialize(name, desc, options, on_update_proc=nil, default=0)
+      super(name, desc, on_update_proc)
+      @options = []
+      @value = default
+      options.each { |option| @options.push(_INTL(option)) }
+      inst = self
+      @option = EnumOption.new(_INTL(@name) ,@options, proc { inst.value }, proc do |value|
+        inst.value = value
+        inst.update
+      end, @desc)
+    end
+
   end
 
-  def ==(other)
-    (other.is_a?(OptionBase) ? @name == other.name : (@value + @min) == other)
-  end
+  class UniNumberOption < OptionBase
 
-  def !=(other)
-    (other.is_a?(OptionBase) ? @name != other.name : (@value + @min) != other)
-  end
+    def ==(other)
+      (other.is_a?(OptionBase) ? @name == other.name : @value + 1 == other)
+    end
 
-  def >(other)
-    (other.is_a?(OptionBase) ? @value > other.value : (@value + @min) > other)
-  end
+    def !=(other)
+      (other.is_a?(OptionBase) ? @name != other.name : @value + 1 != other)
+    end
 
-  def <(other)
-    (other.is_a?(OptionBase) ? @value < other.value  : (@value + @min) < other)
-  end
+    def >(other)
+      (other.is_a?(OptionBase) ? @value > other.value : @value + 1 > other)
+    end
 
-  def >=(other)
-    (other.is_a?(OptionBase) ? @value >= other.value : (@value + @min) >= other)
-  end
+    def <(other)
+      (other.is_a?(OptionBase) ? @value < other.value  : @value + 1 < other)
+    end
 
-  def <=(other)
-    (other.is_a?(OptionBase) ? @value <= other.value  : (@value + @min) <= other)
-  end
+    def >=(other)
+      (other.is_a?(OptionBase) ? @value >= other.value : @value + 1 >= other)
+    end
 
-  def +(other)
-    (other.is_a?(Integer) || other.is_a?(Float)) ? @value + @min + other : 0
-  end
+    def <=(other)
+      (other.is_a?(OptionBase) ? @value <= other.value  : @value + 1 <= other)
+    end
 
-  def -(other)
-    (other.is_a?(Integer) || other.is_a?(Float)) ? @value + @min - other : 0
-  end
-
-  def *(other)
-    (other.is_a?(Integer) || other.is_a?(Float)) ? (@value + @min) * other : 0
-  end
-
-  def /(other)
-    (other.is_a?(Integer) || other.is_a?(Float)) ? (@value + @min) / other : 0
-  end
-
-  def &(other)
-    (other.is_a?(Integer) || other.is_a?(Float)) ? (@value + @min) & other : 0
-  end
-
-  def marshal_dump
-    [@name, @value]
-  end
-
-  def marshal_load(data)
-    @name = data[0]
-    @value = data[1]
   end
 
 end
-
-class IncrementNumberOption < NumberOption
-
-  def initialize(name, format, min, max, getter, setter, increment, description="")
-    super(name, format, min, max, getter, setter, description)
-    @increment = increment
-  end
-
-  def next(current)
-    index = current + @optstart + @increment * (Input.press?(Input::SHIFT) ? 10 : 1)
-    index = @optstart if index>@optend
-    index - @optstart
-  end
-
-  def prev(current)
-    index = current + @optstart - @increment * (Input.press?(Input::SHIFT) ? 10 : 1)
-    index = @optend if index < @optstart
-    index - @optstart
-  end
-
-end
-
-class UniStringOption < OptionBase
-
-  def initialize(name, desc, options, on_update_proc=nil, default=0)
-    super(name, desc, on_update_proc)
-    @options = []
-    @value = default
-    options.each { |option| @options.push(_INTL(option)) }
-    inst = self
-    @option = EnumOption.new(_INTL(@name) ,@options, proc { inst.value }, proc do |value|
-      inst.value = value
-      inst.update
-    end, @desc)
-  end
-
-end
-
-class UniNumberOption < OptionBase
-
-  def ==(other)
-    (other.is_a?(OptionBase) ? @name == other.name : @value + 1 == other)
-  end
-
-  def !=(other)
-    (other.is_a?(OptionBase) ? @name != other.name : @value + 1 != other)
-  end
-
-  def >(other)
-    (other.is_a?(OptionBase) ? @value > other.value : @value + 1 > other)
-  end
-
-  def <(other)
-    (other.is_a?(OptionBase) ? @value < other.value  : @value + 1 < other)
-  end
-
-  def >=(other)
-    (other.is_a?(OptionBase) ? @value >= other.value : @value + 1 >= other)
-  end
-
-  def <=(other)
-    (other.is_a?(OptionBase) ? @value <= other.value  : @value + 1 <= other)
-  end
-
-end
-
-$queue_option_removal = false
 
 module UniLib
 
@@ -249,7 +252,7 @@ class UniLibOptionScene
     @viewport.dispose
   end
 
-end
+end unless UniLib.lib_loaded(__FILE__)
 
 # ======================================================================================================================================== #
 # ================================================================ EVENTS ================================================================ #
@@ -272,7 +275,7 @@ def read_option_data
     end
 
   end
-end
+end unless UniLib.lib_loaded(__FILE__)
 
 UniLib.add_play_event(:read_option_data)
 UniLib.add_new_file_event(:read_option_data)
