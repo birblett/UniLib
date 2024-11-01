@@ -13,3 +13,6 @@ module UniLib
   MOVE_DATA = load_data("Data/moves.dat") unless defined? MOVE_DATA
 
 end
+
+UniLib.replace_in_method(:PokeBattle_Move, :pbEffectMessages, "if !pbIsMultiHit && !attacker.effects[:ParentalBond]",
+  "if !pbIsMultiHit and !attacker.effects[:ParentalBond] and !attacker.effects[:Multihit]")

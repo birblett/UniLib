@@ -3,7 +3,7 @@
 # ======================================================================================================================================== #
 
 UniLib.verify_version(0.5, __FILE__)
-UniLib.include  "Multibility"
+UniLib.include "Multibility"
 UniLib.include "Constants"
 
 # ======================================================================================================================================== #
@@ -170,10 +170,13 @@ UniLib.insert_in_method(:PokeBattle_Battle, :pbPriority, "pri += 3 if @battlers[
   end if attacker.ability.is_a?(AbilityContainer)")
 
 UniLib.insert_in_method_before(:PokeBattle_Battler, :pbUseMove, "target.damagestate.reset",
-  "UniLib::CUSTOM_ABILITIES[@ability].hit_number_modifiers.each do |mod|
-    modifier = mod.call(self, target, basemove)
-    numhits += modifier unless modifier.nil?
-  end unless UniLib::CUSTOM_ABILITIES[@ability].nil?")
+  "unless UniLib::CUSTOM_ABILITIES[@ability].nil?
+    UniLib::CUSTOM_ABILITIES[@ability].hit_number_modifiers.each do |mod|
+      modifier = mod.call(self, target, basemove)
+      numhits += modifier unless modifier.nil?
+    end
+    self.effects[:Multihit] = numhits > 1
+  end")
 
 UniLib.insert_in_method(:PokeBattle_Move, :pbType, :HEAD,
   "attacker.ability.abilities.each do |ability|

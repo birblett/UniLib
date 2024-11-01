@@ -13,7 +13,7 @@ module UniLib
 
   ITEM_DATA = load_data("Data/items.dat") unless defined? ITEM_DATA
 
-  def add_invalid_item(item, count=1)
+  def self.add_invalid_item(item, count=1)
     INVALID_ITEMS[item] = 0 if INVALID_ITEMS[item].nil?
     INVALID_ITEMS[item] += count
   end unless UniLib.lib_loaded(__FILE__)
@@ -153,7 +153,7 @@ unless UniLib.lib_loaded(__FILE__)
     $Trainer.party.each do |pokemon|
       item = pokemon.instance_variable_get(:@item)
       if !item.nil? and $cache.items[item].nil?
-        UniLib::add_invalid_item(item, 1)
+        UniLib.add_invalid_item(item, 1)
         pokemon.instance_variable_set(:@item, nil)
       end
     end
@@ -161,7 +161,7 @@ unless UniLib.lib_loaded(__FILE__)
       box.each do |pokemon|
         item = pokemon.instance_variable_get(:@item)
         if !item.nil? and $cache.items[item].nil?
-          UniLib::add_invalid_item(item, 1)
+          UniLib.add_invalid_item(item, 1)
           pokemon.instance_variable_set(:@item, nil)
         end
       end
@@ -169,7 +169,7 @@ unless UniLib.lib_loaded(__FILE__)
     $PokemonBag.pockets.each do |pocket|
       pocket.each_with_index do |item, index|
         if $cache.items[item].nil?
-          UniLib::add_invalid_item(item, $PokemonBag.contents[item])
+          UniLib.add_invalid_item(item, $PokemonBag.contents[item])
           $PokemonBag.contents.delete(item)
           $PokemonBag.instance_variable_get(:@choices).delete(item)
           pocket.delete_at(index)
@@ -304,10 +304,13 @@ UniLib.insert_in_method(:PokeBattle_Battle, :pbPriority, "pri += 3 if @battlers[
 
 # hit number modifier
 UniLib.insert_in_method_before(:PokeBattle_Battler, :pbUseMove, "target.damagestate.reset",
-  "UniLib::EVENT_ITEMS[self.item].hit_number_modifiers.each do |mod|
-    modifier = mod.call(self, target, basemove)
-    numhits += modifier unless modifier.nil?
-  end if ItemModifier.affects?(self.item, self)
+  "if ItemModifier.affects?(self.item, self)
+    UniLib::EVENT_ITEMS[self.item].hit_number_modifiers.each do |mod|
+      modifier = mod.call(self, target, basemove)
+      numhits += modifier unless modifier.nil?
+    end
+    self.effects[:Multihit] = numhits > 1
+  end
   ItemModifier.consume_items")
 
 # move type override
