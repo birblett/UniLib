@@ -8,7 +8,7 @@ module UniLib
   LOADED_LIBRARIES = {} unless defined? LOADED_LIBRARIES
   LOADED_FILES = {} unless defined? LOADED_FILES
   DEBUG_ENABLED = false
-  VERSION = 0.5
+  VERSION = 0.6
   PATH = File.dirname(__FILE__) + "/"
   ASSET_PATH = File.dirname(__FILE__) + "/../UniLibAssets/"
   API_PATH = PATH + "API/"
