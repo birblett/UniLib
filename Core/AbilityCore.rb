@@ -92,12 +92,8 @@ insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponent.crest
   "opponent.ability.abilities.each do |ability|
     if CUSTOM_ABILITIES[ability]
       typemod = CUSTOM_ABILITIES[ability].forced_resistances[type] if (b = !CUSTOM_ABILITIES[ability].forced_resistances[type].nil?)
-      unless b
-        typemod /= 2 if (b = check_type(type, CUSTOM_ABILITIES[ability].weakness_fakes, TYPE_WEAKNESS_MAP))
-        unless b
-          typemod /= 2 if check_type(type, CUSTOM_ABILITIES[ability].resistance_fakes, TYPE_RESISTANCE_MAP)
-        end
-      end
+      typemod /= 2 if (b = check_type(type, CUSTOM_ABILITIES[ability].weakness_fakes, TYPE_WEAKNESS_MAP)) unless b
+      typemod /= 2 if check_type(type, CUSTOM_ABILITIES[ability].resistance_fakes, TYPE_RESISTANCE_MAP) unless b
     end
   end")
 
@@ -141,14 +137,13 @@ insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "case attacker.ability"
     end unless CUSTOM_ABILITIES[ability].nil?
   end")
 
-replace_in_method(:PokeBattle_Move, :pbAccuracyCheck, "return @battle.pbRandom(100)<(baseaccuracy*accuracy/evasion)",
+insert_in_method_before(:PokeBattle_Move, :pbAccuracyCheck, "return @battle.pbRandom(100)<(baseaccuracy*accuracy/evasion)",
   "attacker.ability.abilities.each do |ability|
     CUSTOM_ABILITIES[ability].accuracy_modifiers.each do |mod|
       modified = mod.call(attacker, self, baseaccuracy, accuracy, evasion)
       baseaccuracy, accuracy, evasion = *modified unless modified.nil?
     end unless CUSTOM_ABILITIES[ability].nil?
-  end
-  return @battle.pbRandom(100) < (baseaccuracy * accuracy / evasion)")
+  end")
 
 insert_in_method(:PokeBattle_Move, :priorityCheck, "pri -= 1 if @battle.FE == :DEEPEARTH && @move == :COREENFORCER",
   "attacker.ability.abilities.each do |ability|
