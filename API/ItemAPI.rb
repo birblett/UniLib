@@ -368,6 +368,15 @@ class ItemModifier
   end
 
   <<-DOC
+  @param proc - a function returning a numeric multiplier
+  >> adds a conditional type effectiveness provider. accepts 2 arguments, defender (PokeBattle_Battler) and attack type (symbol).
+  DOC
+  def type_effectiveness_mod_simple(proc)
+    @type_effectiveness_modifiers.push(proc)
+    self
+  end
+
+  <<-DOC
   @param proc - a function returning an array of two type modifiers
   >> adds a conditional type effectiveness setter. accepts 5 arguments, the attacker (PokeBattle_Battler), the target 
      (PokeBattle_Battler), the move type (Symbol), and the two current type modifiers. if not returning nil, both values in return array

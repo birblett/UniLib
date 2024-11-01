@@ -81,15 +81,6 @@ class AbilityModifier
   end
 
   <<-DOC
-  @param proc - a function returning a numeric multiplier
-  >> adds a conditional type effectiveness provider. accepts 2 arguments, defender (PokeBattle_Battler) and attack type (symbol).
-  DOC
-  def type_effectiveness_provider(proc)
-    @type_effectiveness_providers.push(proc)
-    self
-  end
-
-  <<-DOC
   @param type - type id (or array of type ids)
   @param resistance_level - the amount to resist by (4 => neutral, 2 => 2x resist, 1 => 4x resist)
   >> forces the user resist the given type(s).
@@ -106,6 +97,15 @@ class AbilityModifier
   def battle_stat_mods(proc)
     unilib_include "NumberContainer"
     @battle_stat_modifiers.push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a function returning a numeric multiplier
+  >> adds a conditional type effectiveness provider. accepts 2 arguments, defender (PokeBattle_Battler) and attack type (symbol).
+  DOC
+  def type_effectiveness_mod_simple(proc)
+    @type_effectiveness_modifiers.push(proc)
     self
   end
 

@@ -44,6 +44,7 @@ class ItemModifier
   attr_accessor(:accuracy_modifiers)
   attr_accessor(:priority_modifiers)
   attr_accessor(:hit_number_modifiers)
+  attr_accessor(:type_effectiveness_modifiers)
   attr_accessor(:type_modifiers)
   attr_accessor(:move_type_overrides)
   attr_accessor(:move_stat_overrides)
@@ -79,6 +80,7 @@ class ItemModifier
     @accuracy_modifiers = []
     @priority_modifiers = []
     @hit_number_modifiers = []
+    @type_effectiveness_modifiers = []
     @type_modifiers = []
     @move_type_overrides = []
     @move_stat_overrides = []
@@ -224,6 +226,7 @@ insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponent.crest
     typemod = EVENT_ITEMS[opponent.item].forced_resistances[type] if (b = !EVENT_ITEMS[opponent.item].forced_resistances[type].nil?)
     typemod /= 2 if (b = check_type(type, EVENT_ITEMS[opponent.item].weakness_fakes, TYPE_WEAKNESS_MAP)) unless b
     typemod /= 2 if check_type(type, EVENT_ITEMS[opponent.item].resistance_fakes, TYPE_RESISTANCE_MAP) unless b
+    EVENT_ITEMS[opponent.item].type_effectiveness_modifiers.each { |provider| typemod *= provider.call(opponent, type) unless provider.call(opponent, type).nil? }
   end")
 
 # move stab override
