@@ -19,7 +19,7 @@ CUSTOM_TYPE2_PROVIDERS = {}
 LEARN_OVERRIDES = {}
 LEARN_IGNORE_OVERRIDES = {}
 
-POKEMON_DATA = load_data("Data/mons.dat") unless defined? POKEMON_DATA
+POKEMON_DATA = load_data("Data/mons.dat") if !defined? POKEMON_DATA or POKEMON_DATA.nil?
 
 $force_refresh_abilities = false
 
@@ -33,7 +33,6 @@ end
 
 $pokemon_api_loaded = false
 
-#noinspection RubyTooManyInstanceVariablesInspection
 class PokeModifier
 
   EVENT_POKEMODIFIER_INIT = []
@@ -75,11 +74,13 @@ class PokeModifier
     @learnset_overwrite = false
     @eggs_overwrite = false
     @moves_overwrite = false
+    @base_data = nil
     EVENT_POKEMODIFIER_INIT.each { |event| event.call(self) }
   end
 
   def mon_data
-    @form == 0 ? $cache.pkmn[@species] : $cache.pkmn[@species].formData[$cache.pkmn[@species].forms[@form]]
+    @base_data = @form == 0 ? $cache.pkmn[@species] : $cache.pkmn[@species].formData[$cache.pkmn[@species].forms[@form]] if @base_data.nil?
+    @base_data
   end
 
   def get_base_data(sym, default=nil)
@@ -206,7 +207,7 @@ def register_modified_pokemon
   $PokemonStorage.boxes.each do |box|
     box.pokemon.each do |pokemon|
       pokemon.calcStats unless pokemon.nil?
-      pokemon.initAbility if $force_refresh_abilities and is_valid_for_ability_override(pokemon)
+      pokemon.initAbility if !pokemon.nil? and $force_refresh_abilities and is_valid_for_ability_override(pokemon)
     end
   end
   MODIFIED_POKEMON.clear
