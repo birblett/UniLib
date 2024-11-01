@@ -9,17 +9,17 @@ verify_version(0.5, __FILE__)
 # ======================================================================================================================================== #
 
 <<-DOC
-forcibly refreshes abilities on load. ability capsules will be overridden if replacing an existing ability.
-DOC
-def force_refresh_abilities
-  $force_refresh_abilities = true
-end
-
-<<-DOC
 >> builder class for modifying pokemon
 DOC
 #noinspection RubyTooManyInstanceVariablesInspection
 class PokeModifier
+
+  <<-DOC
+  forcibly refreshes abilities on load. ability capsules will be overridden if replacing an existing ability.
+  DOC
+  def self.force_refresh_abilities
+    $force_refresh_abilities = true
+  end
 
   <<-DOC
   @param species - pokemon symbolic constant (i.e. :NINETALES)
