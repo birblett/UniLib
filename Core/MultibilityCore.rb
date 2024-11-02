@@ -51,11 +51,12 @@ end unless UniLib.lib_loaded(__FILE__)
 
 class Symbol
 
+  alias __shadow_multibility_eq ===
   def ===(other)
-    other.is_a?(AbilityContainer) ? other == self : self == other
+    other.is_a?(AbilityContainer) ? other == self : __shadow_multibility_eq(other)
   end
 
-end
+end unless UniLib.lib_loaded(__FILE__)
 
 module Ability_Cache
 
