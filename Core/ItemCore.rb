@@ -230,13 +230,13 @@ UniLib.insert_in_method(:PokeBattle_Pokemon, :calcStats, "bs=self.baseStats",
     bs = stats.map { |n| n.value }
   end")
 
-# type modifier
+# type1 modifier
 UniLib.insert_in_method(:PokeBattle_Pokemon, :type1, :HEAD,
-  "return UniLib::EVENT_ITEMS[@item].primary if ItemModifier.affects?(@item, self, :primary_type) and UniLib::EVENT_ITEMS[@item].primary", 1001)
+  "return UniLib::EVENT_ITEMS[@item].primary if ItemModifier.affects?(@item, self, :primary_type) and UniLib::EVENT_ITEMS[@item].primary")
 
-# type modifier
+# type2 modifier
 UniLib.insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
-  "(return UniLib::EVENT_ITEMS[@item].secondary == self.type1 ? nil : UniLib::EVENT_ITEMS[@item].secondary) if ItemModifier.affects?(@item, self, :secondary_type) and UniLib::EVENT_ITEMS[@item].secondary", 1001)
+  "(return UniLib::EVENT_ITEMS[@item].secondary == self.type1 ? nil : UniLib::EVENT_ITEMS[@item].secondary) if ItemModifier.affects?(@item, self, :secondary_type) and UniLib::EVENT_ITEMS[@item].secondary")
 
 # resistance modifiers and overrides
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponent.crested",
