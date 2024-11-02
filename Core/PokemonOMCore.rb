@@ -57,7 +57,8 @@ module UniLib
 
     def self.ability_select(default, list)
       cmdwin=pbListWindow([], 200)
-      commands=[] + CUSTOM_POKEMON_ABILITIES
+      tmp = UniLib::CUSTOM_ABILITIES.map { |k, v| [k, v.name] }
+      commands=[] + CUSTOM_POKEMON_ABILITIES + tmp
       list.each { |_, ability| commands.push([ability, UniLib::ABILITY_DATA[ability].name]) if BANNED_ABILITIES.include?(ability) }
       commands.sort! {|a,b| a[1]<=>b[1]}
       realcommands=[]
