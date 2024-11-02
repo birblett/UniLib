@@ -65,6 +65,7 @@ class ItemModifier
   attr_accessor(:move_type_overrides)
   attr_accessor(:move_stat_overrides)
   attr_accessor(:on_battle_entry_events)
+  attr_accessor(:on_move_attempt_events)
   attr_accessor(:on_dealt_damage_events)
   attr_accessor(:on_damage_events)
   attr_accessor(:on_turn_end_events)
@@ -101,6 +102,7 @@ class ItemModifier
     @move_type_overrides = []
     @move_stat_overrides = []
     @on_battle_entry_events = []
+    @on_move_attempt_events = []
     @on_dealt_damage_events = []
     @on_damage_events = []
     @on_turn_end_events = []
@@ -361,6 +363,10 @@ UniLib.insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "if attacker.abi
 UniLib.insert_in_method_before(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "if self.ability == :INTIMIDATE && onactive",
   "UniLib::EVENT_ITEMS[self.item].on_battle_entry_events.each { |event| event.call(self, self.battle, index) } if ItemModifier.affects?(self.item, self, :battle_entry) and onactive
   ItemModifier.consume_items")
+
+# move attempted events
+UniLib.insert_in_method_before(:PokeBattle_Battler, :pbTryUseMove, "protype=basemove.pbType(self,basemove.type)",
+  "UniLib::EVENT_ITEMS[self.item].on_move_attempt_events.each { |event| event.call(self, basemove) } if ItemModifier.affects?(self.item, self, :try_move)")
 
 # damage taken/dealt events
 UniLib.insert_in_method(:PokeBattle_Battler, :pbEffectsOnDealingDamage, "return if target.nil?",

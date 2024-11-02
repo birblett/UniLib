@@ -441,6 +441,17 @@ class ItemModifier
 
   <<-DOC
   @param proc - a void function.
+  >> an event hook called when a move is attempted but not yet used. accepts 2 arguments, the pokemon (PokeBattle_Battler) and the move 
+     (PokeBattle_Move),
+  DOC
+  def on_move_attempt(proc)
+    @has_event[:try_move] = true
+    @on_move_attempt_events.push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a void function.
   >> an event hook for when a pokemon deals damage in battle. accepts 4 arguments, the attacker (PokeBattle_Battler), the target 
      (PokeBattle_Battler), the move used (PokeBattle_Move), and the numeric damage value. return values are ignored. 
   DOC
