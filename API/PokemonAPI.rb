@@ -33,8 +33,7 @@ class PokeModifier
       exit
     end
     initial_form = form
-    form_str = nil
-    form = UniLib.get_form_number(species, form)
+    form, form_str = UniLib.get_form_number(species, form)
     if form.nil?
       Kernel.pbMessage("Failed to register PokeModifer for species #{species}#{initial_form != 0 ? " with form #{initial_form}." : ""}")
       exit

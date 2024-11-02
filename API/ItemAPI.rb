@@ -229,7 +229,7 @@ class ItemModifier
   def add_receiver(holder, form = 0)
     @species = :ALL if holder == :ALL
     return self if @species == :ALL
-    form = UniLib.get_form_number(holder, form)
+    form = UniLib.get_form_number(holder, form)[0]
     @species.push([holder, form]) unless @species.include? [holder, form]
     self
   end
