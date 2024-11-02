@@ -66,7 +66,6 @@ module UniLib
   DOC
   def self.include(path_relative)
     self.include("CodeInjector") if path_relative != "CodeInjector"
-    dev_log(path_relative)
     unless LOADED_FILES[path_relative]
       load LIB_PATH + path_relative + "Core.rb" if File.exists?(LIB_PATH + path_relative + "Core.rb")
       load LIB_PATH + path_relative + "Lib.rb" if File.exists?(LIB_PATH + path_relative + "Lib.rb")
