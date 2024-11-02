@@ -27,15 +27,6 @@ class AbilityModifier
 
   <<-DOC
   @param type - type id
-  >> gives the users the secondary type while holding the crest.
-  DOC
-  def crest_secondary_type(type)
-    @secondary = type
-    self
-  end
-
-  <<-DOC
-  @param type - type id
   >> gives user STAB and resistances of the given type
   DOC
   def type_fake(type)
@@ -60,6 +51,7 @@ class AbilityModifier
   >> allows the user to receive STAB-bonuses from the given type
   DOC
   def stab_override(type)
+    @has_event[:stab_type] = true
     @stab_overrides += type.is_a?(Array) ? type : [type]
     self
   end
@@ -69,6 +61,7 @@ class AbilityModifier
   >> allows the user to lose the weaknesses of the given type.
   DOC
   def weakness_fake(type)
+    @has_event[:fake_reduce_weakness] = true
     @weakness_fakes += type.is_a?(Array) ? type : [type]
     self
   end
@@ -78,6 +71,7 @@ class AbilityModifier
   >> allows the user to gain the resistances of the given type. 
   DOC
   def resistance_fake(type)
+    @has_event[:fake_resistance] = true
     @resistance_fakes += type.is_a?(Array) ? type : [type]
     self
   end
@@ -88,7 +82,30 @@ class AbilityModifier
   >> forces the user resist the given type(s).
   DOC
   def force_resistance(type, resistance_level=2)
+    @has_event[:forced_resistance] = true
     @forced_resistances[type] = resistance_level
+  end
+
+  <<-DOC
+  @param proc - a function returning a numeric multiplier
+  >> adds a conditional type effectiveness provider. accepts 2 arguments, defender (PokeBattle_Battler) and attack type (symbol).
+  DOC
+  def type_effectiveness_mod_simple(proc)
+    @has_event[:type_effectiveness_simple] = true
+    @type_effectiveness_modifiers.push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a function returning an array of two type modifiers
+  >> adds a conditional type effectiveness setter. accepts 5 arguments, the attacker (PokeBattle_Battler), the target 
+     (PokeBattle_Battler), the move type (Symbol), and the two current type modifiers. if not returning nil, both values in return array
+     must be numeric. the type modifiers will be set to the two given values.
+  DOC
+  def type_effectiveness_mod(proc)
+    @has_event[:type_effectiveness] = true
+    @type_modifiers.push(proc)
+    self
   end
 
   <<-DOC
@@ -98,16 +115,8 @@ class AbilityModifier
   DOC
   def battle_stat_mods(proc)
     UniLib.include "NumberContainer"
+    @has_event[:battle_stat_calc] = true
     @battle_stat_modifiers.push(proc)
-    self
-  end
-
-  <<-DOC
-  @param proc - a function returning a numeric multiplier
-  >> adds a conditional type effectiveness provider. accepts 2 arguments, defender (PokeBattle_Battler) and attack type (symbol).
-  DOC
-  def type_effectiveness_mod_simple(proc)
-    @type_effectiveness_modifiers.push(proc)
     self
   end
 
@@ -118,6 +127,7 @@ class AbilityModifier
      calculation. should return a single numeric damage multiplier.
   DOC
   def damage_mod(proc)
+    @has_event[:damage_mod] = true
     @damage_modifiers.push(proc)
     self
   end
@@ -129,18 +139,8 @@ class AbilityModifier
      evasion respectively, or nil if no change.
   DOC
   def accuracy_mod(proc)
+    @has_event[:move_accuracy] = true
     @accuracy_modifiers.push(proc)
-    self
-  end
-
-  <<-DOC
-  @param proc - a function returning an array of two type modifiers
-  >> adds a conditional type effectiveness setter. accepts 5 arguments, the attacker (PokeBattle_Battler), the target 
-     (PokeBattle_Battler), the move type (Symbol), and the two current type modifiers. if not returning nil, both values in return array
-     must be numeric. the type modifiers will be set to the two given values.
-  DOC
-  def type_effectiveness_mod(proc)
-    @type_modifiers.push(proc)
     self
   end
 
@@ -150,6 +150,7 @@ class AbilityModifier
      return a single numeric priority modifier.
   DOC
   def priority_mod(proc)
+    @has_event[:move_priority] = true
     @priority_modifiers.push(proc)
     self
   end
@@ -160,6 +161,7 @@ class AbilityModifier
      move used (PokeBattle_Move). should return an additive hit number modifier.
   DOC
   def hit_count_mod(proc)
+    @has_event[:move_hit_count] = true
     @hit_number_modifiers.push(proc)
     self
   end
@@ -170,6 +172,7 @@ class AbilityModifier
      should return another type.
   DOC
   def move_type_override(proc)
+    @has_event[:move_type] = true
     @move_type_overrides.push(proc)
     self
   end
@@ -181,6 +184,7 @@ class AbilityModifier
      (PokeBattle_Move), and returns a stat symbol. invalid symbols will be ignored.
   DOC
   def move_stat_override(proc)
+    @has_event[:move_stat] = true
     @move_stat_overrides.push(proc)
     self
   end
@@ -191,6 +195,7 @@ class AbilityModifier
      (PokeBattle_Battle), and the index of the pokemon entering.
   DOC
   def on_battle_entry(proc)
+    @has_event[:battle_entry] = true
     @on_battle_entry_events.push(proc)
     self
   end
@@ -201,6 +206,7 @@ class AbilityModifier
      (PokeBattle_Battler), the move used (PokeBattle_Move), and the numeric damage value. return values are ignored. 
   DOC
   def on_damage_dealt(proc)
+    @has_event[:damage_dealt] = true
     @on_dealt_damage_events.push(proc)
     self
   end
@@ -211,6 +217,7 @@ class AbilityModifier
      (PokeBattle_Battler), the move used (PokeBattle_Move), and the numeric damage value. return values are ignored. 
   DOC
   def on_damage_taken(proc)
+    @has_event[:damage_taken] = true
     @on_damage_events.push(proc)
     self
   end
@@ -220,8 +227,19 @@ class AbilityModifier
   >> an event hook for when a the current turn ends. accepts a single PokeBattle_Battler argument.
   DOC
   def on_turn_end(proc)
+    @has_event[:turn_end] = true
     @on_turn_end_events.push(proc)
     self
+  end
+
+  <<-DOC
+  @param proc - a function returning an integer.
+  >> a conditional form provider, accepts 2 arguments, the user (PokeBattle_Pokemon) and nullable move (PokeBattle_Move); returns an integer
+     corresponding to the form.
+  DOC
+  def form_change(proc)
+    @has_event[:form_change] = true
+    @form_changes.push(proc)
   end
 
 end

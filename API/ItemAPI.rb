@@ -229,14 +229,20 @@ class ItemModifier
   def add_receiver(holder, form = 0)
     @species = :ALL if holder == :ALL
     return self if @species == :ALL
-    if form.class == String
-      tmp = FORM_MAP[holder][form + " Form"]
-      tmp = FORM_MAP[holder][form + " Forme"] if tmp.nil?
-      tmp = FORM_MAP[holder][form + " Rotom"] if tmp.nil?
-      tmp = FORM_MAP[holder][form] if tmp.nil?
-      form = tmp
-    end
+    form = UniLib.get_form_number(holder, form)
     @species.push([holder, form]) unless @species.include? [holder, form]
+    self
+  end
+
+  <<-DOC
+  @param proc - a void function
+  >> adds a conditional base stat modifier. accepts 2 arguments; the holder (PokeBattle_Pokemon) and an array of 6 NumberContainers
+     corresponding to hp, atk, def, spa, spd, spe. use the NumberContainers to perform in-place modifications to stats.
+  DOC
+  def base_stat_mods(proc)
+    UniLib.include "NumberContainer"
+    @has_event[:base_stat] = true
+    @base_stat_modifiers.push(proc)
     self
   end
 
@@ -264,7 +270,7 @@ class ItemModifier
   >> gives the users the secondary type while holding the item.
   DOC
   def primary_type(type)
-    @has_event = true
+    @has_event[:primary_type] = true
     @primary = type
     self
   end
@@ -274,7 +280,7 @@ class ItemModifier
   >> gives the users the secondary type while holding the item.
   DOC
   def secondary_type(type)
-    @has_event = true
+    @has_event[:secondary_type] = true
     @secondary = type
     self
   end
@@ -284,7 +290,7 @@ class ItemModifier
   >> allows the user to receive STAB-bonuses from the given type
   DOC
   def stab_override(type)
-    @has_event = true
+    @has_event[:stab_type] = true
     @stab_overrides += type.is_a?(Array) ? type : [type]
     self
   end
@@ -294,7 +300,7 @@ class ItemModifier
   >> allows the user to lose the weaknesses of the given type.
   DOC
   def weakness_fake(type)
-    @has_event = true
+    @has_event[:fake_reduce_weakness] = true
     @weakness_fakes += type.is_a?(Array) ? type : [type]
     self
   end
@@ -304,7 +310,7 @@ class ItemModifier
   >> allows the user to gain the resistances of the given type. 
   DOC
   def resistance_fake(type)
-    @has_event = true
+    @has_event[:fake_resistance] = true
     @resistance_fakes += type.is_a?(Array) ? type : [type]
     self
   end
@@ -315,56 +321,8 @@ class ItemModifier
   >> forces the user resist the given type(s).
   DOC
   def force_resistance(type, resistance_level=2)
-    @has_event = true
+    @has_event[:forced_resistance] = true
     @forced_resistances[type] = resistance_level
-  end
-
-  <<-DOC
-  @param proc - a void function
-  >> adds a conditional base stat modifier. accepts 2 arguments; the holder (PokeBattle_Pokemon) and an array of 6 NumberContainers
-     corresponding to hp, atk, def, spa, spd, spe. use the NumberContainers to perform in-place modifications to stats.
-  DOC
-  def base_stat_mods(proc)
-    UniLib.include "NumberContainer"
-    @has_event = true
-    @base_stat_modifiers.push(proc)
-    self
-  end
-
-  <<-DOC
-  @param proc - a void function
-  >> adds a conditional stat modifier. accepts 2 arguments, the holder (PokeBattle_Battler), and an array of 6 NumberContainers
-     corresponding to hp, atk, def, spa, spd, spe. use the NumberContainers to perform in-place modifications to stats.
-  DOC
-  def battle_stat_mods(proc)
-    UniLib.include "NumberContainer"
-    @has_event = true
-    @battle_stat_modifiers.push(proc)
-    self
-  end
-
-  <<-DOC
-  @param proc - a function returning a damage multiplier
-  >> adds a conditional damage multiplier. accepts 5 arguments, attacker (PokeBattle_Battler), target (PokeBattle_Battler), the move used 
-     (PokeBattle_Move), the hit number (or total hit count if being used by battle AI), and whether the move is being used in a battle AI 
-     calculation. should return a single numeric damage multiplier.
-  DOC
-  def damage_mod(proc)
-    @has_event = true
-    @damage_modifiers.push(proc)
-    self
-  end
-
-  <<-DOC
-  @param proc - a function returning a numeric accuracy
-  >> adds a conditional accuracy modifier. accepts 5 arguments, user (PokeBattle_Battler), move used (PokeBattle_Move), base accuracy, 
-     accuracy modifier, and evasion (all as numbers 0-100). return an array of 3 values corresponding to the base accuracy, modifier, and
-     evasion respectively, or nil if no change.
-  DOC
-  def accuracy_mod(proc)
-    @has_event = true
-    @accuracy_modifiers.push(proc)
-    self
   end
 
   <<-DOC
@@ -372,6 +330,7 @@ class ItemModifier
   >> adds a conditional type effectiveness provider. accepts 2 arguments, defender (PokeBattle_Battler) and attack type (symbol).
   DOC
   def type_effectiveness_mod_simple(proc)
+    @has_event[:type_effectiveness_simple] = true
     @type_effectiveness_modifiers.push(proc)
     self
   end
@@ -383,8 +342,44 @@ class ItemModifier
      must be numeric. the type modifiers will be set to the two given values.
   DOC
   def type_effectiveness_mod(proc)
-    @has_event = true
+    @has_event[:type_effectiveness] = true
     @type_modifiers.push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a void function
+  >> adds a conditional stat modifier. accepts 2 arguments, the holder (PokeBattle_Battler), and an array of 6 NumberContainers
+     corresponding to hp, atk, def, spa, spd, spe. use the NumberContainers to perform in-place modifications to stats.
+  DOC
+  def battle_stat_mods(proc)
+    UniLib.include "NumberContainer"
+    @has_event[:battle_stat_calc] = true
+    @battle_stat_modifiers.push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a function returning a damage multiplier
+  >> adds a conditional damage multiplier. accepts 5 arguments, attacker (PokeBattle_Battler), target (PokeBattle_Battler), the move used 
+     (PokeBattle_Move), the hit number (or total hit count if being used by battle AI), and whether the move is being used in a battle AI 
+     calculation. should return a single numeric damage multiplier.
+  DOC
+  def damage_mod(proc)
+    @has_event[:damage_mod] = true
+    @damage_modifiers.push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a function returning a numeric accuracy
+  >> adds a conditional accuracy modifier. accepts 5 arguments, user (PokeBattle_Battler), move used (PokeBattle_Move), base accuracy, 
+     accuracy modifier, and evasion (all as numbers 0-100). return an array of 3 values corresponding to the base accuracy, modifier, and
+     evasion respectively, or nil if no change.
+  DOC
+  def accuracy_mod(proc)
+    @has_event[:move_accuracy] = true
+    @accuracy_modifiers.push(proc)
     self
   end
 
@@ -394,7 +389,7 @@ class ItemModifier
      return a single numeric priority modifier.
   DOC
   def priority_mod(proc)
-    @has_event = true
+    @has_event[:move_priority] = true
     @priority_modifiers.push(proc)
     self
   end
@@ -405,7 +400,7 @@ class ItemModifier
      move used (PokeBattle_Move). should return an additive hit number modifier.
   DOC
   def hit_count_mod(proc)
-    @has_event = true
+    @has_event[:move_hit_count] = true
     @hit_number_modifiers.push(proc)
     self
   end
@@ -416,7 +411,7 @@ class ItemModifier
      should return another type.
   DOC
   def move_type_override(proc)
-    @has_event = true
+    @has_event[:move_type] = true
     @move_type_overrides.push(proc)
     self
   end
@@ -428,7 +423,7 @@ class ItemModifier
      (PokeBattle_Move), and returns a stat symbol. invalid symbols will be ignored.
   DOC
   def move_stat_override(proc)
-    @has_event = true
+    @has_event[:move_stat] = true
     @move_stat_overrides.push(proc)
     self
   end
@@ -439,7 +434,7 @@ class ItemModifier
      (PokeBattle_Battle), and the index of the pokemon entering.
   DOC
   def on_battle_entry(proc)
-    @has_event = true
+    @has_event[:battle_entry] = true
     @on_battle_entry_events.push(proc)
     self
   end
@@ -450,6 +445,7 @@ class ItemModifier
      (PokeBattle_Battler), the move used (PokeBattle_Move), and the numeric damage value. return values are ignored. 
   DOC
   def on_damage_dealt(proc)
+    @has_event[:damage_dealt] = true
     @on_dealt_damage_events.push(proc)
     self
   end
@@ -460,7 +456,7 @@ class ItemModifier
      (PokeBattle_Battler), the move used (PokeBattle_Move), and the numeric damage value. return values are ignored. 
   DOC
   def on_damage_taken(proc)
-    @has_event = true
+    @has_event[:damage_taken] = true
     @on_damage_events.push(proc)
     self
   end
@@ -470,9 +466,27 @@ class ItemModifier
   >> an event hook for when a the current turn ends. accepts a single PokeBattle_Battler argument.
   DOC
   def on_turn_end(proc)
-    @has_event = true
+    @has_event[:turn_end] = true
     @on_turn_end_events.push(proc)
     self
+  end
+
+  <<-DOC
+  @param proc - a function returning an integer.
+  >> a conditional form provider, accepts 2 arguments, the user (PokeBattle_Pokemon) and nullable move (PokeBattle_Move); returns an integer
+     corresponding to the form.
+  DOC
+  def form_change(proc)
+    @has_event[:form_change] = true
+    @form_changes.push(proc)
+  end
+
+  <<-DOC
+  @param proc - a function returning a boolean.
+  >> a conditional event provider, accepts 1 argument, the user (PokeBattle_Pokemon); should return a boolean value.
+  DOC
+  def event_proc_condition(proc)
+    @event_conditions.push(proc)
   end
 
   <<-DOC
@@ -481,18 +495,8 @@ class ItemModifier
      return an ability symbol or array of them; nil return values are ignored. the user will act as if it also has the returned ability(s).
   DOC
   def ability_provider(proc)
-    @has_event = true
     @ability_providers.push(proc)
     self
-  end
-
-  <<-DOC
-  @param proc - a function returning a boolean.
-  >> a conditional event provider, accepts 1 argument, the user (PokeBattle_Pokemon); should return a boolean value.
-  DOC
-  def event_proc_condition(proc)
-    @has_event = true
-    @event_conditions.push(proc)
   end
 
 end
