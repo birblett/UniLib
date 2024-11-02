@@ -34,13 +34,7 @@ class PokeModifier
     end
     initial_form = form
     form_str = nil
-    if form.class == String
-      tmp = FORM_MAP[species][(form_str = form + " Form")]
-      tmp = FORM_MAP[species][(form_str = form + " Forme")] if tmp.nil?
-      tmp = FORM_MAP[species][(form_str = form + " Rotom")] if tmp.nil?
-      tmp = FORM_MAP[species][(form_str = form)] if tmp.nil?
-      form = tmp
-    end
+    form = UniLib.get_form_number(species, form)
     if form.nil?
       Kernel.pbMessage("Failed to register PokeModifer for species #{species}#{initial_form != 0 ? " with form #{initial_form}." : ""}")
       exit
