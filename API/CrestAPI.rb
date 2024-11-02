@@ -22,16 +22,19 @@ class CrestBuilder
   def self.add(species, desc, form=0, name=nil)
     sym = (species.to_s + "CREST").to_sym
     form_str = nil
-    if form.class == String
-      tmp = FORM_MAP[species][(form_str = form + " Form")]
-      tmp = FORM_MAP[species][(form_str = form + " Forme")] if tmp.nil?
-      tmp = FORM_MAP[species][(form_str = form + " Rotom")] if tmp.nil?
-      tmp = FORM_MAP[species][(form_str = form)] if tmp.nil?
-      form = tmp
-    end
+    form = UniLib.get_form_number(species, form)
     name = POKEMON_DATA[species].name + " Crest#{form_str.nil? ? "" : " (" + form_str + ")"}" if name.nil?
     CUSTOM_ITEMS[sym] = CrestBuilder.new(sym, { :name => name, :desc => desc }).crest.no_use.no_use_in_battle.add_receiver(species, form) if CUSTOM_ITEMS[sym].nil?
     CUSTOM_ITEMS[sym]
+  end
+
+  <<-DOC
+  @param item - item id
+  >> add an existing item as a crestbuilder. can be used to convert existing non-crests into crests or adding effects to crests.
+  DOC
+  def self.add_existing(item)
+    CUSTOM_ITEMS[item] = CrestBuilder.new(item, {}) if CUSTOM_ITEMS[item].nil?
+    CUSTOM_ITEMS[item]
   end
 
   <<-DOC

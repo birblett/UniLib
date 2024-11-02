@@ -23,17 +23,45 @@ class CrestBuilder < ItemModifier
     super(symbol, hash)
     @tier = 1
     @essence = nil
+    @holders = nil
+    @has_event[:crest] = true
+  end
+
+  def holders
+    @holders
   end
 
   def build
     super
-    VALID_CRESTS[@symbol] = []
+    holders = []
     @species.each do |arr|
       species, form = arr
-      VALID_CRESTS[@symbol].push([species, form])
+      form == 0 ? holders.push(species) : holders.push([species, form])
     end
+    VALID_CRESTS[@symbol] = self
+    @holders = CrestHolder.new(holders)
     (@tier..4).each { |tier| SHOP_CRESTS[tier - 1][@symbol] = [$cache.items[@symbol], @essence]} unless @essence.nil?
+  end
 
+end unless UniLib.lib_loaded(__FILE__)
+
+class CrestHolder
+
+  def initialize(holders)
+    @holders = holders
+  end
+
+  def ==(other)
+    @holders.include? other
+  end
+
+end unless UniLib.lib_loaded(__FILE__)
+
+class Symbol
+
+  alias __shadow_crest_eq ===
+  def ===(other)
+    other.is_a?(CrestHolder) ? other == self : __shadow_crest_eq(other)
   end
 
 end unless UniLib.lib_loaded(__FILE__)
@@ -61,11 +89,12 @@ UniLib.add_save_event(:write_custom_crest_flags)
 # ================================================================ PATCH ================================================================= #
 # ======================================================================================================================================== #
 
-UniLib.insert_in_method(:PokeBattle_Battler, :hasCrest?, "return true if @battle.pbGetOwnerItems(@index).include?(:SILVCREST) && crestmon.species == :SILVALLY && !@battle.pbOwnedByPlayer?(@index)", "return crestmon.form == 0 ? true : [crestmon.species, crestmon.form] if !UniLib::VALID_CRESTS[crestmon.item].nil? and UniLib::VALID_CRESTS[crestmon.item].include?([crestmon.species, crestmon.form])")
+UniLib.insert_in_method(:PokeBattle_Battler, :hasCrest?, "return true if @battle.pbGetOwnerItems(@index).include?(:SILVCREST) && crestmon.species == :SILVALLY && !@battle.pbOwnedByPlayer?(@index)",
+  "return crestmon.form == 0 ? true : UniLib::VALID_CRESTS[crestmon.item].holders if UniLib::VALID_CRESTS[crestmon.item] and ItemModifier.affects?(crestmon.item, crestmon, :crest)")
 
 UniLib.replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@crested = hasCrest? ? pkmn.species : false",
   "h = hasCrest?
-  @crested = h ? (h.is_a?(Array) ? h : pkmn.species) : false")
+  @crested = h ? (h.is_a?(CrestHolder) ? h : pkmn.species) : false")
 
 UniLib.insert_in_method(:Cache_Game, :map_load, "end", proc do |mapid|
   if mapid == 168
