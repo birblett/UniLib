@@ -503,10 +503,33 @@ class ItemModifier
   <<-DOC
   @param proc - a function returning an ability symbol (or array of them).
   >> a conditional ability provider. accepts 2 arguments, the user (PokeBattle_Pokemon) and its current abilities (array of symbols).
-     return an ability symbol or array of them; nil return values are ignored. the user will act as if it also has the returned ability(s).
+     return an ability symbol or array of them; 
   DOC
   def ability_provider(proc)
     @ability_providers.push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a function returning a float multiplier.
+  >> a conditional form provider, accepts 3 arguments, the calling AI instance (PokeBattle_AI), the calling pokemon (PokeBattle_Pokemon) and 
+     item (Symbol); returns an item score multiplier corresponding to the item. see PokeBattle_AI$getItemScore
+  DOC
+  def item_score(proc)
+    @has_event[:item_score] = true
+    @item_scores.push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a function returning an integer adder.
+  >> a conditional form provider, accepts 4 arguments, the calling AI instance (PokeBattle_AI), the attacker (PokeBattle_Pokemon), the
+     target (PokeBattle_Pokemon), and item (Symbol); returns an item score adder corresponding to the item. see 
+     PokeBattle_AI$getSwitchInScoresParty
+  DOC
+  def switch_item_score(proc)
+    @has_event[:item_score] = true
+    @item_scores.push(proc)
     self
   end
 

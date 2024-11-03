@@ -269,6 +269,51 @@ class AbilityModifier
   def form_change(proc)
     @has_event[:form_change] = true
     @form_changes.push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a function returning a float multiplier.
+  >> a conditional form provider, accepts 3 arguments, the calling AI instance (PokeBattle_AI), the attacker (PokeBattle_Pokemon) and 
+     target (PokeBattle_Pokemon); returns a miniscore multiplier corresponding to the ability - see PokeBattle_AI$getAbilityDisruptScore
+  DOC
+  def disrupt_score(proc)
+    @has_event[:disrupt_modifier] = true
+    @disrupt_modifiers.push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a function returning an integer adder.
+  >> a conditional form provider, accepts 3 arguments, the calling AI instance (PokeBattle_AI), the calling pokemon (PokeBattle_Pokemon) and 
+     weather effect (Symbol); returns an added weather score modifier corresponding to the ability - see PokeBattle_AI$getSwitchInScoresParty
+  DOC
+  def weather_score(proc)
+    @has_event[:weather_score] = true
+    @weather_scores.push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a function returning an integer adder.
+  >> a conditional form provider, accepts 2 arguments, the calling AI instance (PokeBattle_AI), the calling pokemon (PokeBattle_Pokemon); 
+     returns an added ability score modifier corresponding to the ability - see PokeBattle_AI$getSwitchInScoresParty
+  DOC
+  def ability_score(proc)
+    @has_event[:ability_score] = true
+    @ability_scores.push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a function returning an integer adder.
+  >> a conditional form provider, accepts 3 arguments, the calling AI instance (PokeBattle_AI), the calling pokemon (PokeBattle_Pokemon) and 
+     field effect (Symbol); returns an added field score modifier corresponding to the ability - see PokeBattle_AI$getSwitchInScoresParty
+  DOC
+  def field_score(proc)
+    @has_event[:field_score] = true
+    @field_scores.push(proc)
+    self
   end
 
 end

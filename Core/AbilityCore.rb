@@ -42,6 +42,10 @@ class AbilityModifier
   attr_accessor(:on_damage_events)
   attr_accessor(:on_turn_end_events)
   attr_accessor(:form_changes)
+  attr_accessor(:disrupt_modifiers)
+  attr_accessor(:weather_scores)
+  attr_accessor(:ability_scores)
+  attr_accessor(:field_scores)
   attr_accessor(:has_event)
 
   def initialize(symbol, name=nil, desc=nil, fulldesc=nil)
@@ -71,6 +75,10 @@ class AbilityModifier
     @on_damage_events = []
     @on_turn_end_events = []
     @form_changes = []
+    @disrupt_modifiers = []
+    @weather_scores = []
+    @ability_scores = []
+    @field_scores = []
     @has_event = {}
   end
 
@@ -114,7 +122,6 @@ UniLib.add_play_event(:add_abilities, 1001)
 # ================================================================ PATCH ================================================================= #
 # ======================================================================================================================================== #
 
-
 # type1 modifier
 UniLib.insert_in_method(:PokeBattle_Pokemon, :type1, :HEAD,
   "unless UniLib::POKEMON_ABILITY_CACHE[self] and UniLib::POKEMON_ABILITY_CACHE[self].base == self.ability
@@ -143,6 +150,17 @@ UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponen
       UniLib::CUSTOM_ABILITIES[ability].type_effectiveness_modifiers.each { |provider| typemod *= provider.call(opponent, type) unless provider.call(opponent, type).nil? }
     end
   end", 0, 1001)
+
+# resistance modifiers and overrides
+UniLib.insert_in_method_before(:PokeBattle_AI, :pbTypeModNoMessages, "case opponent.crested",
+  "opponent.ability.abilities.each do |ability|
+    if AbilityModifier.has_event?(ability, :type_effectiveness_simple)
+      typemod = UniLib::CUSTOM_ABILITIES[ability].forced_resistances[type] if (b = !UniLib::CUSTOM_ABILITIES[ability].forced_resistances[type].nil?)
+      typemod /= 2 if (b = check_type(type, UniLib::CUSTOM_ABILITIES[ability].weakness_fakes, UniLib::TYPE_WEAKNESS_MAP)) unless b
+      typemod /= 2 if check_type(type, UniLib::CUSTOM_ABILITIES[ability].resistance_fakes, UniLib::TYPE_RESISTANCE_MAP) unless b
+      UniLib::CUSTOM_ABILITIES[ability].type_effectiveness_modifiers.each { |provider| typemod *= provider.call(opponent, type) unless provider.call(opponent, type).nil? }
+    end if opponent.ability.is_a?(AbilityContainer)
+  end", 1, 1001)
 
 # move type effectiveness modifier
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModifier, "return mod1*mod2",
@@ -185,10 +203,10 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbUpdate, "crestStats if @crested"
 UniLib.insert_in_method_before(:PokeBattle_AI, :pbRoughDamage, "case attacker.crested",
   "attacker.ability.abilities.each do |ability|
     UniLib::CUSTOM_ABILITIES[ability].damage_modifiers.each do |mod|
-      modifier = mod.call(attacker, opponent, self, self.pbNumHits, true)
-      basemult *= modifier unless modifier.nil?
+      modifier = mod.call(attacker, opponent, move, move.pbNumHits(attacker), true)
+      damage *= modifier unless modifier.nil?
     end if AbilityModifier.has_event?(ability, :damage_mod)
-  end", 1, 1001)
+  end if attacker.ability.is_a?(AbilityContainer)", 1, 1001)
 
 # move damage modifier
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "case attacker.ability",
@@ -297,3 +315,34 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbCheckForm, "transformed=false",
     end if AbilityModifier.has_event?(ability, :form_change)
   end if self.ability.is_a? AbilityContainer", 0, 1001)
 
+# ability disrupt score
+UniLib.insert_in_method_before(:PokeBattle_AI, :getAbilityDisruptScore, "case opponent.ability",
+  "opponent.ability.abilities.each do |ability|
+    UniLib::CUSTOM_ABILITIES[ability].disrupt_modifiers.each do |mod|
+      abilityscore *= mod unless (mod = mod.call(self, attacker, opponent)).nil?
+    end if AbilityModifier.has_event?(ability, :disrupt_modifier)
+  end if opponent.ability.is_a? AbilityContainer")
+
+# ability weather score
+UniLib.insert_in_method_before(:PokeBattle_AI, :getSwitchInScoresParty, "case @battle.weather",
+  "i.ability.abilities.each do |ability|
+    UniLib::CUSTOM_ABILITIES[ability].weather_scores.each do |mod|
+      weatherscore += mod unless (mod = mod.call(self, i, @battle.weather)).nil?
+    end if AbilityModifier.has_event?(ability, :weather_score)
+  end if i.ability.is_a? AbilityContainer")
+
+# ability score
+UniLib.insert_in_method_before(:PokeBattle_AI, :getSwitchInScoresParty, "case i.ability",
+  "i.ability.abilities.each do |ability|
+    UniLib::CUSTOM_ABILITIES[ability].ability_scores.each do |mod|
+      abilityscore += mod unless (mod = mod.call(self, i)).nil?
+    end if AbilityModifier.has_event?(ability, :ability_score)
+  end if i.ability.is_a? AbilityContainer")
+
+# ability field score
+UniLib.insert_in_method_before(:PokeBattle_AI, :getSwitchInScoresParty, "case @battle.FE",
+  "i.ability.abilities.each do |ability|
+    UniLib::CUSTOM_ABILITIES[ability].field_scores.each do |mod|
+      fieldscore += mod unless (mod = mod.call(self, i, @battle.FE)).nil?
+    end if AbilityModifier.has_event?(ability, :field_score)
+  end if i.ability.is_a? AbilityContainer")
