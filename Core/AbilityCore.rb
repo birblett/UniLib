@@ -223,6 +223,7 @@ UniLib.insert_in_method_before(:PokeBattle_Move, :pbAccuracyCheck, "return @batt
     UniLib::CUSTOM_ABILITIES[ability].accuracy_modifiers.each do |mod|
       modified = mod.call(attacker, self, baseaccuracy, accuracy, evasion)
       baseaccuracy, accuracy, evasion = *modified unless modified.nil?
+      return true if baseaccuracy == 0
     end if AbilityModifier.has_event?(ability, :move_accuracy)
   end", 0, 1001)
 

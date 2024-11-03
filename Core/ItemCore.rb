@@ -310,6 +310,7 @@ UniLib.insert_in_method_before(:PokeBattle_Move, :pbAccuracyCheck, "return @batt
   "UniLib::EVENT_ITEMS[attacker.item].accuracy_modifiers.each do |mod|
     modified = mod.call(attacker, self, baseaccuracy, accuracy, evasion)
     baseaccuracy, accuracy, evasion = *modified unless modified.nil?
+    return true if baseaccuracy == 0
   end if ItemModifier.affects?(attacker.item, attacker, :move_accuracy)
   ItemModifier.consume_items")
 
