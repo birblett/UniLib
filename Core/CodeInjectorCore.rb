@@ -114,7 +114,6 @@ module UniLib
     end
 
     def self.cache_aggressive
-      dev_log(CACHE_AGGRESSIVE)
       !CACHE_AGGRESSIVE.empty?
     end
 
