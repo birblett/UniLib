@@ -14,6 +14,7 @@ module UniLib
 
     SUB_2 = "../../"
     MOD_DIR = "#{File.dirname(__FILE__)}/#{SUB_2}"
+    CACHE_AGGRESSIVE = [0]
 
     def self.get_or_create_method_attr(clazz, method, sym, default)
       METHOD_MODS[clazz][method][sym] = default if METHOD_MODS[clazz][method][sym].nil?
@@ -113,6 +114,7 @@ module UniLib
     end
 
     def self.cache_aggressive
+      dev_log(CACHE_AGGRESSIVE)
       !CACHE_AGGRESSIVE.empty?
     end
 
@@ -124,7 +126,6 @@ module UniLib
 
   PENDING_DELETIONS = []
   PENDING_INSERTIONS = []
-  CACHE_AGGRESSIVE = [0]
   METHOD_MODS = {} if !defined? METHOD_MODS or CLEAR_INJECTOR_CACHE
   NO_OP = {}
   EVENT_ON_PLAY = []
