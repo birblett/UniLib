@@ -112,16 +112,24 @@ module UniLib
       true
     end
 
+    def self.cache_aggressive
+      !CACHE_AGGRESSIVE.empty?
+    end
+
+    def self.has_valid_cache
+      self.cache_aggressive and $code_injector_aggressive_cache
+    end
+
   end
 
   PENDING_DELETIONS = []
   PENDING_INSERTIONS = []
+  CACHE_AGGRESSIVE = []
   METHOD_MODS = {} if !defined? METHOD_MODS or CLEAR_INJECTOR_CACHE
   NO_OP = {}
   EVENT_ON_PLAY = []
   EVENT_ON_SAVE = []
   EVENT_ON_NEW_FILE = []
-  CACHE_AGGRESSIVE = false unless defined? CACHE_AGGRESSIVE
   CODE_SOURCE = ""
 
 end
@@ -134,13 +142,12 @@ entrypoint = method(:pbCallTitle)
 define_method(:pbCallTitle) do
   UniLib::LOADED_FILES.clear
   ret = entrypoint.()
-  if defined? $code_injector_aggressive_cache and UniLib::CACHE_AGGRESSIVE
+  if UniLib.has_valid_cache
     t = Time.now
     $code_injector_aggressive_cache.each { |clazz, source| clazz.class_eval(source) }
     UniLib.log("aggressive insertion cache compile time:", Time.now - t)
-  end
-  unless UniLib::CACHE_AGGRESSIVE and defined? $code_injector_aggressive_cache
-    $code_injector_aggressive_cache = {} if UniLib::CACHE_AGGRESSIVE
+  else
+    $code_injector_aggressive_cache = UniLib.cache_aggressive ? {} : nil
     UniLib::EVENT_ON_PLAY.sort! { |a, b| b[1] <=> a[1]}
     UniLib::EVENT_ON_SAVE.sort! { |a, b| b[1] <=> a[1]}
     insertions = Time.now
@@ -170,7 +177,7 @@ define_method(:pbCallTitle) do
       end
       clazz.class_eval(UniLib::CODE_SOURCE)
       methods.delete_if { |method| method.is_a? Proc}
-      $code_injector_aggressive_cache[clazz] = UniLib::CODE_SOURCE if UniLib::CACHE_AGGRESSIVE
+      $code_injector_aggressive_cache[clazz] = UniLib::CODE_SOURCE if UniLib.cache_aggressive
     end
     end_compile = Time.now
     UniLib.log("staging insertions=#{deletions - insertions}", "staging deletions=#{method_mods - deletions}", "compilation=#{end_compile - method_mods}")

@@ -30,6 +30,7 @@ module UniLib
   >> injects a block of code after the specified target in the target function.
   DOC
   def self.insert_in_function(function, target, proc, index=0, priority=1000)
+    return if self.has_valid_cache
     self.insert_in_method(:Object, function, target, proc, index, priority)
   end
   
@@ -37,6 +38,7 @@ module UniLib
   >> injects a block of code after the specified target in the target method.
   DOC
   def self.insert_in_method(clazz, method, target, proc, index=0, priority=1000)
+    return if self.has_valid_cache
     PENDING_INSERTIONS.push([clazz, method, target, proc, index, false, priority])
   end
   
@@ -44,6 +46,7 @@ module UniLib
   >> injects a block of code before the specified target in the target function.
   DOC
   def self.insert_in_function_before(function, target, proc, index=0, priority=1000)
+    return if self.has_valid_cache
     self.insert_in_method_before(:Object, function, target, proc, index, priority)
   end
   
@@ -51,6 +54,7 @@ module UniLib
   >> injects a block of code before the specified target in the target method.
   DOC
   def self.insert_in_method_before(clazz, method, target, proc, index=0, priority=1000)
+    return if self.has_valid_cache
     PENDING_INSERTIONS.push([clazz, method, target, proc, index, true, priority])
   end
   
@@ -58,6 +62,7 @@ module UniLib
   >> replaces a target line in the target function. chains with other operations.
   DOC
   def self.replace_in_function(function, target, proc, index=0, priority=1000)
+    return if self.has_valid_cache
     self.replace_in_method(:Object, function, target, proc, index, priority)
   end
   
@@ -65,6 +70,7 @@ module UniLib
   >> replaces a target line in the target method. chains with other operations.
   DOC
   def self.replace_in_method(clazz, method, target, proc, index=0, priority=1000)
+    return if self.has_valid_cache
     self.insert_in_method_before(clazz, method, target, proc, index, priority)
     self.delete_in_method(clazz, method, target, index, priority)
   end
@@ -73,6 +79,7 @@ module UniLib
   >> deletes a target line in the target function. chains with other operations.
   DOC
   def self.delete_in_function(function, target, index=0, priority=1000)
+    return if self.has_valid_cache
     self.delete_in_method(:Object, function, target, index, priority)
   end
   
@@ -80,6 +87,7 @@ module UniLib
   >> deletes a target line in the target method. chains with other operations.
   DOC
   def self.delete_in_method(clazz, method, target, index=0, priority=1000)
+    return if self.has_valid_cache
     PENDING_DELETIONS.push([clazz, method, target, index, priority])
   end
   
@@ -109,6 +117,13 @@ module UniLib
   DOC
   def self.add_save_event(save_event, priority=1000)
     EVENT_ON_SAVE.push([save_event, priority]) unless EVENT_ON_SAVE.include?([save_event, priority])
+  end
+
+  <<-DOC
+  >> sets the code injector to use aggressive caching; this means that code injectors are only applied on first load.
+  DOC
+  def self.set_aggressive_caching
+    CACHE_AGGRESSIVE[0] = 0
   end
   
 end
