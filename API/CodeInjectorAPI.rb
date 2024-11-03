@@ -122,8 +122,8 @@ module UniLib
   <<-DOC
   >> sets the code injector to use aggressive caching; this means that code injectors are only applied on first load.
   DOC
-  def self.set_aggressive_caching
-    CACHE_AGGRESSIVE[0] = 0
+  def self.set_aggressive_caching(default=true)
+    default ? CACHE_AGGRESSIVE[0] = true : CACHE_AGGRESSIVE.clear
   end
   
 end
