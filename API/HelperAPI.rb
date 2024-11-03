@@ -25,4 +25,8 @@ module UniLib
     [form, form_str]
   end
 
+  def self.deep_copy(object)
+    Marshal.load(Marshal.dump(object))
+  end
+
 end

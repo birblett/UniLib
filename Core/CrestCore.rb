@@ -112,7 +112,7 @@ UniLib.insert_in_method(:Cache_Game, :map_load, "end", proc do |mapid|
       UniLib::SHOP_CRESTS[i - 1].each do |symbol, item|
         arr[0] += ", #{item[0].name}"
         current = []
-        (112..144).each { |j| current.push(Marshal.load(Marshal.dump(@cachedmaps[mapid].events[16].pages[1].list[j]))) }
+        (112..144).each { |j| current.push(UniLib.deep_copy(@cachedmaps[mapid].events[16].pages[1].list[j])) }
         # [1][3] index
         current[1].parameters[3] = chmap[i] - 1 + count
         count += 1
