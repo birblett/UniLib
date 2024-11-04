@@ -58,6 +58,7 @@ class ItemModifier
   attr_accessor(:battle_stat_modifiers)
   attr_accessor(:damage_modifiers)
   attr_accessor(:accuracy_modifiers)
+  attr_accessor(:crit_modifiers)
   attr_accessor(:priority_modifiers)
   attr_accessor(:hit_number_modifiers)
   attr_accessor(:type_effectiveness_modifiers)
@@ -97,6 +98,7 @@ class ItemModifier
     @battle_stat_modifiers = []
     @damage_modifiers = []
     @accuracy_modifiers = []
+    @crit_modifiers = []
     @priority_modifiers = []
     @hit_number_modifiers = []
     @type_effectiveness_modifiers = []
@@ -316,6 +318,15 @@ UniLib.insert_in_method_before(:PokeBattle_Move, :pbAccuracyCheck, "return @batt
     baseaccuracy, accuracy, evasion = *modified unless modified.nil?
     return true if baseaccuracy == 0
   end if ItemModifier.affects?(attacker.item, attacker, :move_accuracy)
+  ItemModifier.consume_items")
+
+# move crit rate modifier
+UniLib.insert_in_method_before(:PokeBattle_Move, :pbCritRate?, "c=3 if c>3",
+  "is_ai = caller_locations.first.label == \"pbRoughDamage\" rescue false
+  UniLib::EVENT_ITEMS[attacker.item].crit_modifiers.each do |mod|
+    mod = mod.call(attacker, opponent, self, is_ai)
+    c += mod unless mod.nil?
+  end if ItemModifier.affects?(attacker.item, attacker, :crit_rate)
   ItemModifier.consume_items")
 
 # move priority modifier

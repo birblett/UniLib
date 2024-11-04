@@ -23,6 +23,10 @@ class PokeBattle_Move
     UniLib::WIND_MOVES.include?(@move)
   end
 
+  def is_stabbing_move?
+    PBStuff::STABBINGMOVE.include?(@move)
+  end
+
   def is_bite_move?
     PBStuff::BITEMOVE.include?(@move)
   end

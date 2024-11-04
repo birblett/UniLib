@@ -384,6 +384,18 @@ class ItemModifier
   end
 
   <<-DOC
+  @param proc - a function returning an integer adder
+  >> adds a conditional crit modifier. accepts 4 arguments, attacker (PokeBattle_Battler), target (PokeBattle_Pokemon), move used 
+     (PokeBattle_Move), accuracy modifier, and whether it's being used in ai calculations or not. return a critical hit modifier. 
+     final critical hit modifier is clamped to [-1, 3].
+  DOC
+  def crit_mod(proc)
+    @has_event[:crit_rate] = true
+    @crit_modifiers.push(proc)
+    self
+  end
+
+  <<-DOC
   @param proc - a function returning an additive priority modifier
   >> adds a conditional damage multiplier. accepts 2 arguments, the user (PokeBattle_Battler) and the move used (PokeBattle_Move). should
      return a single numeric priority modifier.

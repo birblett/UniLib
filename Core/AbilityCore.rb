@@ -30,6 +30,7 @@ class AbilityModifier
   attr_accessor(:battle_stat_modifiers)
   attr_accessor(:damage_modifiers)
   attr_accessor(:accuracy_modifiers)
+  attr_accessor(:crit_modifiers)
   attr_accessor(:priority_modifiers)
   attr_accessor(:hit_number_modifiers)
   attr_accessor(:type_effectiveness_modifiers)
@@ -66,6 +67,7 @@ class AbilityModifier
     @battle_stat_modifiers = []
     @damage_modifiers = []
     @accuracy_modifiers = []
+    @crit_modifiers = []
     @priority_modifiers = []
     @hit_number_modifiers = []
     @type_modifiers = []
@@ -239,6 +241,16 @@ UniLib.insert_in_method(:PokeBattle_Move, :priorityCheck, "pri -= 1 if @battle.F
       pri += modifier unless modifier.nil?
     end  if AbilityModifier.has_event?(ability, :move_priority)
   end if attacker.ability.is_a?(AbilityContainer)", 0, 1001)
+
+# move crit rate modifier
+UniLib.insert_in_method_before(:PokeBattle_Move, :pbCritRate?, "c=3 if c>3",
+  "is_ai = caller_locations.first.label == \"pbRoughDamage\" rescue false
+  attacker.ability.abilities.each do |ability|
+    UniLib::CUSTOM_ABILITIES[ability].crit_modifiers.each do |mod|
+      mod = mod.call(attacker, opponent, self, is_ai)
+      c += mod unless mod.nil?
+    end if AbilityModifier.has_event?(ability, :crit_rate)
+  end", 0, 1001)
 
 # move priority modifier
 UniLib.insert_in_method(:PokeBattle_Battle, :pbPriority, "pri += 3 if @battlers[i].ability == :TRIAGE && (PBStuff::HEALFUNCTIONS).include?(@choices[i][2].function)",
