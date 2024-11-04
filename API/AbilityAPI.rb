@@ -221,12 +221,32 @@ class AbilityModifier
   <<-DOC
   @param proc - a void function.
   >> an event hook called when a move is attempted but not yet used. accepts 2 arguments, the pokemon (PokeBattle_Battler) and the move 
-     (PokeBattle_Move),
+     (PokeBattle_Move)
   DOC
   def on_move_attempt(proc)
     @has_event[:try_move] = true
     @on_move_attempt_events.push(proc)
     self
+  end
+
+  <<-DOC
+  @param proc - a void function.
+  >> an event hook called when a effect is applied. accepts 2 arguments, the pokemon (PokeBattle_Battler) and the move 
+     (PokeBattle_Move)
+  DOC
+  def move_effect(proc)
+    @has_event[:move_effect] = true
+    @move_effect_events.push(proc)
+  end
+
+  <<-DOC
+  @param proc - a void function.
+  >> an event hook called after a move effect is applied. accepts 2 arguments, the pokemon (PokeBattle_Battler) and the move 
+     (PokeBattle_Move)
+  DOC
+  def after_move_effect(proc)
+    @has_event[:after_move_effect] = true
+    @after_move_effect_events.push(proc)
   end
 
   <<-DOC

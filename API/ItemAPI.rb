@@ -452,6 +452,26 @@ class ItemModifier
 
   <<-DOC
   @param proc - a void function.
+  >> an event hook called when a effect is applied. accepts 2 arguments, the pokemon (PokeBattle_Battler) and the move 
+     (PokeBattle_Move)
+  DOC
+  def move_effect(proc)
+    @has_event[:move_effect] = true
+    @move_effect_events.push(proc)
+  end
+
+  <<-DOC
+  @param proc - a void function.
+  >> an event hook called after a move effect is applied. accepts 2 arguments, the pokemon (PokeBattle_Battler) and the move 
+     (PokeBattle_Move)
+  DOC
+  def after_move_effect(proc)
+    @has_event[:after_move_effect] = true
+    @after_move_effect_events.push(proc)
+  end
+
+  <<-DOC
+  @param proc - a void function.
   >> an event hook for when a pokemon deals damage in battle. accepts 4 arguments, the attacker (PokeBattle_Battler), the target 
      (PokeBattle_Battler), the move used (PokeBattle_Move), and the numeric damage value. return values are ignored. 
   DOC

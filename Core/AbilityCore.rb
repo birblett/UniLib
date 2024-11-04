@@ -38,6 +38,8 @@ class AbilityModifier
   attr_accessor(:move_stat_overrides)
   attr_accessor(:on_battle_entry_events)
   attr_accessor(:on_move_attempt_events)
+  attr_accessor(:move_effect_events)
+  attr_accessor(:after_move_effect_events)
   attr_accessor(:on_dealt_damage_events)
   attr_accessor(:on_damage_events)
   attr_accessor(:on_turn_end_events)
@@ -71,6 +73,8 @@ class AbilityModifier
     @move_stat_overrides = []
     @on_battle_entry_events = []
     @on_move_attempt_events = []
+    @move_effect_events = []
+    @after_move_effect_events = []
     @on_dealt_damage_events = []
     @on_damage_events = []
     @on_turn_end_events = []
@@ -266,7 +270,30 @@ UniLib.insert_in_method(:PokeBattle_Move, :pbType, :HEAD,
   end", 0, 1001)
 
 # attacking stat modifier
-UniLib.insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "if attacker.ability == :HUSTLE && pbIsPhysical?(type)",
+UniLib.insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "if opponent.ability != :UNAWARE || opponent.moldbroken",
+  "attacker.ability.abilities.each do |ability|
+    UniLib::CUSTOM_ABILITIES[ability].move_stat_overrides.each do |mod|
+      tmp = mod.call(attacker, opponent, self)
+      tmp = [:hp, :atk, :def, :spa, :spd, :spe][tmp] if tmp.is_a? Integer
+      case tmp.downcase
+      when :hp then atk = attacker.hp
+      when :atk then atk = attacker.attack; atkstage = attacker.stages[PBStats::ATTACK]+6
+      when :def then atk = attacker.defense; atkstage = attacker.stages[PBStats::DEFENSE]+6
+      when :spa then atk = attacker.spatk; atkstage = attacker.stages[PBStats::SPATK]+6
+      when :spd then atk = attacker.spdef; atkstage = attacker.stages[PBStats::SPDEF]+6
+      when :spe then atk = attacker.speed; atkstage = attacker.stages[PBStats::SPEED]+6
+      when :opphp then atk = opponent.hp
+      when :oppatk then atk = opponent.attack; atkstage = opponent.stages[PBStats::ATTACK]+6
+      when :oppdef then atk = opponent.defense; atkstage = opponent.stages[PBStats::DEFENSE]+6
+      when :oppspa then atk = opponent.spatk; atkstage = opponent.stages[PBStats::SPATK]+6
+      when :oppspd then atk = opponent.spdef; atkstage = opponent.stages[PBStats::SPDEF]+6
+      when :oppspe then atk = opponent.speed; atkstage = opponent.stages[PBStats::SPEED]+6
+      end if tmp.is_a? Symbol
+    end if AbilityModifier.has_event?(ability, :move_stat)
+  end", 0, 1001)
+
+# attacking stat modifier
+UniLib.insert_in_method_before(:PokeBattle_AI, :pbRoughDamage, "case attacker.crested",
   "attacker.ability.abilities.each do |ability|
     UniLib::CUSTOM_ABILITIES[ability].move_stat_overrides.each do |mod|
       tmp = mod.call(attacker, opponent, self)
@@ -295,6 +322,14 @@ UniLib.insert_in_method_before(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "if 
 # move attempted events
 UniLib.insert_in_method_before(:PokeBattle_Battler, :pbTryUseMove, "protype=basemove.pbType(self,basemove.type)",
   "self.ability.abilities.each { |ability| UniLib::CUSTOM_ABILITIES[ability].on_move_attempt_events.each { |event| event.call(self, basemove) } if AbilityModifier.has_event?(ability, :try_move) }", 0, 1001)
+
+# move effect events
+UniLib.insert_in_method_before(:PokeBattle_Battler, :pbUseMove, "basemove.pbEffect(user,nil)",
+  "@ability.abilities.each { |ability| UniLib::CUSTOM_ABILITIES[ability].move_effect_events.each { |event| event.call(self, basemove) } if AbilityModifier.has_event?(ability, :move_effect) }")
+
+# after move effect events
+UniLib.insert_in_method(:PokeBattle_Battler, :pbUseMove, "basemove.pbEffect(user,nil)",
+  "@ability.abilities.each { |ability| UniLib::CUSTOM_ABILITIES[ability].after_move_effect_events.each { |event| event.call(self, basemove) } if AbilityModifier.has_event?(ability, :after_move_effect) }")
 
 # damage taken/dealt events
 UniLib.insert_in_method(:PokeBattle_Battler, :pbEffectsOnDealingDamage, "return if target.nil?",
