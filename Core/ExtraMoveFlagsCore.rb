@@ -12,11 +12,15 @@ UniLib.include "Constants"
 class PokeBattle_Move
 
   def is_kicking_move?
-    UniLib::KICKING_MOVES.include?(self.move)
+    UniLib::KICKING_MOVES.include?(@move)
   end
 
   def is_hand_move?
-    UniLib::HAND_MOVES.include?(self.move)
+    UniLib::HAND_MOVES.include?(@move)
+  end
+
+  def is_wind_move?
+    UniLib::WIND_MOVES.include?(@move)
   end
 
   def is_bite_move?
