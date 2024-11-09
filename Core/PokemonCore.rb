@@ -24,6 +24,18 @@ module UniLib
       end
     end
 
+    def self.add_type1_provider(species, form, provider)
+      key = [species, form]
+      CUSTOM_TYPE1_PROVIDERS[key] = [] if CUSTOM_TYPE1_PROVIDERS[key].nil?
+      CUSTOM_TYPE1_PROVIDERS[key].push(provider) unless CUSTOM_TYPE1_PROVIDERS[key].include?(provider)
+    end
+
+    def self.add_type2_provider(species, form, provider)
+      key = [species, form]
+      CUSTOM_TYPE2_PROVIDERS[key] = [] if CUSTOM_TYPE2_PROVIDERS[key].nil?
+      CUSTOM_TYPE2_PROVIDERS[key].push(provider) unless CUSTOM_TYPE2_PROVIDERS[key].include?(provider)
+    end
+
   end
 
   MODIFIED_POKEMON = {}
@@ -67,7 +79,7 @@ class PokeModifier
       @stats = get_base_data(:BaseStats)
       @types = { :Type1 => get_base_data(:Type1), :Type2 => get_base_data(:Type2)}
       abil2 = get_base_data(:Abilities)[2]
-      @abilities = { 0 => get_base_data(:Abilities)[0], 1 =>  get_base_data(:Abilities)[1], 2 => abil2.nil? ? get_base_data(:HiddenAbilities) : abil2}
+      @abilities = { 0 => get_base_data(:Abilities)[0], 1 => get_base_data(:Abilities)[1], 2 => abil2.nil? ? get_base_data(:HiddenAbilities) : abil2}
       @base_learnset = get_base_data(:Moveset)
       @base_learnset = [] if @base_learnset.nil?
       @learnset = []
@@ -233,16 +245,16 @@ UniLib.add_play_event(:register_modified_pokemon)
 # ======================================================================================================================================== #
 
 UniLib.insert_in_method(:PokeBattle_Pokemon, :type1, :HEAD,
- "provider = UniLib::CUSTOM_TYPE1_PROVIDERS[@species]
-  unless provider.nil?
+ "providers = UniLib::CUSTOM_TYPE1_PROVIDERS[[@species, @form]]
+  providers.each do |provider|
     ret = provider.call(self)
     return ret unless ret.nil?
-  end")
+  end unless providers.nil?")
 
 UniLib.insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
- "provider = UniLib::CUSTOM_TYPE2_PROVIDERS[@species]
-  unless provider.nil?
+ "providers = UniLib::CUSTOM_TYPE2_PROVIDERS[[@species, @form]]
+  providers.each do |provider|
     ret = provider.call(self)
-    return nil if ret == type1
+    next if ret == type1
     return ret unless ret.nil?
-  end")
+  end unless providers.nil?")
