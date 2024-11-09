@@ -72,8 +72,9 @@ class PokeModifier
   <<-DOC
   >> makes the pokemon's types match that of its first two moves.
   DOC
-  def set_camo
-    @camo = true
+  def set_camo(value = 2)
+    @camo = value
+    self
   end
 
   <<-DOC
@@ -86,14 +87,16 @@ class PokeModifier
     else
       @alphabet |= [letter]
     end
+    self
   end
 
   <<-DOC
   >> when set, all the pokemon's abilities will be active at once
   DOC
-  def set_pokebilities
+  def set_pokebilities(value = 2)
     multibility_handler(UniLib::POKEBILITY_PROC)
-    @pokebilities = true
+    @pokebilities = value
+    self
   end
 
 end

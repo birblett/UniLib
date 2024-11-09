@@ -6,10 +6,15 @@ UniLib.verify_version(0.6, __FILE__)
 UniLib.include "Pokemon"
 UniLib.include "Move"
 UniLib.include "Ability"
+UniLib.include "Item"
 
 # ======================================================================================================================================== #
 # ============================================================ INTERNAL/CORE ============================================================= #
 # ======================================================================================================================================== #
+
+ItemBuilder.add(:CATALYZER, "Catalyzer", "May activate the user's hidden potential.")
+           .no_use
+           .no_use_in_battle
 
 module UniLib
 
@@ -57,15 +62,16 @@ module UniLib
 
     def self.ability_select(default, list)
       cmdwin=pbListWindow([], 200)
-      tmp = UniLib::CUSTOM_ABILITIES.map { |k, v| [k, v.name] }
-      commands=[] + CUSTOM_POKEMON_ABILITIES + tmp
+      commands= [] + CUSTOM_POKEMON_ABILITIES + UniLib::CUSTOM_ABILITIES.map { |k, v| [k, v.name] }
       list.each { |_, ability| commands.push([ability, UniLib::ABILITY_DATA[ability].name]) if BANNED_ABILITIES.include?(ability) }
       commands.sort! {|a,b| a[1]<=>b[1]}
-      realcommands=[]
-      commands.each { |command| realcommands.push(_ISPRINTF("{1:s}", command[1])) }
-      ret=pbCommands2(cmdwin,realcommands,-1,default-1,true)
+      ret = pbCommands2(cmdwin, commands.map { |command| _ISPRINTF("{1:s}", command[1])} ,-1,default-1,true)
       cmdwin.dispose
-      ret>=0 ? commands[ret][0] : 0
+      ret >= 0 ? commands[ret][0] : 0
+    end
+
+    def self.pokebilities_active(pkmn)
+      UniLib::POKEBILITIES_POKEMON[[pkmn.species, pkmn.form]] == 2 or pkmn.item == :CATALYZER
     end
 
     PLATE_MAP = {:SILKSCARF => :NORMAL, :FISTPLATE => :FIGHTING, :SKYPLATE => :FLYING, :EARTHPLATE => :GROUND, :TOXICPLATE => :POISON,
@@ -74,13 +80,11 @@ module UniLib
                  :DRACOPLATE => :DRAGON, :DREADPLATE => :DARK, :PIXIEPLATE => :FAIRY}
 
     CAMO_PROVIDER_TYPE1 = proc do |pokemon|
-      next pokemon.moves[0].type unless pokemon.moves[0].nil?
-      next nil
+      next pokemon.moves[0].type if (UniLib::CAMO_POKEMON[key = [pokemon.species, pokemon.form]] == 2 or (UniLib::CAMO_POKEMON[key] == 1 and pokemon.item == :CATALYZER)) unless pokemon.moves[0].nil?
     end
 
     CAMO_PROVIDER_TYPE2 = proc do |pokemon|
-      next pokemon.moves[1].type unless pokemon.moves[1].nil?
-      next nil
+      next pokemon.moves[1].type if (UniLib::CAMO_POKEMON[key = [pokemon.species, pokemon.form]] == 2 or (UniLib::CAMO_POKEMON[key] == 1 and pokemon.item == :CATALYZER)) unless pokemon.moves[1].nil?
     end
 
   end
@@ -90,6 +94,7 @@ module UniLib
   PLATE_POKEMON = {}
   CUSTOM_PLATE_MAP = {}
   ALPHABET_POKEMON = {}
+  CAMO_POKEMON = {}
   CUSTOM_POKEMON_ABILITIES = []
   POKEBILITIES_POKEMON = {}
 
@@ -114,9 +119,9 @@ class PokeModifier
     modifier.stab = false
     modifier.stab_types = []
     modifier.plates = []
-    modifier.camo = false
+    modifier.camo = 0
     modifier.alphabet = []
-    modifier.pokebilities = false
+    modifier.pokebilities = 0
   end
 
   OM_MODIFIER_BUILD = proc do |modifier|
@@ -147,11 +152,12 @@ class PokeModifier
     end
     UniLib::ALPHABET_POKEMON[key] = modifier.alphabet if modifier.alphabet.length > 0
     modifier.set_plates_internal(modifier.plates) unless modifier.plates.empty?
-    if modifier.camo
-      UniLib::CUSTOM_TYPE1_PROVIDERS[key] = UniLib::CAMO_PROVIDER_TYPE1
-      UniLib::CUSTOM_TYPE2_PROVIDERS[key] = UniLib::CAMO_PROVIDER_TYPE2
+    if modifier.camo > 0
+      UniLib::CAMO_POKEMON[key] = modifier.camo
+      UniLib.add_type1_provider(modifier.species, modifier.form, UniLib::CAMO_PROVIDER_TYPE1)
+      UniLib.add_type2_provider(modifier.species, modifier.form, UniLib::CAMO_PROVIDER_TYPE2)
     end
-    UniLib::POKEBILITIES_POKEMON[key] = true if modifier.pokebilities
+    UniLib::POKEBILITIES_POKEMON[key] = modifier.pokebilities if modifier.pokebilities > 0
   end
 
   def set_aaa_internal
@@ -180,7 +186,7 @@ PokeModifier::EVENT_POKEMODIFIER_POST_BUILD.push(PokeModifier::OM_MODIFIER_BUILD
 UniLib.insert_in_function(ItemHandlers::UseOnPokemon.instance_variable_get(:@hash)[:ABILITYCAPSULE], :HEAD,
  "key = [pokemon.species, pokemon.form]
   unless UniLib::AAA_POKEMON[key].nil?
-    list = UniLib::POKEBILITIES_POKEMON[key] ? [] : pokemon.getAbilityList
+    list = UniLib.pokebilities_active(pokemon) ? [] : pokemon.getAbilityList
     i = UniLib.ability_select(1, list)
     if i != 0
       pokemon.setAbility(i)
@@ -194,31 +200,35 @@ UniLib.insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
   return UniLib::PLATE_MAP[@item] if !UniLib::PLATE_POKEMON[key].nil? and UniLib::PLATE_POKEMON[key].include?(@item) and UniLib::PLATE_MAP.include?(@item)
   return UniLib::CUSTOM_PLATE_MAP[@item] if !UniLib::PLATE_POKEMON[key].nil? and UniLib::PLATE_POKEMON[key].include?(@item) and UniLib::CUSTOM_PLATE_MAP.include?(@item)")
 
+UniLib.insert_in_method_before(:PokeBattle_Battle, :pbIsUnlosableItem, :HEAD,
+  "key = [pkmn.species, pkmn.form]
+  return true if !UniLib::PLATE_POKEMON[key].nil? and UniLib::PLATE_POKEMON[key].include?(item) and (UniLib::PLATE_MAP.include?(item) or UniLib::CUSTOM_PLATE_MAP.include?(item))")
+
 UniLib.insert_in_function_before(:pbGetRelearnableMoves, "return moves|[]",
   "key = [pokemon.species, pokemon.form]
   UniLib::STAB_POKEMON[key].each { |type| moves |= UniLib::TYPE_MAPPED_MOVES[type] unless UniLib::TYPE_MAPPED_MOVES[type].nil? } unless UniLib::STAB_POKEMON[key].nil?
   UniLib::ALPHABET_POKEMON[key].each { |letter| moves |= UniLib::ALPHABET_MOVES[letter] unless UniLib::ALPHABET_MOVES[letter].nil? } unless UniLib::ALPHABET_POKEMON[key].nil?")
 
-UniLib.insert_in_method(:PokemonSummaryScene, :drawAbilPage, "memo+=_INTL(\"<c3=F8F8F8,686868>Ability:<c3=404040,B0B0B0>\n\")", "abilname = \"Pokebilities\" if UniLib::POKEBILITIES_POKEMON[[@pokemon.species, @pokemon.form]]")
+UniLib.insert_in_method(:PokemonSummaryScene, :drawAbilPage, "memo+=_INTL(\"<c3=F8F8F8,686868>Ability:<c3=404040,B0B0B0>\n\")", "abilname = \"Pokebilities\" if UniLib.pokebilities_active(@pokemon)")
 
 UniLib.insert_in_method(:PokemonSummaryScene, :drawPageThree, "abilitydesc = abil.nil? ? (@pokemon.ability.nil? ? NoAbilDesc : NotRealAbil) : abil.desc.nil? ? MissingAbilDesc : abil.desc",
-   "if UniLib::POKEBILITIES_POKEMON[[@pokemon.species, @pokemon.form]]
+   "if UniLib.pokebilities_active(@pokemon)
     abilityname = \"Pokebilities\"
     list = @pokemon.getAbilityList
+    list.push(pokemon.ability) unless list.include?(pokemon.ability)
     abilitydesc = \"\"
     list.each { |abil| abilitydesc += getAbilityName(abil, true) + (abil != list.last ? \" + \" : \".\") }
-    abilitydesc += \" + \" + getAbilityName(pokemon.ability) if !list.include?(pokemon.ability)
   end")
 
 UniLib.insert_in_method(:PokemonSummaryScene, :drawPageFour, "abilitydesc = abil.nil? ? (pokemon.ability.nil? ? NoAbilDesc : NotRealAbil) : abil.desc.nil? ? MissingAbilDesc : abil.desc",
-  "if UniLib::POKEBILITIES_POKEMON[[pokemon.species, pokemon.form]]
+  "if UniLib.pokebilities_active(@pokemon)
     abilityname = \"Pokebilities\"
     list = pokemon.getAbilityList
+    list.push(pokemon.ability) unless list.include?(pokemon.ability)
     abilitydesc = \"\"
     list.each { |abil| abilitydesc += getAbilityName(abil, true) + (abil != list.last ? \" + \" : \".\")}
-    abilitydesc += \" + \" + getAbilityName(pokemon.ability) if !list.include?(pokemon.ability)
   end")
 
-UniLib.insert_in_method(:PokemonStorageScene, :pbUpdateOverlay, "abilityname=getAbilityName(pokemon.ability)", "abilityname = \"Pokebilities\" if UniLib::POKEBILITIES_POKEMON[[pokemon.species, pokemon.form]]")
+UniLib.insert_in_method(:PokemonStorageScene, :pbUpdateOverlay, "abilityname=getAbilityName(pokemon.ability)", "abilityname = \"Pokebilities\" if UniLib.pokebilities_active(pokemon)")
 
-UniLib.insert_in_method(:PokeBattle_Pokemon, :initAbility, :TAIL, "@ability = abillist[0] if UniLib::POKEBILITIES_POKEMON[[@species, @form]]")
+UniLib.insert_in_method(:PokeBattle_Pokemon, :initAbility, :TAIL, "@ability = abillist[0] if UniLib.pokebilities_active(self)")

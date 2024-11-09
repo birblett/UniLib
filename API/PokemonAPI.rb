@@ -110,7 +110,7 @@ class PokeModifier
   >> sets a custom primary type based on a condition. proc should return nil if no changes are required.
   DOC
   def type1_provider(proc)
-    CUSTOM_TYPE1_PROVIDERS[@species] = proc
+    UniLib.add_type1_provider(@species, @form, proc)
   end
 
   <<-DOC
@@ -118,7 +118,7 @@ class PokeModifier
   >> sets a custom secondary type based on a condition. proc should return nil if no changes are required.
   DOC
   def type2_provider(proc)
-    CUSTOM_TYPE2_PROVIDERS[@species] = proc
+    UniLib.add_type2_provider(@species, @form, proc)
   end
 
   <<-DOC
@@ -128,6 +128,16 @@ class PokeModifier
   DOC
   def abilities(abilities)
     abilities.each { |slot, ability| @abilities[slot] = ability}
+    self
+  end
+
+  <<-DOC
+  @param slot - index of the ability slot
+  @param ability - ability input as a symbol
+  >> replaces the ability at the target index
+  DOC
+  def ability(slot, ability)
+    @abilities[slot] = ability
     self
   end
 
