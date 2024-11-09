@@ -182,7 +182,7 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :pbTypeModNoMessages, "case oppon
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModifier, "return mod1*mod2",
   "attacker.ability.abilities.each do |ability|
     UniLib::CUSTOM_ABILITIES[ability].type_modifiers.each do |mod|
-      modifiers = mod.call(attacker, opponent, atype, mod1, mod2)
+      modifiers = mod.call(attacker, opponent, self, mod1, mod2)
       mod1, mod2 = modifiers[0], modifiers[1] unless modifiers.nil?
     end if AbilityModifier.has_event?(ability, :type_effectiveness)
   end", 0, 1001)

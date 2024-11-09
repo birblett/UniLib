@@ -279,7 +279,7 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :pbTypeModNoMessages, "case oppon
 # move type effectiveness modifier
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModifier, "return mod1*mod2",
   "UniLib::EVENT_ITEMS[attacker.item].type_modifiers.each do |mod|
-    modifiers = mod.call(attacker, opponent, atype, mod1, mod2)
+    modifiers = mod.call(attacker, opponent, self, mod1, mod2)
     mod1, mod2 = modifiers[0], modifiers[1] unless modifiers.nil?
   end if ItemModifier.affects?(attacker.item, attacker, :type_effectiveness)
   ItemModifier.consume_items")
