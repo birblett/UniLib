@@ -49,6 +49,7 @@ class AbilityModifier
   attr_accessor(:weather_scores)
   attr_accessor(:ability_scores)
   attr_accessor(:field_scores)
+  attr_accessor(:move_scores)
   attr_accessor(:has_event)
 
   def initialize(symbol, name=nil, desc=nil, fulldesc=nil)
@@ -85,6 +86,7 @@ class AbilityModifier
     @weather_scores = []
     @ability_scores = []
     @field_scores = []
+    @move_scores = []
     @has_event = {}
   end
 
@@ -153,7 +155,11 @@ UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponen
       typemod = UniLib::CUSTOM_ABILITIES[ability].forced_resistances[type] if (b = !UniLib::CUSTOM_ABILITIES[ability].forced_resistances[type].nil?)
       typemod /= 2 if (b = check_type(type, UniLib::CUSTOM_ABILITIES[ability].weakness_fakes, UniLib::TYPE_WEAKNESS_MAP)) unless b
       typemod /= 2 if check_type(type, UniLib::CUSTOM_ABILITIES[ability].resistance_fakes, UniLib::TYPE_RESISTANCE_MAP) unless b
-      UniLib::CUSTOM_ABILITIES[ability].type_effectiveness_modifiers.each { |provider| typemod *= provider.call(opponent, type) unless provider.call(opponent, type).nil? }
+      UniLib::CUSTOM_ABILITIES[ability].type_effectiveness_modifiers.each { |provider|
+        b = provider.call(opponent, type, true)
+        typemod *= b unless b.nil?
+        return 0 if typemod <= 0
+      }
     end
   end", 0, 1001)
 
@@ -164,7 +170,11 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :pbTypeModNoMessages, "case oppon
       typemod = UniLib::CUSTOM_ABILITIES[ability].forced_resistances[type] if (b = !UniLib::CUSTOM_ABILITIES[ability].forced_resistances[type].nil?)
       typemod /= 2 if (b = check_type(type, UniLib::CUSTOM_ABILITIES[ability].weakness_fakes, UniLib::TYPE_WEAKNESS_MAP)) unless b
       typemod /= 2 if check_type(type, UniLib::CUSTOM_ABILITIES[ability].resistance_fakes, UniLib::TYPE_RESISTANCE_MAP) unless b
-      UniLib::CUSTOM_ABILITIES[ability].type_effectiveness_modifiers.each { |provider| typemod *= provider.call(opponent, type) unless provider.call(opponent, type).nil? }
+      UniLib::CUSTOM_ABILITIES[ability].type_effectiveness_modifiers.each { |provider|
+        b = provider.call(opponent, type, false)
+        typemod *= b unless b.nil?
+        return 0 if typemod <= 0
+      }
     end if opponent.ability.is_a?(AbilityContainer)
   end", 1, 1001)
 
@@ -219,6 +229,7 @@ UniLib.insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "case attacker.a
   "attacker.ability.abilities.each do |ability|
     UniLib::CUSTOM_ABILITIES[ability].damage_modifiers.each do |mod|
       modifier = mod.call(attacker, opponent, self, hitnum, false)
+      Kernel.pbMessage(\"\#{modifier}\") unless modifier.nil?
       basemult *= modifier unless modifier.nil?
     end if AbilityModifier.has_event?(ability, :damage_mod)
   end", 0, 1001)
@@ -394,3 +405,11 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :getSwitchInScoresParty, "case @b
       fieldscore += mod unless (mod = mod.call(self, i, @battle.FE)).nil?
     end if AbilityModifier.has_event?(ability, :field_score)
   end if i.ability.is_a? AbilityContainer")
+
+# move score
+UniLib.insert_in_method_before(:PokeBattle_AI, :getMoveScore, "case @move.function",
+  "@attacker.ability.abilities.each do |ability|
+    UniLib::CUSTOM_ABILITIES[ability].move_scores.each do |mod|
+      miniscore *= mod unless (mod = mod.call(self, @attacker, @opponent, @move)).nil?
+    end if AbilityModifier.has_event?(ability, :move_score)
+  end")

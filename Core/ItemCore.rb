@@ -74,6 +74,9 @@ class ItemModifier
   attr_accessor(:on_turn_end_events)
   attr_accessor(:form_changes)
   attr_accessor(:event_conditions)
+  attr_accessor(:item_scores)
+  attr_accessor(:item_switch_scores)
+  attr_accessor(:move_scores)
   attr_accessor(:has_event)
 
   def self.set_consumed_item(pkmn)
@@ -117,6 +120,7 @@ class ItemModifier
     @ability_providers = []
     @item_scores = []
     @item_switch_scores = []
+    @move_scores = []
     @has_event = {}
   end
 
@@ -252,7 +256,11 @@ UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponen
     typemod = UniLib::EVENT_ITEMS[opponent.item].forced_resistances[type] if (b = !UniLib::EVENT_ITEMS[opponent.item].forced_resistances[type].nil?)
     typemod /= 2 if (b = check_type(type, UniLib::EVENT_ITEMS[opponent.item].weakness_fakes, UniLib::TYPE_WEAKNESS_MAP)) unless b
     typemod /= 2 if check_type(type, UniLib::EVENT_ITEMS[opponent.item].resistance_fakes, UniLib::TYPE_RESISTANCE_MAP) unless b
-    UniLib::EVENT_ITEMS[opponent.item].type_effectiveness_modifiers.each { |provider| typemod *= provider.call(opponent, type) unless provider.call(opponent, type).nil? }
+    UniLib::EVENT_ITEMS[opponent.item].type_effectiveness_modifiers.each { |provider|
+      b = provider.call(opponent, type, true)
+      typemod *= b unless b.nil?
+      return 0 if typemod <= 0
+    }
   end")
 
 # resistance modifiers and overrides
@@ -261,7 +269,11 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :pbTypeModNoMessages, "case oppon
     typemod = UniLib::EVENT_ITEMS[opponent.item].forced_resistances[type] if (b = !UniLib::EVENT_ITEMS[opponent.item].forced_resistances[type].nil?)
     typemod /= 2 if (b = check_type(type, UniLib::EVENT_ITEMS[opponent.item].weakness_fakes, UniLib::TYPE_WEAKNESS_MAP)) unless b
     typemod /= 2 if check_type(type, UniLib::EVENT_ITEMS[opponent.item].resistance_fakes, UniLib::TYPE_RESISTANCE_MAP) unless b
-    UniLib::EVENT_ITEMS[opponent.item].type_effectiveness_modifiers.each { |provider| typemod *= provider.call(opponent, type) unless provider.call(opponent, type).nil? }
+    UniLib::EVENT_ITEMS[opponent.item].type_effectiveness_modifiers.each { |provider|
+      b = provider.call(opponent, type, false)
+      typemod *= b unless b.nil?
+      return 0 if typemod <= 0
+    }
   end", 1)
 
 # move type effectiveness modifier
@@ -460,5 +472,11 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :getItemScore, "itemscore-=100",
 # item switch in score
 UniLib.insert_in_method_before(:PokeBattle_AI, :getSwitchInScoresParty, "if (i.item == :ROCKYHELMET)",
   "UniLib::EVENT_ITEMS[i].item_switch_scores.each do |mod|
-    itemscore += f unless (f = mod.call(self, i, @opponent, i.item)).nil?
+    itemscore += f unless (f = mod.call(self, i, @opponent)).nil?
   end if ItemModifier.affects?(i.item, i, :item_switch_score)")
+
+# move score
+UniLib.insert_in_method_before(:PokeBattle_AI, :getMoveScore, "case @move.function",
+  "UniLib::EVENT_ITEMS[@attacker.item].move_scores.each do |mod|
+    miniscore *= mod unless (mod = mod.call(self, @attacker, @opponent, @move)).nil?
+  end if ItemModifier.affects?(@attacker.item, @attacker, :move_score)")

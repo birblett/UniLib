@@ -327,7 +327,8 @@ class ItemModifier
 
   <<-DOC
   @param proc - a function returning a numeric multiplier
-  >> adds a conditional type effectiveness provider. accepts 2 arguments, defender (PokeBattle_Battler) and attack type (symbol).
+  >> adds a conditional type effectiveness provider. accepts 3 arguments, defender (PokeBattle_Battler), attack type (symbol), and whether
+     messages should be sent in the current context (boolean).
   DOC
   def type_effectiveness_mod_simple(proc)
     @has_event[:type_effectiveness_simple] = true
@@ -555,14 +556,23 @@ class ItemModifier
 
   <<-DOC
   @param proc - a function returning an integer adder.
-  >> a conditional form provider, accepts 4 arguments, the calling AI instance (PokeBattle_AI), the attacker (PokeBattle_Pokemon), the
-     target (PokeBattle_Pokemon), and item (Symbol); returns an item score adder corresponding to the item. see 
-     PokeBattle_AI$getSwitchInScoresParty
+  >> a conditional form provider, accepts 3 arguments, the calling AI instance (PokeBattle_AI), the attacker (PokeBattle_Pokemon), the
+     target (PokeBattle_Pokemon); returns an item score adder corresponding to the item. see PokeBattle_AI$getSwitchInScoresParty
   DOC
   def switch_item_score(proc)
     @has_event[:item_score] = true
     @item_scores.push(proc)
     self
+  end
+
+  <<-DOC
+  @param proc - a function returning a float multiplier.
+  >> a conditional form provider, accepts 4 arguments, the calling AI instance (PokeBattle_AI), the attacker (PokeBattle_Pokemon, 
+     the defender (PokeBattle_Pokemon), and the move (PokeBattle_Move); returns a move score modifier.
+  DOC
+  def move_score(proc)
+    @has_event[:move_score] = true
+    @move_scores.push(proc)
   end
 
 end
