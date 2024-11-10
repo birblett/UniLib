@@ -37,6 +37,7 @@ class AbilityModifier
   attr_accessor(:type_modifiers)
   attr_accessor(:move_type_overrides)
   attr_accessor(:move_stat_overrides)
+  attr_accessor(:on_effects_init_events)
   attr_accessor(:on_battle_entry_events)
   attr_accessor(:on_move_attempt_events)
   attr_accessor(:move_effect_events)
@@ -74,6 +75,7 @@ class AbilityModifier
     @type_modifiers = []
     @move_type_overrides = []
     @move_stat_overrides = []
+    @on_effects_init_events = []
     @on_battle_entry_events = []
     @on_move_attempt_events = []
     @move_effect_events = []
@@ -229,7 +231,6 @@ UniLib.insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "case attacker.a
   "attacker.ability.abilities.each do |ability|
     UniLib::CUSTOM_ABILITIES[ability].damage_modifiers.each do |mod|
       modifier = mod.call(attacker, opponent, self, hitnum, false)
-      Kernel.pbMessage(\"\#{modifier}\") unless modifier.nil?
       basemult *= modifier unless modifier.nil?
     end if AbilityModifier.has_event?(ability, :damage_mod)
   end", 0, 1001)
@@ -337,6 +338,10 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :pbRoughDamage, "case attacker.cr
       end if tmp.is_a? Symbol
     end if AbilityModifier.has_event?(ability, :move_stat)
   end", 0, 1001)
+
+# effect initialization event
+UniLib.insert_in_method(:PokeBattle_Battler, :pbInitEffects, :TAIL,
+  "self.ability.abilities.each { |ability| UniLib::CUSTOM_ABILITIES[ability].on_effects_init_events.each { |event| event.call(self, self.battle, self.effects, oldeffects, fakebattler) } if AbilityModifier.has_event?(ability, :effects_init) } if self.ability.is_a?(AbilityContainer)", 0, 1001)
 
 # switch in event
 UniLib.insert_in_method_before(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "if self.ability == :INTIMIDATE && onactive",

@@ -339,7 +339,7 @@ class ItemModifier
   <<-DOC
   @param proc - a function returning an array of two type modifiers
   >> adds a conditional type effectiveness setter. accepts 5 arguments, the attacker (PokeBattle_Battler), the target 
-     (PokeBattle_Battler), the move type (Symbol), and the two current type modifiers. if not returning nil, both values in return array
+     (PokeBattle_Battler), the move (PokeBattle_Move), and the two current type modifiers. if not nil, both values in return array
      must be numeric. the type modifiers will be set to the two given values.
   DOC
   def type_effectiveness_mod(proc)
@@ -438,6 +438,17 @@ class ItemModifier
   def move_stat_override(proc)
     @has_event[:move_stat] = true
     @move_stat_overrides.push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a void function.
+  >> an event hook for when a pokemon enters the field. accepts 5 arguments, the pokemon (PokeBattle_Battler), the battle 
+     (PokeBattle_Battle), current effects hash (Hash), persistent effects (Hash), and whether the caller is the battle AI or not (boolean).
+  DOC
+  def on_effects_init(proc)
+    @has_event[:effects_init] = true
+    @on_effects_init_events.push(proc)
     self
   end
 

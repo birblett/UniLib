@@ -65,6 +65,7 @@ class ItemModifier
   attr_accessor(:type_modifiers)
   attr_accessor(:move_type_overrides)
   attr_accessor(:move_stat_overrides)
+  attr_accessor(:on_effects_init_events)
   attr_accessor(:on_battle_entry_events)
   attr_accessor(:on_move_attempt_events)
   attr_accessor(:move_effect_events)
@@ -108,6 +109,7 @@ class ItemModifier
     @type_modifiers = []
     @move_type_overrides = []
     @move_stat_overrides = []
+    @on_effects_init_events = []
     @on_battle_entry_events = []
     @on_move_attempt_events = []
     @move_effect_events = []
@@ -418,6 +420,11 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :pbRoughDamage, "case attacker.cr
     when :oppspe then atk = opponent.speed; atkstage = opponent.stages[PBStats::SPEED]+6
     end if tmp.is_a? Symbol
   end if ItemModifier.affects?(attacker.item, attacker, :move_stat)")
+
+# effect initialization event
+UniLib.insert_in_method(:PokeBattle_Battler, :pbInitEffects, :TAIL,
+  "UniLib::EVENT_ITEMS[self.item].on_effects_init_events.each { |event| event.call(self, self.battle, self.effects, oldeffects, fakebattler) } if ItemModifier.affects?(self.item, self, :effects_init)
+  ItemModifier.consume_items unless fakebattler")
 
 # switch in event
 UniLib.insert_in_method_before(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "if self.ability == :INTIMIDATE && onactive",

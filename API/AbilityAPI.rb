@@ -222,6 +222,17 @@ class AbilityModifier
 
   <<-DOC
   @param proc - a void function.
+  >> an event hook for when a pokemon enters the field. accepts 4 arguments, the pokemon (PokeBattle_Battler), the battle 
+     (PokeBattle_Battle), persistent effects (Hash), and whether the caller is the battle AI or not (boolean).
+  DOC
+  def on_effects_init(proc)
+    @has_event[:effects_init] = true
+    @on_effects_init_events.push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a void function.
   >> an event hook for when a pokemon enters the field. accepts 3 arguments, the pokemon (PokeBattle_Battler), the battle 
      (PokeBattle_Battle), and the index of the pokemon entering.
   DOC
