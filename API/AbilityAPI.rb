@@ -26,6 +26,42 @@ class AbilityModifier
   end
 
   <<-DOC
+  @param name - string
+  >> sets the displayed name of the ability (i.e. in debug)
+  DOC
+  def set_name(name)
+    @name = name
+    self
+  end
+
+  <<-DOC
+  @param fullname - string
+  >> sets the full name of the ability
+  DOC
+  def set_full_name(fullname)
+    @full_name = fullname
+    self
+  end
+
+  <<-DOC
+  @param desc - string
+  >> sets the initial displayed description of an ability
+  DOC
+  def set_desc(desc)
+    @desc = desc
+    self
+  end
+
+  <<-DOC
+  @param fulldesc - string
+  >> sets the detailed description of an ability
+  DOC
+  def set_full_desc(fulldesc)
+    @full_desc = fulldesc
+    self
+  end
+
+  <<-DOC
   @param type - type id (or array of type ids)
   >> equivalent to weakness_override + secondary_type
   DOC
