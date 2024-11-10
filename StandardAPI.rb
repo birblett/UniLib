@@ -70,6 +70,7 @@ module UniLib
       load LIB_PATH + path_relative + "Core.rb" if File.exists?(LIB_PATH + path_relative + "Core.rb")
       load LIB_PATH + path_relative + "Lib.rb" if File.exists?(LIB_PATH + path_relative + "Lib.rb")
       load API_PATH + path_relative + "API.rb" if File.exists?(API_PATH + path_relative + "API.rb") unless LOADED_LIBRARIES[path_relative]
+      load API_PATH + path_relative + ".rb" if File.exists?(API_PATH + path_relative + ".rb") unless LOADED_LIBRARIES[path_relative]
     end
     LOADED_LIBRARIES[path_relative] = (LOADED_FILES[path_relative] = true)
   end
