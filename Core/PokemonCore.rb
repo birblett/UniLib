@@ -258,3 +258,5 @@ UniLib.insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
     next if ret == type1
     return ret unless ret.nil?
   end unless providers.nil?")
+
+UniLib.insert_in_method(:PokeBattle_Battle, :pbEndOfBattle, "i.rampCrestUsed = false", "i.permanent_battle_effects = {}")
