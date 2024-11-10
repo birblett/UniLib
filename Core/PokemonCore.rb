@@ -205,6 +205,17 @@ class PokeModifier
 
 end
 
+class PokeBattle_Pokemon
+
+  attr_accessor(:permanent_battle_effects)
+
+  def permanent_battle_effects
+    @permanent_battle_effects = {} unless @permanent_battle_effects
+    @permanent_battle_effects
+  end
+
+end unless UniLib.lib_loaded(__FILE__)
+
 # ======================================================================================================================================== #
 # ================================================================ EVENTS ================================================================ #
 # ======================================================================================================================================== #

@@ -217,16 +217,20 @@ class PokeModifier
 
 end
 
-<<-DOC
->> permanent battle effect hash, similar to effects like the rampardos crest
-DOC
-class PokeBattle_Pokemon
+class PokeBattle_Battler
 
-  attr_accessor(:permanent_battle_effects)
+  <<-DOC
+  >> apply a persistently tracked effect, similar to rampardos crest
+  DOC
+  def set_permanent_effect(symbol, value)
+    self.pokemon.permanent_battle_effects[symbol] = value
+  end
 
-  def permanent_battle_effects
-    @permanent_battle_effects = {} unless @permanent_battle_effects
-    @permanent_battle_effects
+  <<-DOC
+  >> get the current value of a permanent effect
+  DOC
+  def permanent_effect(symbol)
+    self.pokemon.permanent_battle_effects[symbol]
   end
 
 end
