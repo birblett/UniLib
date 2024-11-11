@@ -62,9 +62,10 @@ module UniLib
 
     def self.ability_select(default, list)
       cmdwin=pbListWindow([], 200)
-      commands= [] + CUSTOM_POKEMON_ABILITIES + UniLib::CUSTOM_ABILITIES.map { |k, v| [k, v.name] }
+      commands = CUSTOM_POKEMON_ABILITIES.clone
+      UniLib::CUSTOM_ABILITIES.map { |ability, data| [ability, data.name] }.each { |cmd| commands.push(cmd) unless commands.include?(cmd) }
       list.each { |_, ability| commands.push([ability, UniLib::ABILITY_DATA[ability].name]) if BANNED_ABILITIES.include?(ability) }
-      commands.sort! {|a,b| a[1]<=>b[1]}
+      commands.sort! { |a,b| a[1] <=> b[1] }
       ret = pbCommands2(cmdwin, commands.map { |command| _ISPRINTF("{1:s}", command[1])} ,-1,default-1,true)
       cmdwin.dispose
       ret >= 0 ? commands[ret][0] : 0
