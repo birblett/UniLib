@@ -68,7 +68,7 @@ class ItemModifier < EventProvider
     @data = hash
     @species = []
     @ability_providers = []
-    @event_hash = {}
+    super()
   end
 
   def build
