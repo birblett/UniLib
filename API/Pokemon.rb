@@ -58,10 +58,7 @@ class PokeModifier
       print("PokeModifer for species #{@species} of form #{@form} failed: stat array requires length 6, got #{stats.length}")
       exit
     end
-    UniLib.dev_log(hp, attack, defense, spa, spd, spe)
-    UniLib.dev_log(@stats)
     stats.each_with_index { |stat, i| @stats[i] = stat unless stat.nil? or stat == 0 }
-    UniLib.dev_log(@stats)
     self
   end
 

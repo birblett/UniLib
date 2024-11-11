@@ -24,7 +24,7 @@ class CrestBuilder < ItemModifier
     @tier = 1
     @essence = nil
     @holders = nil
-    @has_event[:crest] = true
+    @event_hash[:crest] = true
   end
 
   def holders
@@ -90,7 +90,7 @@ UniLib.add_save_event(:write_custom_crest_flags)
 # ======================================================================================================================================== #
 
 UniLib.insert_in_method(:PokeBattle_Battler, :hasCrest?, "return true if @battle.pbGetOwnerItems(@index).include?(:SILVCREST) && crestmon.species == :SILVALLY && !@battle.pbOwnedByPlayer?(@index)",
-  "return crestmon.form == 0 ? true : UniLib::VALID_CRESTS[crestmon.item].holders if UniLib::VALID_CRESTS[crestmon.item] and ItemModifier.affects?(crestmon.item, crestmon, :crest)")
+  "return crestmon.form == 0 ? true : UniLib::VALID_CRESTS[crestmon.item].holders if UniLib::VALID_CRESTS[crestmon.item] and ItemModifier.has_event?(crestmon, :crest)")
 
 UniLib.replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@crested = hasCrest? ? pkmn.species : false",
   "h = hasCrest?
