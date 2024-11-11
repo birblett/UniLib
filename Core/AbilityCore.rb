@@ -15,7 +15,6 @@ module UniLib
 
   ABILITY_DATA = load_data("Data/abil.dat") unless defined? ABILITY_DATA
   CUSTOM_ABILITIES = {}
-  POKEMON_ABILITY_CACHE = {}
 
 end
 
@@ -58,9 +57,42 @@ class AbilityModifier < EventProvider
 
 end unless UniLib.lib_loaded(__FILE__)
 
-module PokeBattle_Pokemon_Ability
+class PokeBattle_Pokemon_Ability < AbilityContainer
 
   attr_accessor(:base)
+  def initialize(pkmn, ability)
+    super
+    @base = ability
+  end
+
+end unless UniLib.lib_loaded(__FILE__)
+
+class PokeBattle_Pokemon
+
+  PKMN_ABIL_CACHE = {}
+
+  def update_ability
+    PKMN_ABIL_CACHE[self] = PokeBattle_Pokemon_Ability.new(self, self.ability) unless PKMN_ABIL_CACHE[self] and PKMN_ABIL_CACHE[self].base == self.ability
+  end unless UniLib.lib_loaded(__FILE__)
+
+  def ability_event_value(event)
+    update_ability
+    return unless PKMN_ABIL_CACHE[self].is_a? AbilityContainer
+    PKMN_ABIL_CACHE[self].abilities.each do |ability|
+      next unless AbilityModifier.has_event?(ability, event)
+      out = AbilityModifier.get_event(ability, event)
+      yield(out) unless out.nil?
+    end
+  end unless UniLib.lib_loaded(__FILE__)
+
+  def apply_ability_event(event, *args)
+    update_ability
+    return unless PKMN_ABIL_CACHE[self].is_a? AbilityContainer
+    PKMN_ABIL_CACHE[self].abilities.each do |ability|
+      next unless AbilityModifier.has_event?(ability, event)
+      AbilityModifier.get_event(ability, event).each { |e, out = e.(*args)| yield(out) unless out.nil? }
+    end
+  end unless UniLib.lib_loaded(__FILE__)
 
 end
 
@@ -83,7 +115,7 @@ class PokeBattle_Battler
     end
   end
 
-end
+end unless UniLib.lib_loaded(__FILE__)
 
 # ======================================================================================================================================== #
 # ================================================================ EVENTS ================================================================ #
@@ -104,21 +136,12 @@ UniLib.with_priority(1001) {
 
 # type1 modifier
 UniLib.insert_in_method(:PokeBattle_Pokemon, :type1, :HEAD,
-  "unless UniLib::POKEMON_ABILITY_CACHE[self] and UniLib::POKEMON_ABILITY_CACHE[self].base == self.ability
-    UniLib::POKEMON_ABILITY_CACHE[self] = AbilityContainer.new(self, self.ability)
-    UniLib::POKEMON_ABILITY_CACHE[self].extend PokeBattle_Pokemon_Ability
-    UniLib::POKEMON_ABILITY_CACHE[self].base = self.ability
-  end
-  UniLib::POKEMON_ABILITY_CACHE[self].abilities.each do |ability|
-    return UniLib::CUSTOM_ABILITIES[ability].event_hash[:primary_type] if AbilityModifier.has_event?(ability, :primary_type)
-  end")
+  "self.ability_event_value(:primary_type) { |m| return m }")
 
 # type2 modifier
 UniLib.insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
   "t1 = type1
-  UniLib::POKEMON_ABILITY_CACHE[self].abilities.each do |ability|
-    return UniLib::CUSTOM_ABILITIES[ability].event_hash[:secondary_type] if AbilityModifier.has_event?(ability, :secondary_type) and UniLib::CUSTOM_ABILITIES[ability].event_hash[:secondary_type] != t1
-  end")
+  self.ability_event_value(:secondary_type) { |m| return m if m != t1 }")
 
 # resistance modifiers and overrides
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponent.crested",
