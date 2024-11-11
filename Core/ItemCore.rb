@@ -57,12 +57,9 @@ class ItemModifier < EventProvider
     $should_consume_item = false
   end
 
-  def self.set_consumed_item(pkmn)
-    CONSUMED_ITEM.push(pkmn) if $should_consume_item
-  end
-
   def self.consume_items
-    CONSUMED_ITEM.each { |pkmn| pkmn.pbDisposeItem(pbIsBerry?(pkmn.item)) }
+    CONSUMED_ITEM.each { |pkmn| pkmn.pbDisposeItem(pbIsBerry?(pkmn.item)) if pkmn.is_a? PokeBattle_Battler }
+    CONSUMED_ITEM.clear
   end
 
   def initialize(symbol, hash={})
@@ -108,7 +105,7 @@ class PokeBattle_Pokemon
     ItemModifier.get_event(self, event).each { |e, out = e.(*args)| yield(out) unless out.nil? }
   end
 
-end
+end unless UniLib.lib_loaded(__FILE__)
 
 class PokeBattle_Battler
 
@@ -123,7 +120,7 @@ class PokeBattle_Battler
     ItemModifier.get_event(self, event).each { |e, out = e.(*args)| yield(out) unless out.nil? }
   end
 
-end
+end unless UniLib.lib_loaded(__FILE__)
 
 # ======================================================================================================================================== #
 # ================================================================ EVENTS ================================================================ #

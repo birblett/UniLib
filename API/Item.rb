@@ -278,4 +278,12 @@ class ItemModifier
     self
   end
 
+  <<-DOC
+  @param pkmn - the pokemon whose item is consumed (PokeBattle_Battler)
+  >> flags a pokemon's item as consumed in-battle. safe to call when when doing ai calculations.
+  DOC
+  def self.set_consumed_item(pkmn)
+    CONSUMED_ITEM.push(pkmn) if $should_consume_item
+  end
+
 end
