@@ -27,7 +27,7 @@ class AbilityContainer
   attr_accessor(:ctx)
 
   def initialize(pkmn, ability)
-    @pokemon = pkmn
+    @pokemon = pkmn.is_a?(PokeBattle_Battler) ? pkmn.pokemon : pkmn
     @abilities = ability.is_a?(Array) ? ability.dup : [ability]
     @ctx = ability
     key = [pkmn.species, pkmn.form]

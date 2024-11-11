@@ -44,11 +44,24 @@ class PokeModifier
   end
 
   <<-DOC
-  @param stats - stat input in the form of a 6-number array, in the form [hp, atk, def, spa, spd, spe]
-  >> overwrites a pokemon's existing stats with the provided array
+  @param hp - hp stat, or a 6-number array
+  @param atk - attack stat
+  @param defe - defense stat
+  @param spa - special attack stat
+  @param spd - special defense stat
+  @param spe - speed stat
+  >> overwrites a pokemon's existing stats with the provided stats
   DOC
-  def stats(stats)
-    @stats = stats
+  def stats(hp = 0, attack = 0, defense = 0, spa = 0, spd = 0, spe = 0)
+    stats = hp.is_a?(Array) ? hp : [hp, attack, defense, spa, spd, spe]
+    if stats.length != 6
+      print("PokeModifer for species #{@species} of form #{@form} failed: stat array requires length 6, got #{stats.length}")
+      exit
+    end
+    UniLib.dev_log(hp, attack, defense, spa, spd, spe)
+    UniLib.dev_log(@stats)
+    stats.each_with_index { |stat, i| @stats[i] = stat unless stat.nil? or stat == 0 }
+    UniLib.dev_log(@stats)
     self
   end
 
