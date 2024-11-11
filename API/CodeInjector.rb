@@ -29,7 +29,7 @@ module UniLib
   <<-DOC
   >> injects a block of code after the specified target in the target function.
   DOC
-  def self.insert_in_function(function, target, proc, index=0, priority=1000)
+  def self.insert_in_function(function, target, proc, index=0, priority=$injector_global_priority)
     return if self.has_valid_cache
     self.insert_in_method(:Object, function, target, proc, index, priority)
   end
@@ -37,7 +37,7 @@ module UniLib
   <<-DOC
   >> injects a block of code after the specified target in the target method.
   DOC
-  def self.insert_in_method(clazz, method, target, proc, index=0, priority=1000)
+  def self.insert_in_method(clazz, method, target, proc, index=0, priority=$injector_global_priority)
     return if self.has_valid_cache
     PENDING_INSERTIONS.push([clazz, method, target, proc, index, false, priority])
   end
@@ -45,7 +45,7 @@ module UniLib
   <<-DOC
   >> injects a block of code before the specified target in the target function.
   DOC
-  def self.insert_in_function_before(function, target, proc, index=0, priority=1000)
+  def self.insert_in_function_before(function, target, proc, index=0, priority=$injector_global_priority)
     return if self.has_valid_cache
     self.insert_in_method_before(:Object, function, target, proc, index, priority)
   end
@@ -53,7 +53,7 @@ module UniLib
   <<-DOC
   >> injects a block of code before the specified target in the target method.
   DOC
-  def self.insert_in_method_before(clazz, method, target, proc, index=0, priority=1000)
+  def self.insert_in_method_before(clazz, method, target, proc, index=0, priority=$injector_global_priority)
     return if self.has_valid_cache
     PENDING_INSERTIONS.push([clazz, method, target, proc, index, true, priority])
   end
@@ -61,7 +61,7 @@ module UniLib
   <<-DOC
   >> replaces a target line in the target function. chains with other operations.
   DOC
-  def self.replace_in_function(function, target, proc, index=0, priority=1000)
+  def self.replace_in_function(function, target, proc, index=0, priority=$injector_global_priority)
     return if self.has_valid_cache
     self.replace_in_method(:Object, function, target, proc, index, priority)
   end
@@ -69,7 +69,7 @@ module UniLib
   <<-DOC
   >> replaces a target line in the target method. chains with other operations.
   DOC
-  def self.replace_in_method(clazz, method, target, proc, index=0, priority=1000)
+  def self.replace_in_method(clazz, method, target, proc, index=0, priority=$injector_global_priority)
     return if self.has_valid_cache
     self.insert_in_method_before(clazz, method, target, proc, index, priority)
     self.delete_in_method(clazz, method, target, index, priority)
@@ -78,7 +78,7 @@ module UniLib
   <<-DOC
   >> deletes a target line in the target function. chains with other operations.
   DOC
-  def self.delete_in_function(function, target, index=0, priority=1000)
+  def self.delete_in_function(function, target, index=0, priority=$injector_global_priority)
     return if self.has_valid_cache
     self.delete_in_method(:Object, function, target, index, priority)
   end
@@ -86,7 +86,7 @@ module UniLib
   <<-DOC
   >> deletes a target line in the target method. chains with other operations.
   DOC
-  def self.delete_in_method(clazz, method, target, index=0, priority=1000)
+  def self.delete_in_method(clazz, method, target, index=0, priority=$injector_global_priority)
     return if self.has_valid_cache
     PENDING_DELETIONS.push([clazz, method, target, index, priority])
   end
@@ -97,7 +97,7 @@ module UniLib
   >> these events are called when the player enters a save file. useful for deserializing data. numerically higher 
      priorities go first.
   DOC
-  def self.add_play_event(play_event, priority=1000)
+  def self.add_play_event(play_event, priority=$injector_global_priority)
     EVENT_ON_PLAY.push([play_event, priority]) unless EVENT_ON_PLAY.include?([play_event, priority])
   end
   
@@ -106,7 +106,7 @@ module UniLib
   @param priority - a numeric priority
   >> these events are called when the player creates a new save file. numerically higher priorities go first.
   DOC
-  def self.add_new_file_event(new_file_event, priority=1000)
+  def self.add_new_file_event(new_file_event, priority=$injector_global_priority)
     EVENT_ON_NEW_FILE.push([new_file_event, priority]) unless EVENT_ON_NEW_FILE.include?([new_file_event, priority])
   end
   
@@ -115,7 +115,7 @@ module UniLib
   @param priority - a numeric priority
   >> these events are called on save. useful for serializing data. numerically higher priorities go first.
   DOC
-  def self.add_save_event(save_event, priority=1000)
+  def self.add_save_event(save_event, priority=$injector_global_priority)
     EVENT_ON_SAVE.push([save_event, priority]) unless EVENT_ON_SAVE.include?([save_event, priority])
   end
 
@@ -124,6 +124,22 @@ module UniLib
   DOC
   def self.set_aggressive_caching(default=true)
     default ? CACHE_AGGRESSIVE[0] = true : CACHE_AGGRESSIVE.clear
+  end
+
+  <<-DOC
+  >> sets the global default priority for injectors
+  DOC
+  def self.set_global_priority(priority=1000)
+    $injector_global_priority = priority
+  end
+
+  <<-DOC
+  >> executes a block of code with the given priority before reverting to the default.
+  DOC
+  def self.with_priority(priority)
+    self.set_global_priority(priority)
+    yield
+    self.set_global_priority
   end
   
 end

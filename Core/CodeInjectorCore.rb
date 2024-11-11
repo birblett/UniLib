@@ -10,6 +10,8 @@ UniLib.verify_version(0.6, __FILE__)
 
 module UniLib
 
+  $injector_global_priority = 1000
+
   unless lib_loaded(__FILE__)
 
     SUB_2 = "../../"
