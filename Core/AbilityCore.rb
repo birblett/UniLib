@@ -251,7 +251,7 @@ UniLib.insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "if opponent.abi
 
 # attacking stat modifier (ai)
 UniLib.insert_in_method_before(:PokeBattle_AI, :pbRoughDamage, "case attacker.crested",
-  "attacker.apply_ability_event(:move_stat_override, attacker, opponent, self) { |m|
+  "attacker.apply_ability_event(:move_stat_override, attacker, opponent, move) { |m|
     m = [:hp, :atk, :def, :spa, :spd, :spe][m] if m.is_a? Integer
     case m.downcase
       when :hp then atk = attacker.hp
