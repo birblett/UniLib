@@ -29,4 +29,11 @@ module UniLib
     Marshal.load(Marshal.dump(object))
   end
 
+  def self.damage_pkmn(pkmn, dmg, message=nil)
+    pkmn.battle.scene.pbDamageAnimation(pkmn,0)
+    pkmn.pbReduceHP(dmg)
+    pkmn.battle.pbDisplay(message)
+    pkmn.pbFaint if pkmn.isFainted?
+  end
+
 end
