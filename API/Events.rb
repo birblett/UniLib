@@ -79,8 +79,30 @@ class EventProvider
   end
 
   <<-DOC
+  @param proc - a proc returning a symbol
+  >> conditional proc to set the user's type in battle. accepts 2 arguments, the user (PokeBattle_Battler) and whether the context is on
+     switch-in or not; returns a type symbol.
+  DOC
+  def primary_type_battle(proc)
+    @event_hash[:primary_type_battle] = [] unless @event_hash[:primary_type_battle]
+    @event_hash[:primary_type_battle].push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a proc returning a symbol
+  >> conditional proc to set the user's type in battle. accepts 2 arguments, the user (PokeBattle_Battler) and whether the context is on
+     switch-in or not; returns a type symbol.
+  DOC
+  def secondary_type_battle(proc)
+    @event_hash[:secondary_type_battle] = [] unless @event_hash[:secondary_type_battle]
+    @event_hash[:secondary_type_battle].push(proc)
+    self
+  end
+
+  <<-DOC
   @param type - type id
-  >> allows the user to receive STAB-bonuses from the given type
+  >> allows the user to receive STAB-bonuses from the given type.
   DOC
   def stab_override(type)
     @event_hash[:stab_type] = [] unless @event_hash[:stab_type]
@@ -290,7 +312,8 @@ class EventProvider
   <<-DOC
   @param proc - a void function.
   >> an event hook for when a pokemon deals damage in battle. accepts 4 arguments, the attacker (PokeBattle_Battler), the target 
-     (PokeBattle_Battler), the move used (PokeBattle_Move), and the numeric damage value. return values are ignored. 
+     (PokeBattle_Battler), the move used (PokeBattle_Move), and the numeric damage value. this is called even if a move fails. return values 
+     are ignored. 
   DOC
   def on_damage_dealt(proc)
     @event_hash[:damage_dealt] = [] unless @event_hash[:damage_dealt]
@@ -301,7 +324,8 @@ class EventProvider
   <<-DOC
   @param proc - a void function.
   >> an event hook for when a pokemon is damaged in battle. accepts 4 arguments, the attacker (PokeBattle_Battler), the target
-     (PokeBattle_Battler), the move used (PokeBattle_Move), and the numeric damage value. return values are ignored. 
+     (PokeBattle_Battler), the move used (PokeBattle_Move), and the numeric damage value. this is called even if a move fails. return values 
+     are ignored. 
   DOC
   def on_damage_taken(proc)
     @event_hash[:damage_taken] = [] unless @event_hash[:damage_taken]
