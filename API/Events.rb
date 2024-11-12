@@ -354,7 +354,7 @@ class EventProvider
 
   <<-DOC
   @param proc - a function returning an integer adder.
-  >> a conditional form provider, accepts 3 arguments, the calling AI instance (PokeBattle_AI), the calling pokemon (PokeBattle_Pokemon) and 
+  >> a conditional score modifier, the calling AI instance (PokeBattle_AI), the calling pokemon (PokeBattle_Pokemon) and 
      weather effect (Symbol); returns an added weather score modifier corresponding to the ability - see PokeBattle_AI$getSwitchInScoresParty
   DOC
   def weather_score(proc)
@@ -365,7 +365,7 @@ class EventProvider
 
   <<-DOC
   @param proc - a function returning an integer adder.
-  >> a conditional form provider, accepts 3 arguments, the calling AI instance (PokeBattle_AI), the calling pokemon (PokeBattle_Pokemon) and 
+  >> a conditional score modifier, accepts 3 arguments, the calling AI instance (PokeBattle_AI), the calling pokemon (PokeBattle_Pokemon) and 
      field effect (Symbol); returns an added field score modifier corresponding to the ability - see PokeBattle_AI$getSwitchInScoresParty
   DOC
   def field_score(proc)
@@ -376,12 +376,24 @@ class EventProvider
 
   <<-DOC
   @param proc - a function returning a float multiplier.
-  >> a conditional form provider, accepts 4 arguments, the calling AI instance (PokeBattle_AI), the attacker (PokeBattle_Pokemon, 
+  >> a conditional score modifier, accepts 4 arguments, the calling AI instance (PokeBattle_AI), the attacker (PokeBattle_Pokemon, 
      the defender (PokeBattle_Pokemon), and the move (PokeBattle_Move); returns a move score modifier.
   DOC
   def move_score(proc)
     @event_hash[:move_score] = [] unless @event_hash[:move_score]
     @event_hash[:move_score].push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a function returning a numeric adder.
+  >> a conditional score modifier, accepts 3 arguments, the calling AI instance (PokeBattle_AI), the attacker (PokeBattle_Pokemon, 
+     and the defender (PokeBattle_Pokemon); returns a move score modifier (added).
+  DOC
+  def should_switch_score(proc)
+    @event_hash[:should_switch_score] = [] unless @event_hash[:should_switch_score]
+    @event_hash[:should_switch_score].push(proc)
+    self
   end
 
 end

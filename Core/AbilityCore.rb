@@ -314,6 +314,10 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :getSwitchInScoresParty, "case @b
 UniLib.insert_in_method_before(:PokeBattle_AI, :getMoveScore, "case @move.function",
   "@attacker.apply_ability_event(:move_score, self, @attacker, @opponent, @move) { |m| miniscore *= m }")
 
+# should switch score
+UniLib.insert_in_method_before(:PokeBattle_AI, :shouldSwitch?, "switchscore = statusscore + statscore + healscore + forcedscore + typescore + specialscore",
+  "@attacker.apply_ability_event(:should_switch_score, self, @attacker, @opponent) { |m| specialscore += m }")
+
 # ========= ability only ========= #
 
 # ability score
