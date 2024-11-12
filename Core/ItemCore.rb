@@ -357,12 +357,12 @@ UniLib.insert_in_method_before(:PokeBattle_Battler, :pbTryUseMove, "protype=base
   "ItemModifier.with_consumption { self.apply_item_event(:try_move, self, basemove) { |_| } }")
 
 # move effect events
-UniLib.insert_in_method_before(:PokeBattle_Battler, :pbUseMove, "basemove.pbEffect(user,nil)",
-  "ItemModifier.with_consumption { self.apply_item_event(:move_effect, self, basemove) { |_| } }")
+UniLib.insert_in_method_before(:PokeBattle_Battler, :pbProcessMoveAgainstTarget, "damage = basemove.pbEffect(user,target,i,alltargets,showanimation)",
+  "ItemModifier.with_consumption { user.apply_item_event(:move_effect, user, target, i, basemove) { |_| } }")
 
 # after move effect events
-UniLib.insert_in_method(:PokeBattle_Battler, :pbUseMove, "basemove.pbEffect(user,nil)",
-  "ItemModifier.with_consumption { self.apply_item_event(:after_move_effect, self, basemove) { |_| } }")
+UniLib.insert_in_method(:PokeBattle_Battler, :pbProcessMoveAgainstTarget, "damage = basemove.pbEffect(user,target,i,alltargets,showanimation)",
+  "ItemModifier.with_consumption { user.apply_item_event(:after_move_effect, user, target, i, basemove) { |_| } }")
 
 # damage taken/dealt events
 UniLib.insert_in_method(:PokeBattle_Battler, :pbEffectsOnDealingDamage, "return if target.nil?",
