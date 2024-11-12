@@ -11,9 +11,15 @@ UniLib.verify_version(0.6, __FILE__)
 <<-DOC
 >> ability creation and event API. refer to the Events API for common event types; ability specific events are provided in AbilityModifier.
 DOC
-
 module AbilityBuilder
 
+  <<-DOC
+  @param symbol - ability symbol
+  @param name - ability name, string
+  @param desc - ability description, string; must fit in the small ability description box
+  @param fulldesc - full-length ability description, string; defaulting to regular desc
+  >> used for the creation of new abilities. essentially just an AbilityModifier.new call wrapper.
+  DOC
   def self.add(symbol, name, desc, fulldesc=desc)
     AbilityModifier.add(symbol, name, desc, fulldesc)
   end
@@ -22,8 +28,13 @@ end
 
 class AbilityModifier
 
-  include UniLib
-
+  <<-DOC
+  @param symbol - ability symbol
+  @param name - ability name, string
+  @param desc - ability description, string; must fit in the small ability description box
+  @param fulldesc - full-length ability description, string; defaulting to regular desc
+  >> used to create abilitymodifier instances, and can also be used to create new abilities.
+  DOC
   def self.add(symbol, name=nil, desc=nil, fulldesc=nil)
     CUSTOM_ABILITIES[symbol] = AbilityModifier.new(symbol, name, desc, fulldesc) if CUSTOM_ABILITIES[symbol].nil?
     CUSTOM_ABILITIES[symbol]
