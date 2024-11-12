@@ -208,7 +208,7 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbProcessMoveAgainstTarget, "damag
 # damage taken/dealt events
 UniLib.insert_in_method(:PokeBattle_Battler, :pbEffectsOnDealingDamage, "return if target.nil?",
   "user.apply_effect_event(:damage_dealt, user, target, move, damage) { |_| }
-  target.apply_effect_event(:damage_taken, user, target, move, damage) { |_| }")
+  target.apply_effect_event(:damage_taken, user, target, move, damage) { |_| } if damage > 0")
 
 # turn end event handler
 UniLib.insert_in_method_before(:PokeBattle_Battle, :__clauses__pbEndOfRoundPhase, "if i.crested == :VESPIQUEN",

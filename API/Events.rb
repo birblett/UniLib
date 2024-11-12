@@ -312,8 +312,7 @@ class EventProvider
   <<-DOC
   @param proc - a void function.
   >> an event hook for when a pokemon deals damage in battle. accepts 4 arguments, the attacker (PokeBattle_Battler), the target 
-     (PokeBattle_Battler), the move used (PokeBattle_Move), and the numeric damage value. this is called even if a move fails. return values 
-     are ignored. 
+     (PokeBattle_Battler), the move used (PokeBattle_Move), and the numeric damage value. this is called even if a move fails. 
   DOC
   def on_damage_dealt(proc)
     @event_hash[:damage_dealt] = [] unless @event_hash[:damage_dealt]
@@ -324,8 +323,7 @@ class EventProvider
   <<-DOC
   @param proc - a void function.
   >> an event hook for when a pokemon is damaged in battle. accepts 4 arguments, the attacker (PokeBattle_Battler), the target
-     (PokeBattle_Battler), the move used (PokeBattle_Move), and the numeric damage value. this is called even if a move fails. return values 
-     are ignored. 
+     (PokeBattle_Battler), the move used (PokeBattle_Move), and the numeric damage value.
   DOC
   def on_damage_taken(proc)
     @event_hash[:damage_taken] = [] unless @event_hash[:damage_taken]
