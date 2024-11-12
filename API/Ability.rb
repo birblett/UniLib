@@ -8,6 +8,10 @@ UniLib.verify_version(0.6, __FILE__)
 # ============================================================== PUBLIC API ============================================================== #
 # ======================================================================================================================================== #
 
+<<-DOC
+>> ability creation and event API. refer to the Events API for common event types; ability specific events are provided in AbilityModifier.
+DOC
+
 module AbilityBuilder
 
   def self.add(symbol, name, desc, fulldesc=desc)

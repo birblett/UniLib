@@ -269,8 +269,8 @@ class EventProvider
 
   <<-DOC
   @param proc - a void function.
-  >> an event hook called when a effect is applied. accepts 2 arguments, the pokemon (PokeBattle_Battler) and the move 
-     (PokeBattle_Move)
+  >> an event hook called when a effect is applied. accepts 4 arguments, the user (PokeBattle_Battler), the target (PokeBattle_Battler), the
+     hit number, and the move (PokeBattle_Move)
   DOC
   def move_effect(proc)
     @event_hash[:move_effect] = [] unless @event_hash[:move_effect]
@@ -279,8 +279,8 @@ class EventProvider
 
   <<-DOC
   @param proc - a void function.
-  >> an event hook called after a move effect is applied. accepts 2 arguments, the pokemon (PokeBattle_Battler) and the move 
-     (PokeBattle_Move)
+  >> an event hook called after a move effect is applied. accepts 4 arguments, the user (PokeBattle_Battler), the target 
+     (PokeBattle_Battler), the hit number, and the move (PokeBattle_Move)
   DOC
   def after_move_effect(proc)
     @event_hash[:after_move_effect] = [] unless @event_hash[:after_move_effect]

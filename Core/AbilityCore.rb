@@ -20,6 +20,8 @@ end
 
 class AbilityModifier < EventProvider
 
+  include UniLib
+
   attr_accessor(:name)
   attr_accessor(:full_name)
   attr_accessor(:desc)
@@ -48,11 +50,11 @@ class AbilityModifier < EventProvider
   end
 
   def self.has_event?(ability, id)
-    !UniLib::CUSTOM_ABILITIES[ability].nil? and UniLib::CUSTOM_ABILITIES[ability].event_hash[id]
+    !CUSTOM_ABILITIES[ability].nil? and CUSTOM_ABILITIES[ability].event_hash[id]
   end
 
   def self.get_event(ability, id)
-    UniLib::CUSTOM_ABILITIES[ability].event_hash[id]
+    CUSTOM_ABILITIES[ability].event_hash[id]
   end
 
 end unless UniLib.lib_loaded(__FILE__)
@@ -270,12 +272,12 @@ UniLib.insert_in_method_before(:PokeBattle_Battler, :pbTryUseMove, "protype=base
   "self.apply_ability_event(:try_move, self, basemove) { |_| }")
 
 # move effect events
-UniLib.insert_in_method_before(:PokeBattle_Battler, :pbUseMove, "basemove.pbEffect(user,nil)",
-  "self.apply_ability_event(:move_effect, self, basemove) { |_| }")
+UniLib.insert_in_method_before(:PokeBattle_Battler, :pbProcessMoveAgainstTarget, "damage = basemove.pbEffect(user,target,i,alltargets,showanimation)",
+  "user.apply_ability_event(:move_effect, user, target, i, basemove) { |_| }")
 
 # after move effect events
-UniLib.insert_in_method(:PokeBattle_Battler, :pbUseMove, "basemove.pbEffect(user,nil)",
-  "self.apply_ability_event(:after_move_effect, self, basemove) { |_| }")
+UniLib.insert_in_method(:PokeBattle_Battler, :pbProcessMoveAgainstTarget, "damage = basemove.pbEffect(user,target,i,alltargets,showanimation)",
+  "user.apply_ability_event(:after_move_effect, user, target, i, basemove) { |_| }")
 
 # damage taken/dealt events
 UniLib.insert_in_method(:PokeBattle_Battler, :pbEffectsOnDealingDamage, "return if target.nil?",
