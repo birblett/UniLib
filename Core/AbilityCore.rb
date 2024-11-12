@@ -145,6 +145,16 @@ UniLib.insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
   "t1 = type1
   self.ability_event_value(:secondary_type) { |m| return m if m != t1 }")
 
+# type modifiers (in battle, on switch in)
+UniLib.insert_in_method(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, :TAIL,
+  "self.apply_ability_event(:primary_type_battle, self, true) { |m| @type1 = m }
+  self.apply_ability_event(:secondary_type_battle, self, true) { |m| @type2 = (m == @type1 ? nil : m) }")
+
+# type modifiers (in battle, on update)
+UniLib.insert_in_method(:PokeBattle_Battler, :pbUpdate, "crestStats if @crested",
+  "self.apply_ability_event(:primary_type_battle, self, false) { |m| @type1 = m }
+  self.apply_ability_event(:secondary_type_battle, self, false) { |m| @type2 = (m == @type1 ? nil : m) }")
+
 # resistance modifiers and overrides
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponent.crested",
   "opponent.ability_event_value(:forced_resistance) { |forced| typemod = forced[type] unless forced[type].nil? }
@@ -173,7 +183,7 @@ UniLib.insert_in_method(:PokeBattle_Move, :pbCalcDamage, "typecrest = false",
 UniLib.insert_in_method(:PokeBattle_AI, :pbRoughDamage, "typecrest = false",
   "attacker.ability_event_value(:stab_type) { |types| typecrest = true if types.include?(type) }", 1)
 
-# battle stat modifier
+# battle stat modifier (on initialize)
 UniLib.insert_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "crestStats if @crested",
   "stats = NumberContainer.of(@hp, @attack, @defense, @spatk, @spdef, @speed)
   self.apply_ability_event(:battle_stat_calc, self, stats) { |_| }

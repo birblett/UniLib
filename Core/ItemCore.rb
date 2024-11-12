@@ -224,6 +224,20 @@ UniLib.insert_in_method(:PokeBattle_Pokemon, :type1, :HEAD,
 UniLib.insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
   "self.item_event_value(:secondary_type) { |m| return m == self.type1 ? nil : m }")
 
+# type modifiers (in battle, on switch in)
+UniLib.insert_in_method(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, :TAIL,
+  "ItemModifier.with_consumption {
+    self.apply_item_event(:primary_type_battle, self, true) { |m| @type1 = m }
+    self.apply_item_event(:secondary_type_battle, self, true) { |m| @type2 = (m == @type1 ? nil : m) }
+  }")
+
+# type modifiers (in battle, on update)
+UniLib.insert_in_method(:PokeBattle_Battler, :pbUpdate, "crestStats if @crested",
+  "ItemModifier.with_consumption {
+    self.apply_item_event(:primary_type_battle, self, false) { |m| @type1 = m }
+    self.apply_item_event(:secondary_type_battle, self, false) { |m| @type2 = (m == @type1 ? nil : m) }
+  }")
+
 # resistance modifiers and overrides
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponent.crested",
   "ItemModifier.with_consumption {
