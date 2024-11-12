@@ -111,13 +111,19 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbUpdate, "crestStats if @crested"
   self.apply_effect_event(:battle_stat_calc, self, stats) { |_| }
   @hp, @attack, @defense, @spatk, @spdef, @speed = *stats.map { |n| n.value }")
 
-# move damage modifier
-UniLib.insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "case attacker.ability",
-  "attacker.apply_effect_event(:damage_mod, attacker, opponent, self, hitnum, false) { |m| basemult *= m; }")
+# battle speed modifier (on calculation)
+UniLib.insert_in_method_before(:PokeBattle_Battler, :pbSpeed, "speed = 1 if speed <= 1",
+  "self.apply_effect_event(:battle_speed_calc, self) { |m| speed *= m }")
 
-# move damage modifier (ai)
+# move damage/damage taken modifier
+UniLib.insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "case attacker.ability",
+  "attacker.apply_effect_event(:damage_mod, attacker, opponent, self, hitnum, false) { |m| basemult *= m }
+  opponent.apply_effect_event(:damage_taken_mod, opponent, attacker, self, hitnum, false) { |m| basemult *= m }")
+
+# move damage/damage taken modifier (ai)
 UniLib.insert_in_method_before(:PokeBattle_AI, :pbRoughDamage, "typecrest = false",
-  "attacker.apply_effect_event(:damage_mod, attacker, opponent, move, move.pbNumHits(attacker), true) { |m| damage *= m }")
+  "attacker.apply_effect_event(:damage_mod, attacker, opponent, move, move.pbNumHits(attacker), true) { |m| damage *= m }
+  opponent.apply_effect_event(:damage_taken_mod, opponent, attacker, move, move.pbNumHits(attacker), true) { |m| damage *= m }")
 
 # move accuracy modifier
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbAccuracyCheck, "return @battle.pbRandom(100)<(baseaccuracy*accuracy/evasion)",
@@ -208,7 +214,7 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbProcessMoveAgainstTarget, "damag
 # damage taken/dealt events
 UniLib.insert_in_method(:PokeBattle_Battler, :pbEffectsOnDealingDamage, "return if target.nil?",
   "user.apply_effect_event(:damage_dealt, user, target, move, damage) { |_| }
-  target.apply_effect_event(:damage_taken, user, target, move, damage) { |_| } if damage > 0")
+  target.apply_effect_event(:damage_taken, target, user, move, damage) { |_| } if damage > 0")
 
 # turn end event handler
 UniLib.insert_in_method_before(:PokeBattle_Battle, :__clauses__pbEndOfRoundPhase, "if i.crested == :VESPIQUEN",

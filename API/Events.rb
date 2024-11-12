@@ -177,6 +177,17 @@ class EventProvider
   end
 
   <<-DOC
+  @param proc - a function returning a speed multiple
+  >> adds a conditional stat modifier. accepts 1 argument, the pokemon (PokeBattle_Battler). return a float multiplier to speed based on
+     current battle conditions.
+  DOC
+  def battle_speed_mods(proc)
+    @event_hash[:battle_speed_calc] = [] unless @event_hash[:battle_speed_calc]
+    @event_hash[:battle_speed_calc].push(proc)
+    self
+  end
+
+  <<-DOC
   @param proc - a function returning a damage multiplier
   >> adds a conditional damage multiplier. accepts 5 arguments, attacker (PokeBattle_Battler), target (PokeBattle_Battler), the move used 
      (PokeBattle_Move), the hit number (or total hit count if being used by battle AI), and whether the move is being used in a battle AI 
@@ -185,6 +196,18 @@ class EventProvider
   def damage_mod(proc)
     @event_hash[:damage_mod] = [] unless @event_hash[:damage_mod]
     @event_hash[:damage_mod].push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a function returning a damage multiplier
+  >> adds a conditional damage multiplier. accepts 5 arguments, the defender (PokeBattle_Battler), attacker (PokeBattle_Battler), the move 
+     used (PokeBattle_Move), the hit number (or total hit count if being used by battle AI), and whether the move is being used in a battle 
+     AI calculation. should return a single numeric damage multiplier.
+  DOC
+  def damage_taken_mod(proc)
+    @event_hash[:damage_taken_mod] = [] unless @event_hash[:damage_taken_mod]
+    @event_hash[:damage_taken_mod].push(proc)
     self
   end
 
@@ -322,7 +345,7 @@ class EventProvider
 
   <<-DOC
   @param proc - a void function.
-  >> an event hook for when a pokemon is damaged in battle. accepts 4 arguments, the attacker (PokeBattle_Battler), the target
+  >> an event hook for when a pokemon is damaged in battle. accepts 4 arguments, the defender (PokeBattle_Battler), the attacker
      (PokeBattle_Battler), the move used (PokeBattle_Move), and the numeric damage value.
   DOC
   def on_damage_taken(proc)

@@ -280,13 +280,21 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbUpdate, "crestStats if @crested"
   self.apply_item_event(:battle_stat_calc, self, stats) { |_| }
   @hp, @attack, @defense, @spatk, @spdef, @speed = *stats.map { |n| n.value }")
 
+# battle speed modifier (on calculation)
+UniLib.insert_in_method_before(:PokeBattle_Battler, :pbSpeed, "speed = 1 if speed <= 1",
+  "self.apply_item_event(:battle_speed_calc, self) { |m| speed *= m }")
+
 # move damage modifier
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "case attacker.ability",
-  "ItemModifier.with_consumption { attacker.apply_item_event(:damage_mod, attacker, opponent, self, hitnum, false) { |m| basemult *= m; } }")
+  "ItemModifier.with_consumption { 
+    attacker.apply_item_event(:damage_mod, attacker, opponent, self, hitnum, false) { |m| basemult *= m }
+    opponent.apply_item_event(:damage_taken_mod, opponent, attacker, self, hitnum, false) { |m| basemult *= m }
+  }")
 
 # move damage modifier (ai)
 UniLib.insert_in_method(:PokeBattle_AI, :pbRoughDamage, "typecrest = false",
-  "attacker.apply_item_event(:damage_mod, attacker, opponent, move, move.pbNumHits(attacker), true) { |m| damage *= m }")
+  "attacker.apply_item_event(:damage_mod, attacker, opponent, move, move.pbNumHits(attacker), true) { |m| damage *= m }
+  opponent.apply_item_event(:damage_taken_mod, opponent, attacker, self, move.pbNumHits(attacker), true) { |m| damage *= m }")
 
 # move accuracy modifier
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbAccuracyCheck, "return @battle.pbRandom(100)<(baseaccuracy*accuracy/evasion)",
@@ -381,7 +389,7 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbProcessMoveAgainstTarget, "damag
 # damage taken/dealt events
 UniLib.insert_in_method(:PokeBattle_Battler, :pbEffectsOnDealingDamage, "return if target.nil?",
   "ItemModifier.with_consumption { user.apply_item_event(:damage_dealt, user, target, move, damage) { |_| } }
-  ItemModifier.with_consumption { target.apply_item_event(:damage_taken, user, target, move, damage) { |_| } } if damage > 0")
+  ItemModifier.with_consumption { target.apply_item_event(:damage_taken, target, user, move, damage) { |_| } } if damage > 0")
 
 # turn end event handler
 UniLib.insert_in_method_before(:PokeBattle_Battle, :__clauses__pbEndOfRoundPhase, "if i.crested == :VESPIQUEN",
