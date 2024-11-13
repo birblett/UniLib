@@ -47,6 +47,16 @@ class AbilityContainer
     AbilityContainer.new(@pokemon, @abilities)
   end
 
+  def each
+    @abilities.each { |a| yield(a) }
+  end
+
+  def self.multibility_case(clazz, method, case_statement, tail, ending, idx=0, idx2=0)
+    s = case_statement.sub("case ", "") + ".each " + (ending == "}" ? "{" : "do") + " |ability| case ability"
+    UniLib.replace_in_method(clazz, method, case_statement, s, idx)
+    ending == "}" ? UniLib.insert_in_method_before(clazz, method, tail, ending, idx2) : UniLib.insert_in_method(clazz, method, tail, ending, idx2)
+  end
+
 end unless UniLib.lib_loaded(__FILE__)
 
 class Symbol
@@ -89,3 +99,35 @@ UniLib.replace_in_function(:pbShowBattleStats, "report.push(_INTL(\"Ability: {1}
   else
     report.push(_INTL(\"Ability: {1}\", getAbilityName(shownmon.ability.abilities[0])))
   end")
+
+AbilityContainer.multibility_case(:PokeBattle_AI, :getMoveScore, "case @opponent.ability", "contactscore*=0.8 if @opponent.species == :AEGISLASH && !checkAImoves([:KINGSSHIELD]) && (@move.pbIsPhysical?() || @battle.FE == :FAIRYTALE)", "}")
+
+AbilityContainer.multibility_case(:PokeBattle_AI, :entraincode, "case @attacker.ability", "case @opponent.ability", "}")
+
+AbilityContainer.multibility_case(:PokeBattle_AI, :entraincode, "case @opponent.ability", "when :SLOWSTART  then score +=50", "end")
+
+AbilityContainer.multibility_case(:PokeBattle_AI, :moldbreakeronalaser, "case @opponent.ability", "return miniscore", "}")
+
+AbilityContainer.multibility_case(:PokeBattle_AI, :pbTypeModNoMessages, "case opponent.ability", "when :TELEPATHY 						then return 0 if  move.basedamage>0 && opponent.index == attacker.pbPartner.index", "end")
+
+AbilityContainer.multibility_case(:PokeBattle_AI, :getAbilityDisruptScore, "case opponent.ability", "abilityscore*=0.01", "}")
+
+AbilityContainer.multibility_case(:PokeBattle_AI, :getSwitchInScoresParty, "case i.ability", "abilityscore+=30 if checkAImoves(PBStuff::PROTECTMOVE,aimem2) && @mondata.skill>=BESTSKILL", "end")
+
+AbilityContainer.multibility_case(:PokeBattle_Move, :pbType, "case attacker.ability", "when :LIQUIDVOICE then type= @battle.FE==:ICY ? :ICE : :WATER if isSoundBased?", "end")
+
+AbilityContainer.multibility_case(:PokeBattle_Move, :pbCalcDamage, "case attacker.ability", "when :INEXORABLE    then basemult*=1.3 if type == :DRAGON && (!opponent.hasMovedThisRound? || @battle.switchedOut[opponent.index])", "end")
+
+AbilityContainer.multibility_case(:PokeBattle_Move, :pbCalcDamage, "case opponent.ability", "if attitemworks", "}")
+
+AbilityContainer.multibility_case(:PokeBattle_Move, :pbCalcDamage, "case attacker.ability", "when :QUARKDRIVE then atkmult*=1.3 if (attacker.effects[:Quarkdrive][0] == PBStats::ATTACK && pbIsPhysical?(type)) || (attacker.effects[:Quarkdrive][0] == PBStats::SPATK && pbIsSpecial?(type))", "end", 1)
+
+AbilityContainer.multibility_case(:PokeBattle_Move, :pbCalcDamage, "case attacker.ability", "when :SKILLLINK then atkmult*=1.2 if (@battle.FE == :COLOSSEUM && (@function == 0xC0 || @function == 0x307 || (attacker.crested == :CINCCINO && !pbIsMultiHit)))", "end", 2)
+
+AbilityContainer.multibility_case(:PokeBattle_Move, :pbCalcDamage, "case opponent.ability", "defmult*=0.5 if type == :FIRE && !(opponent.moldbroken)", "end", 1)
+
+AbilityContainer.multibility_case(:PokeBattle_Battler, :pbSpeed, "case self.ability", "case @battle.FE", "}")
+
+AbilityContainer.multibility_case(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "case self.ability", "when :NEUTRALIZINGGAS then @battle.pbDisplay(_INTL(\"{1}'s gas neutralized all other Pokémon's abilities!\",pbThis))", "end")
+
+# ignoring "case $Trainer.party[0].ability" in PokemonEncounters$pbGenerateEncounters
