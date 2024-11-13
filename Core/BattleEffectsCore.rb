@@ -224,14 +224,6 @@ UniLib.insert_in_method_before(:PokeBattle_Battle, :__clauses__pbEndOfRoundPhase
 UniLib.insert_in_method(:PokeBattle_Battler, :pbCheckForm, "transformed=false",
   "self.apply_effect_event(:form_change, self, basemove) { |m| transformed = !(self.form = m).nil? } unless self.isFainted?")
 
-# weather score
-UniLib.insert_in_method_before(:PokeBattle_AI, :getSwitchInScoresParty, "case @battle.weather",
-  "i.apply_effect_event(:weather_score, self, attacker, opponent) { |m| weatherscore += m }")
-
-# ability field score
-UniLib.insert_in_method_before(:PokeBattle_AI, :getSwitchInScoresParty, "case @battle.FE",
-  "i.apply_effect_event(:field_score, self, i, @battle.FE) { |m| fieldscore += m }")
-
 # move score
 UniLib.insert_in_method_before(:PokeBattle_AI, :getMoveScore, "case @move.function",
   "@attacker.apply_effect_event(:move_score, self, @attacker, @opponent, @move) { |m| miniscore *= m }")

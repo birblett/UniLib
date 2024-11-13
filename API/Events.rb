@@ -377,23 +377,12 @@ class EventProvider
 
   <<-DOC
   @param proc - a function returning an integer adder.
-  >> a conditional score modifier, the calling AI instance (PokeBattle_AI), the calling pokemon (PokeBattle_Pokemon) and 
-     weather effect (Symbol); returns an added weather score modifier corresponding to the ability - see PokeBattle_AI$getSwitchInScoresParty
+  >> a conditional score modifier, accepts 3 arguments, the calling AI instance (PokeBattle_AI) and possible switch (PokeBattle_Pokemon).
+     return an additive score modifier.
   DOC
-  def weather_score(proc)
-    @event_hash[:weather_score] = [] unless @event_hash[:weather_score]
-    @event_hash[:weather_score].push(proc)
-    self
-  end
-
-  <<-DOC
-  @param proc - a function returning an integer adder.
-  >> a conditional score modifier, accepts 3 arguments, the calling AI instance (PokeBattle_AI), the calling pokemon (PokeBattle_Pokemon) and 
-     field effect (Symbol); returns an added field score modifier corresponding to the ability - see PokeBattle_AI$getSwitchInScoresParty
-  DOC
-  def field_score(proc)
-    @event_hash[:field_score] = [] unless @event_hash[:field_score]
-    @event_hash[:field_score].push(proc)
+  def switch_in_score(proc)
+    @event_hash[:switch_in_score] = [] unless @event_hash[:switch_in_score]
+    @event_hash[:switch_in_score].push(proc)
     self
   end
 
