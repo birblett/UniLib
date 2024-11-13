@@ -54,7 +54,8 @@ class AbilityContainer
   def self.multibility_case(clazz, method, case_statement, tail, ending, idx=0, idx2=0)
     s = case_statement.sub("case ", "") + ".each " + (ending == "}" ? "{" : "do") + " |ability| case ability"
     UniLib.replace_in_method(clazz, method, case_statement, s, idx)
-    ending == "}" ? UniLib.insert_in_method_before(clazz, method, tail, ending, idx2) : UniLib.insert_in_method(clazz, method, tail, ending, idx2)
+    real_ending = ending + " if #{case_statement.sub("case ", "")}.is_a? AbilityContainer"
+    ending == "}" ? UniLib.insert_in_method_before(clazz, method, tail, real_ending, idx2) : UniLib.insert_in_method(clazz, method, tail, real_ending, idx2)
   end
 
 end unless UniLib.lib_loaded(__FILE__)
