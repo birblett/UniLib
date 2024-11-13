@@ -36,4 +36,8 @@ module UniLib
     pkmn.pbFaint if pkmn.isFainted?
   end
 
+  def self.get_opposing(pkmn)
+    pkmn.battle.battlers[[1, 0, 3, 2][pkmn.index]]
+  end
+
 end
