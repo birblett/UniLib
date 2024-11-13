@@ -31,10 +31,12 @@ class AbilityContainer
     @abilities = ability.is_a?(Array) ? ability.dup : [ability]
     @ctx = ability
     key = [pkmn.species, pkmn.form]
-    UniLib::MULTIBILITY_HANDLERS[key].each do |handler|
+    UniLib::MULTIBILITY_HANDLERS[key].each do |handler, condition|
+      next if condition and !condition.call(@pokemon)
       extra = handler.call(@pokemon, @abilities)
       @abilities += (extra.is_a?(Array) ? extra : [extra]) - @abilities unless extra.nil?
     end unless UniLib::MULTIBILITY_HANDLERS[key].nil?
+    print(@pokemon.getAbilityList)
   end
 
   def ==(other)

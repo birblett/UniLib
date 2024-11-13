@@ -141,9 +141,7 @@ class PokeModifier
     end
 
     def set_types_internal
-      @types.each do |slot, type|
-        set_data(slot, type)
-      end
+      @types.each { |slot, type| set_data(slot, type) }
     end
 
     def set_level_moves_internal(sort=false)
@@ -154,21 +152,17 @@ class PokeModifier
         @base_learnset.push(move) if add
       end
       @learnset.clear
-      @base_learnset.sort_by!{ |a| a[0] } if sort
+      @base_learnset.sort_by! { |a| a[0] } if sort
       set_data(:Moveset, @base_learnset)
     end
 
     def set_egg_moves_internal
-      @egg_moves.each do |move|
-        @base_egg_moves.push(move) unless @base_egg_moves.include?(move)
-      end
+      @egg_moves.each { |move| @base_egg_moves.push(move) unless @base_egg_moves.include?(move) }
       set_data(:EggMoves, @base_egg_moves)
     end
 
     def set_compatible_moves_internal
-      @compatible_moves.each do |move|
-        @base_compatible_moves.push(move) unless @base_compatible_moves.include?(move)
-      end
+      @compatible_moves.each { |move| @base_compatible_moves.push(move) unless @base_compatible_moves.include?(move) }
       set_data(:compatiblemoves, @base_compatible_moves)
     end
 
