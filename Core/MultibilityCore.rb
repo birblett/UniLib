@@ -36,7 +36,6 @@ class AbilityContainer
       extra = handler.call(@pokemon, @abilities)
       @abilities += (extra.is_a?(Array) ? extra : [extra]) - @abilities unless extra.nil?
     end unless UniLib::MULTIBILITY_HANDLERS[key].nil?
-    print(@pokemon.getAbilityList)
   end
 
   def ==(other)
