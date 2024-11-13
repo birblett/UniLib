@@ -71,7 +71,7 @@ module UniLib
   DOC
   def self.replace_in_method(clazz, method, target, proc, index=0, priority=$injector_global_priority)
     return if self.has_valid_cache
-    self.insert_in_method_before(clazz, method, target, proc, index, priority)
+    PENDING_PRE_INSERTIONS.push([clazz, method, target, proc, index, false, priority])
     self.delete_in_method(clazz, method, target, index, priority)
   end
   
