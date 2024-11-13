@@ -120,31 +120,28 @@ class PokeModifier
       @form == 0 ? mon_data.instance_variable_set(("@" + String(sym)).to_sym, data) : mon_data[sym] = data
     end
 
-    def set_stats_internal(stats)
-      set_data(:BaseStats, stats)
+    def set_stats_internal
+      set_data(:BaseStats, @stats)
     end
 
-    def set_abilities_internal(abilities)
-      abilities.each do |index, ability|
-        next if index > 2 or index < 0 or ability.nil?
+    def set_abilities_internal
+      @abilities.each do |index, ability|
+        next if index > 2 or index < 0
         if index == 2 and @form == 0
           ha = get_data(:flags)
           ha[:HiddenAbilities] = ability
         else
-          ha = get_data(:flags)
-          if ha.nil? or ha[:HiddenAbilities].nil?
-            set_data(:HiddenAbilities, ability) if index == 1 and get_data(:Abilities)[1] == get_data(:HiddenAbilities)
-          else
-            ha[:HiddenAbilities] = ability if index == 1 and get_data(:Abilities)[1] == ha[:HiddenAbilities]
-          end
-          set_data(:Abilities, [get_data(:Abilities)]) unless get_data(:Abilities).class == Array
+          data = get_data(:Abilities)
+          set_data(:Abilities, [data]) unless data.class == Array
           get_data(:Abilities)[index] = ability
         end
       end
+      a = get_data(:Abilities)
+      a.reject! {|ab| ab.nil? } if a.is_a?(Array)
     end
 
-    def set_types_internal(types)
-      types.each do |slot, type|
+    def set_types_internal
+      @types.each do |slot, type|
         set_data(slot, type)
       end
     end
@@ -189,9 +186,9 @@ class PokeModifier
 
     def build
       EVENT_POKEMODIFIER_PRE_BUILD.each { |event| event.call(self) }
-      set_stats_internal(@stats) unless @stats.empty?
-      set_types_internal(@types) unless @types.empty?
-      set_abilities_internal(@abilities) unless @abilities.empty?
+      set_stats_internal unless @stats.empty?
+      set_types_internal unless @types.empty?
+      set_abilities_internal unless @abilities.empty?
       @base_learnset = [] if @learnset_overwrite
       @base_egg_moves = [] if @eggs_overwrite
       @base_compatible_moves = [] if @moves_overwrite
