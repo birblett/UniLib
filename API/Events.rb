@@ -192,8 +192,8 @@ class EventProvider
   <<-DOC
   @param proc - a function returning a damage multiplier
   >> adds a conditional damage multiplier. accepts 5 arguments, attacker (PokeBattle_Battler), target (PokeBattle_Battler), the move used 
-     (PokeBattle_Move), the hit number (or total hit count if being used by battle AI), and whether the move is being used in a battle AI 
-     calculation. should return a single numeric damage multiplier.
+     (PokeBattle_Move), the hit number (or total hit count if being used by battle AI), and battle AI (PokeBattle_AI) if being used in 
+     AI damage calcs. should return a single numeric damage multiplier.
   DOC
   def damage_mod(proc)
     @event_hash[:damage_mod] = [] unless @event_hash[:damage_mod]
@@ -261,11 +261,22 @@ class EventProvider
   <<-DOC
   @param proc - a function returning a type.
   >> adds a conditional move type override. accepts 3 arguments, the user (PokeBattle_Battler), the move (PokeBattle_Move), and the type.
-     should return another type.
+     should return a type symbol.
   DOC
   def move_type_override(proc)
     @event_hash[:move_type_override] = [] unless @event_hash[:move_type_override]
     @event_hash[:move_type_override].push(proc)
+    self
+  end
+
+  <<-DOC
+  @param proc - a function returning a type.
+  >> adds a conditional move subtype provider. accepts 2 arguments, the user (PokeBattle_Battler) and the move (PokeBattle_Move). should 
+     return a type symbol.
+  DOC
+  def move_subtype(proc)
+    @event_hash[:move_subtype] = [] unless @event_hash[:move_subtype]
+    @event_hash[:move_subtype].push(proc)
     self
   end
 

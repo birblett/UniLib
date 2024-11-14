@@ -327,6 +327,10 @@ UniLib.insert_in_method_before(:PokeBattle_Battler, :pbUseMove, "target.damagest
 UniLib.insert_in_method(:PokeBattle_Move, :pbType, :HEAD,
   "attacker.apply_item_event(:move_type_override, attacker, self, type) { |m| type = m }")
 
+# move subtype provider
+UniLib.insert_in_method(:PokeBattle_Move, :getSecondaryType, "secondtype = []",
+  "attacker.apply_item_event(:move_subtype, attacker, self) { |m| secondtype.push(m) }")
+
 # attacking stat modifier
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "if opponent.ability != :UNAWARE || opponent.moldbroken",
   "ItemModifier.with_consumption { attacker.apply_item_event(:move_stat_override, attacker, opponent, self) { |m|
