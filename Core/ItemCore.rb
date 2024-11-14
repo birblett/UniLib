@@ -288,14 +288,14 @@ UniLib.insert_in_method_before(:PokeBattle_Battler, :pbSpeed, "speed = 1 if spee
 # move damage modifier
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "case attacker.ability",
   "ItemModifier.with_consumption { 
-    attacker.apply_item_event(:damage_mod, attacker, opponent, self, hitnum, false) { |m| basemult *= m }
-    opponent.apply_item_event(:damage_taken_mod, opponent, attacker, self, hitnum, false) { |m| basemult *= m }
+    attacker.apply_item_event(:damage_mod, attacker, opponent, self, hitnum, nil) { |m| basemult *= m }
+    opponent.apply_item_event(:damage_taken_mod, opponent, attacker, self, hitnum, nil) { |m| basemult *= m }
   }")
 
 # move damage modifier (ai)
 UniLib.insert_in_method(:PokeBattle_AI, :pbRoughDamage, "typecrest = false",
-  "attacker.apply_item_event(:damage_mod, attacker, opponent, move, move.pbNumHits(attacker), true) { |m| damage *= m }
-  opponent.apply_item_event(:damage_taken_mod, opponent, attacker, self, move.pbNumHits(attacker), true) { |m| damage *= m }")
+  "attacker.apply_item_event(:damage_mod, attacker, opponent, move, move.pbNumHits(attacker), self) { |m| damage *= m }
+  opponent.apply_item_event(:damage_taken_mod, opponent, attacker, self, move.pbNumHits(attacker), self) { |m| damage *= m }")
 
 # move accuracy modifier
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbAccuracyCheck, "return @battle.pbRandom(100)<(baseaccuracy*accuracy/evasion)",
