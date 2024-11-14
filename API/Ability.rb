@@ -58,6 +58,17 @@ class AbilityModifier
     self
   end
 
+
+  <<-DOC
+  @param desc - string
+  >> sets both descriptions of an ability
+  DOC
+  def set_all_desc(desc)
+    @desc = desc
+    @full_desc = desc
+    self
+  end
+
   <<-DOC
   @param desc - string
   >> sets the initial displayed description of an ability
