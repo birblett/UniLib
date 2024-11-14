@@ -43,7 +43,7 @@ class EventProvider
 
   <<-DOC
   @param type - type id (or array of type ids)
-  >> equivalent to weakness_override + secondary_type
+  >> equivalent to weakness_override + secondary_type, always active
   DOC
   def secondary_no_weakness(type)
     weakness_fake(type)
@@ -61,20 +61,22 @@ class EventProvider
   end
 
   <<-DOC
-  @param type - type id
-  >> sets the user's primary type.
+  @param proc - a proc returning a symbol, or a symbol
+  >> conditional proc to set the user's base primary type. accepts 1 argument, the user (PokeBattle_Pokemon); returns a type symbol.
   DOC
-  def primary_type(type)
-    @event_hash[:primary_type] = type
+  def primary_type(proc)
+    @event_hash[:primary_type] = [] unless @event_hash[:primary_type]
+    @event_hash[:primary_type].push(proc.is_a?(Symbol) ? Proc.new { |_| proc } : proc)
     self
   end
 
   <<-DOC
-  @param type - type id
-  >> sets the user's secondary type.
+  @param proc - a proc returning a symbol, or a symbol
+  >> conditional proc to set the user's base secondary type. accepts 1 argument, the user (PokeBattle_Pokemon); returns a type symbol.
   DOC
-  def secondary_type(type)
-    @event_hash[:secondary_type] = type
+  def secondary_type(proc)
+    @event_hash[:secondary_type] = [] unless @event_hash[:secondary_type]
+    @event_hash[:secondary_type].push(proc.is_a?(Symbol) ? Proc.new { |_| proc } : proc)
     self
   end
 
@@ -281,7 +283,7 @@ class EventProvider
 
   <<-DOC
   @param proc - a void function.
-  >> an event hook for when a pokemon enters the field. accepts 4 arguments, the pokemon (PokeBattle_Battler), the battle 
+  >> an event hook for when a pokemon's effects are initialized. accepts 4 arguments, the pokemon (PokeBattle_Battler), the battle 
      (PokeBattle_Battle), persistent effects (Hash), and whether the caller is the battle AI or not (boolean).
   DOC
   def on_effects_init(proc)

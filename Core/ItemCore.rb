@@ -219,11 +219,11 @@ UniLib.insert_in_method(:PokeBattle_Pokemon, :calcStats, "bs=self.baseStats",
 
 # type1 modifier
 UniLib.insert_in_method(:PokeBattle_Pokemon, :type1, :HEAD,
-  "self.item_event_value(:primary_type) { |m| return m }")
+  "self.apply_item_event(:primary_type, self) { |m| return m }")
 
 # type2 modifier
 UniLib.insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
-  "self.item_event_value(:secondary_type) { |m| return m == self.type1 ? nil : m }")
+  "self.apply_item_event(:secondary_type, self) { |m| return m == self.type1 ? nil : m }")
 
 # type modifiers (in battle, on switch in)
 UniLib.insert_in_method(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, :TAIL,

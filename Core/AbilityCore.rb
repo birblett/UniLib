@@ -71,16 +71,14 @@ end unless UniLib.lib_loaded(__FILE__)
 
 class PokeBattle_Pokemon
 
-  PKMN_ABIL_CACHE = {}
-
   def update_ability
-    PKMN_ABIL_CACHE[self] = PokeBattle_Pokemon_Ability.new(self, self.ability) unless PKMN_ABIL_CACHE[self] and PKMN_ABIL_CACHE[self].base == self.ability
+    @abil_cache = PokeBattle_Pokemon_Ability.new(self, self.ability) unless @abil_cache and @abil_cache.base == self.ability
   end unless UniLib.lib_loaded(__FILE__)
 
   def ability_event_value(event)
     update_ability
-    return unless PKMN_ABIL_CACHE[self].is_a? AbilityContainer
-    PKMN_ABIL_CACHE[self].abilities.each do |ability|
+    return unless @abil_cache.is_a? AbilityContainer
+    @abil_cache.abilities.each do |ability|
       next unless AbilityModifier.has_event?(ability, event)
       out = AbilityModifier.get_event(ability, event)
       yield(out) unless out.nil?
@@ -89,8 +87,8 @@ class PokeBattle_Pokemon
 
   def apply_ability_event(event, *args)
     update_ability
-    return unless PKMN_ABIL_CACHE[self].is_a? AbilityContainer
-    PKMN_ABIL_CACHE[self].abilities.each do |ability|
+    return unless @abil_cache.is_a? AbilityContainer
+    @abil_cache.abilities.each do |ability|
       next unless AbilityModifier.has_event?(ability, event)
       AbilityModifier.get_event(ability, event).each { |e, out = e.(*args)| yield(out) unless out.nil? }
     end
@@ -138,12 +136,12 @@ UniLib.with_priority(1001) {
 
 # type1 modifier
 UniLib.insert_in_method(:PokeBattle_Pokemon, :type1, :HEAD,
-  "self.ability_event_value(:primary_type) { |m| return m }")
+  "self.apply_ability_event(:primary_type, self) { |m| return m }")
 
 # type2 modifier
 UniLib.insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
   "t1 = type1
-  self.ability_event_value(:secondary_type) { |m| return m if m != t1 }")
+  self.apply_ability_event(:secondary_type, self) { |m| return m if m != t1 }")
 
 # type modifiers (in battle, on switch in)
 UniLib.insert_in_method(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, :TAIL,

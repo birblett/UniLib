@@ -70,7 +70,6 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbUpdate, "crestStats if @crested"
   "self.apply_effect_event(:primary_type_battle, self, false) { |m| @type1 = m }
   self.apply_effect_event(:secondary_type_battle, self, false) { |m| @type2 = (m == @type1 ? nil : m) }")
 
-
 # resistance modifiers and overrides
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponent.crested",
   "opponent.effect_event_value(:forced_resistance) { |forced| typemod = forced[type] unless forced[type].nil? }
