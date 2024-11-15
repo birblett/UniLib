@@ -111,7 +111,11 @@ class EventProvider
   DOC
   def force_resistance(type, resistance_level=2)
     @event_hash[:forced_resistance] = {} unless @event_hash[:forced_resistance]
-    @event_hash[:forced_resistance][type] = resistance_level
+    if type.is_a? Array
+      type.each { |t| @event_hash[:forced_resistance][t] = resistance_level }
+    else
+      @event_hash[:forced_resistance][type] = resistance_level
+    end
     self
   end
 
