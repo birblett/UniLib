@@ -239,11 +239,9 @@ class ItemModifier
   >> adds a conditional base stat modifier. accepts 2 arguments; the holder (PokeBattle_Pokemon) and an array of 6 NumberContainers
      corresponding to hp, atk, def, spa, spd, spe. use the NumberContainers to perform in-place modifications to stats.
   DOC
-  def base_stat_mods(proc)
+  def base_stat_mods(proc=nil, &block)
     UniLib.include "NumberContainer"
-    @event_hash[:base_stat_mods] = [] unless @event_hash[:base_stat_mods]
-    @event_hash[:base_stat_mods].push(proc)
-    self
+    add_or_create_event(:base_stat_mods, proc, block)
   end
 
   <<-DOC
@@ -251,8 +249,15 @@ class ItemModifier
   >> a conditional ability provider. accepts 2 arguments, the user (PokeBattle_Pokemon) and its current abilities (array of symbols).
      return an ability symbol or array of them; 
   DOC
-  def ability_provider(proc)
-    @ability_providers.push(proc)
+  def ability_provider(proc=nil, &block)
+    if proc.nil? and block.nil?
+      print "No function or block provided for event ability_provider of #{@symbol}:#{self.class}"
+      exit
+    elsif proc.nil?
+      @ability_providers.push(block)
+    else
+      @ability_providers.push(proc)
+    end
     self
   end
 
@@ -261,10 +266,8 @@ class ItemModifier
   >> a conditional form provider, accepts 2 arguments, the calling AI instance (PokeBattle_AI) and the calling pokemon (PokeBattle_Pokemon); 
      returns an item score multiplier corresponding to the item. see PokeBattle_AI$getItemScore
   DOC
-  def item_score(proc)
-    @event_hash[:item_score] = [] unless @event_hash[:item_score]
-    @event_hash[:item_score].push(proc)
-    self
+  def item_score(proc=nil, &block)
+    add_or_create_event(:item_score, proc, block)
   end
 
   <<-DOC
@@ -272,10 +275,8 @@ class ItemModifier
   >> a conditional form provider, accepts 3 arguments, the calling AI instance (PokeBattle_AI), possible switch (PokeBattle_Pokemon), and
      the target (PokeBattle_Pokemon); returns an item score adder corresponding to the item. see PokeBattle_AI$getSwitchInScoresParty
   DOC
-  def switch_item_score(proc)
-    @event_hash[:switch_item_score] = [] unless @event_hash[:switch_item_score]
-    @event_hash[:switch_item_score].push(proc)
-    self
+  def switch_item_score(proc=nil, &block)
+    add_or_create_event(:switch_item_score, proc, block)
   end
 
   <<-DOC

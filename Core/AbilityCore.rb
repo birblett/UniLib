@@ -28,7 +28,7 @@ class AbilityModifier < EventProvider
   attr_accessor(:full_desc)
 
   def initialize(symbol, name=nil, desc=nil, fulldesc=nil)
-    @sym = symbol
+    @symbol = symbol
     @name = name
     @full_name = nil
     @desc = desc
@@ -37,7 +37,7 @@ class AbilityModifier < EventProvider
   end
 
   def build
-    a = $cache.abil[@sym]
+    a = $cache.abil[@symbol]
     if a.nil? or (!@name.nil? and a.name != @name) or (!@full_name.nil? and a.fullName != @full_name) or (!@desc.nil? and a.desc != @desc) or (!@full_desc.nil? and a.fullDesc != @fullDesc)
       unless a.nil?
         @name = a.name if @name.nil?
@@ -45,7 +45,7 @@ class AbilityModifier < EventProvider
         @desc = a.desc if @desc.nil?
         @full_desc = a.fullDesc if @full_desc.nil?
       end
-      $cache.abil[@sym] = AbilityData.new(@sym, { :name => @name, :fullName => @full_name, :desc => @desc, :fullDesc => @full_desc })
+      $cache.abil[@symbol] = AbilityData.new(@symbol, { :name => @name, :fullName => @full_name, :desc => @desc, :fullDesc => @full_desc })
     end
   end
 

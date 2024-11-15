@@ -42,10 +42,8 @@ class BattleEffects
   @param proc
   >> proc that provides a display in the battle inspector. accepts a user (PokeBattle_Pokemon) argument; returns a string.
   DOC
-  def set_display(proc)
-    @event_hash[:display] = [] unless @event_hash[:display]
-    @event_hash[:display].push(proc)
-    self
+  def set_display(proc=nil, &block)
+    add_or_create_event(:display, proc, block)
   end
 
 end

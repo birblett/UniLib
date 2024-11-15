@@ -92,10 +92,8 @@ class AbilityModifier
   >> a conditional form provider, accepts 2 arguments, the calling AI instance (PokeBattle_AI), the calling pokemon (PokeBattle_Pokemon); 
      returns an added ability score modifier corresponding to the ability - see PokeBattle_AI$getSwitchInScoresParty
   DOC
-  def ability_score(proc)
-    @event_hash[:ability_score] = [] unless @event_hash[:ability_score]
-    @event_hash[:ability_score].push(proc)
-    self
+  def ability_score(proc=nil, &block)
+    add_or_create_event(:ability_score, proc, block)
   end
 
   <<-DOC
@@ -103,10 +101,8 @@ class AbilityModifier
   >> a conditional form provider, accepts 3 arguments, the calling AI instance (PokeBattle_AI), the attacker (PokeBattle_Pokemon) and 
      target (PokeBattle_Pokemon); returns a miniscore multiplier corresponding to the ability - see PokeBattle_AI$getAbilityDisruptScore
   DOC
-  def disrupt_score(proc)
-    @event_hash[:disrupt_score] = [] unless @event_hash[:disrupt_score]
-    @event_hash[:disrupt_score].push(proc)
-    self
+  def disrupt_score(proc=nil, &block)
+    add_or_create_event(:disrupt_score, proc, block)
   end
 
 end
