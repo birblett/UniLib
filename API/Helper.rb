@@ -40,4 +40,9 @@ module UniLib
     pkmn.battle.battlers[[1, 0, 3, 2][pkmn.index]]
   end
 
+  def self.is_status_move(move)
+    move = move.move if move.is_a? PokeBattle_Move
+    PBStuff::BURNMOVE.include?(move) || PBStuff::PARAMOVE.include?(move) || PBStuff::SLEEPMOVE.include?(move) || PBStuff::SCREENMOVE.include?(move)
+  end
+
 end
