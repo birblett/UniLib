@@ -240,10 +240,6 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :getMoveScore, "case @move.functi
   "@attacker.apply_effect_event(:move_score, self, @attacker, @opponent, @move) { |m| return -1 if m == -1; miniscore *= m }
   @opponent.apply_effect_event(:targeted_by_move, self, @opponent, @attacker, @move) { |m| return -1 if m == -1; miniscore *= m }")
 
-# role provider
-UniLib.insert_in_method_before(:PokeBattle_AI, :pbGetMonRoles, "partyRoles.push(monRoles)",
-  "mon.apply_effect_event(:move_score, self, mon) { |m| monRoles.push(m) }")
-
 # ========= effects only ========= #
 
 # battle stats

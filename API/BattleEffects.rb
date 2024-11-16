@@ -39,6 +39,15 @@ class BattleEffects
   end
 
   <<-DOC
+  @param proc - unused
+  >> unimplemented event
+  DOC
+  def role_provider(proc = nil, &block)
+    print "Warning for BattleEffects #{@symbol}: BattleEffects does not support role providers with role_provider method"
+    self
+  end
+
+  <<-DOC
   @param proc
   >> proc that provides a display in the battle inspector. accepts a user (PokeBattle_Pokemon) argument; returns a string.
   DOC

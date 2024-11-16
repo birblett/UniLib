@@ -388,7 +388,7 @@ class EventProvider
 
   <<-DOC
   @param proc - a function returning a symbol
-  >> a conditional role provider, accepts 2 arguments, the calling AI instance (PokeBattle_AI) and the pokemon (PokeBattle_Battler). return
+  >> a conditional role provider, accepts 2 arguments, the calling AI instance (PokeBattle_AI) and the pokemon (PokeBattle_Pokemon). return
      a symbol corresponding to a role (i.e. :SWEEPER or :STATUSABSORBER)
   DOC
   def role_provider(proc=nil, &block)
