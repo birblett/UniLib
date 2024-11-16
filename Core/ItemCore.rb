@@ -395,7 +395,7 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbProcessMoveAgainstTarget, "damag
 
 # switch out events
 UniLib.insert_in_method_before(:PokeBattle_Battler, :pbInitialize, "pbInitPokemon(pkmn,index)",
-  "ItemModifier.with_consumption { self.apply_ability_event(:switch_out, self) {} }")
+  "ItemModifier.with_consumption { self.apply_item_event(:switch_out, self) {} }")
 
 # damage taken/dealt events
 UniLib.insert_in_method(:PokeBattle_Battler, :pbEffectsOnDealingDamage, "return if target.nil?",

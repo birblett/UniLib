@@ -309,14 +309,6 @@ class EventProvider
 
   <<-DOC
   @param proc - a void function.
-  >> an event hook called when switching out. accepts 1 argument, the pokemon being switched (PokeBattle_Battler).
-  DOC
-  def switch_out_event(proc=nil, &block)
-    add_or_create_event(:switch_out, proc, block)
-  end
-
-  <<-DOC
-  @param proc - a void function.
   >> an event hook for when a pokemon deals damage in battle. accepts 4 arguments, the attacker (PokeBattle_Battler), the target 
      (PokeBattle_Battler), the move used (PokeBattle_Move), and the numeric damage value. this is called even if a move fails. 
   DOC
@@ -339,6 +331,14 @@ class EventProvider
   DOC
   def on_turn_end(proc=nil, &block)
     add_or_create_event(:turn_end, proc, block)
+  end
+
+  <<-DOC
+  @param proc - a void function.
+  >> an event hook called when switching out. accepts 1 argument, the pokemon being switched (PokeBattle_Battler).
+  DOC
+  def on_switch_out(proc=nil, &block)
+    add_or_create_event(:switch_out, proc, block)
   end
 
   <<-DOC
