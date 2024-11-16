@@ -316,13 +316,18 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbCheckForm, "transformed=false",
 UniLib.insert_in_method(:PokeBattle_AI, :getSwitchInScoresParty, "monscore += otherscore",
   "i.apply_item_event(:switch_in_score, self, i) { |m| monscore += m }")
 
-# move score
-UniLib.insert_in_method_before(:PokeBattle_AI, :getMoveScore, "case @move.function",
-  "@attacker.apply_ability_event(:move_score, self, @attacker, @opponent, @move) { |m| miniscore *= m }")
-
 # should switch score
 UniLib.insert_in_method_before(:PokeBattle_AI, :shouldSwitch?, "switchscore = statusscore + statscore + healscore + forcedscore + typescore + specialscore",
   "@attacker.apply_ability_event(:should_switch_score, self, @attacker, @opponent) { |m| specialscore += m }")
+
+# move scores
+UniLib.insert_in_method_before(:PokeBattle_AI, :getMoveScore, "case @move.function",
+  "@attacker.apply_ability_event(:move_score, self, @attacker, @opponent, @move) { |m| return -1 if m == -1; miniscore *= m }
+  @opponent.apply_ability_event(:targeted_by_move, self, @opponent, @attacker, @move) { |m| return -1 if m == -1; miniscore *= m }")
+
+# role provider
+UniLib.insert_in_method_before(:PokeBattle_AI, :pbGetMonRoles, "partyRoles.push(monRoles)",
+  "mon.apply_ability_event(:move_score, self, mon) { |m| monRoles.push(m) }")
 
 # ========= ability only ========= #
 

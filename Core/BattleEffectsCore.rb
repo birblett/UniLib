@@ -231,13 +231,20 @@ UniLib.insert_in_method_before(:PokeBattle_Battle, :__clauses__pbEndOfRoundPhase
 UniLib.insert_in_method(:PokeBattle_Battler, :pbCheckForm, "transformed=false",
   "self.apply_effect_event(:form_change, self, basemove) { |m| transformed = !(self.form = m).nil? } unless self.isFainted?")
 
-# move score
-UniLib.insert_in_method_before(:PokeBattle_AI, :getMoveScore, "case @move.function",
-  "@attacker.apply_effect_event(:move_score, self, @attacker, @opponent, @move) { |m| miniscore *= m }")
-
 # should switch score
 UniLib.insert_in_method_before(:PokeBattle_AI, :shouldSwitch?, "switchscore = statusscore + statscore + healscore + forcedscore + typescore + specialscore",
   "@attacker.apply_effect_event(:should_switch_score, self, @attacker, @opponent) { |m| specialscore += m }")
+
+# move scores
+UniLib.insert_in_method_before(:PokeBattle_AI, :getMoveScore, "case @move.function",
+  "@attacker.apply_effect_event(:move_score, self, @attacker, @opponent, @move) { |m| return -1 if m == -1; miniscore *= m }
+  @opponent.apply_effect_event(:targeted_by_move, self, @opponent, @attacker, @move) { |m| return -1 if m == -1; miniscore *= m }")
+
+# role provider
+UniLib.insert_in_method_before(:PokeBattle_AI, :pbGetMonRoles, "partyRoles.push(monRoles)",
+  "mon.apply_effect_event(:move_score, self, mon) { |m| monRoles.push(m) }")
+
+# ========= effects only ========= #
 
 # battle stats
 UniLib.insert_in_function(:pbShowBattleStats, "report.push(_INTL(\"Infatuated with {1}\",@battle.battlers[pkmn.effects[:Attract]].name)) if pkmn.effects[:Attract]>=0",

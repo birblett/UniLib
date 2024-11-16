@@ -360,12 +360,21 @@ class EventProvider
   end
 
   <<-DOC
-  @param proc - a function returning a float multiplier.
-  >> a conditional score modifier, accepts 4 arguments, the calling AI instance (PokeBattle_AI), the attacker (PokeBattle_Pokemon, 
+  @param proc - a function returning a float multiplier, or -1.
+  >> a conditional score modifier, accepts 4 arguments, the calling AI instance (PokeBattle_AI), the attacker (PokeBattle_Pokemon), 
      the defender (PokeBattle_Pokemon), and the move (PokeBattle_Move); returns a move score modifier.
   DOC
   def move_score(proc=nil, &block)
     add_or_create_event(:move_score, proc, block)
+  end
+
+  <<-DOC
+  @param proc - a function returning a float multiplier, or -1.
+  >> a conditional score modifier, accepts 4 arguments, the calling AI instance (PokeBattle_AI), the defender (PokeBattle_Pokemon), 
+     the attacker (PokeBattle_Pokemon), and the move (PokeBattle_Move); returns a move score modifier. 
+  DOC
+  def targeted_by_move_score(proc=nil, &block)
+    add_or_create_event(:targeted_by_move, proc, block)
   end
 
   <<-DOC
@@ -375,6 +384,15 @@ class EventProvider
   DOC
   def should_switch_score(proc=nil, &block)
     add_or_create_event(:should_switch_score, proc, block)
+  end
+
+  <<-DOC
+  @param proc - a function returning a symbol
+  >> a conditional role provider, accepts 2 arguments, the calling AI instance (PokeBattle_AI) and the pokemon (PokeBattle_Battler). return
+     a symbol corresponding to a role (i.e. :SWEEPER or :STATUSABSORBER)
+  DOC
+  def role_provider(proc=nil, &block)
+    add_or_create_event(:roles, proc, block)
   end
 
 end

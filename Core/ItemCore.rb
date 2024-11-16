@@ -422,6 +422,20 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :getMoveScore, "case @move.functi
 UniLib.insert_in_method_before(:PokeBattle_AI, :shouldSwitch?, "switchscore = statusscore + statscore + healscore + forcedscore + typescore + specialscore",
   "@attacker.apply_item_event(:should_switch_score, self, @attacker, @opponent) { |m| specialscore += m }")
 
+# should switch score
+UniLib.insert_in_method_before(:PokeBattle_AI, :shouldSwitch?, "switchscore = statusscore + statscore + healscore + forcedscore + typescore + specialscore",
+  "@attacker.apply_item_event(:should_switch_score, self, @attacker, @opponent) { |m| specialscore += m }")
+
+# move scores
+UniLib.insert_in_method_before(:PokeBattle_AI, :getMoveScore, "case @move.function",
+  "@attacker.apply_item_event(:move_score, self, @attacker, @opponent, @move) { |m| return -1 if m == -1; miniscore *= m }
+  @opponent.apply_item_event(:targeted_by_move, self, @opponent, @attacker, @move) { |m| return -1 if m == -1; miniscore *= m }")
+
+# role provider
+UniLib.insert_in_method_before(:PokeBattle_AI, :pbGetMonRoles, "partyRoles.push(monRoles)",
+  "mon.apply_item_event(:move_score, self, mon) { |m| monRoles.push(m) }")
+
+
 # ========= item only ========= #
 
 # item update
@@ -437,9 +451,5 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :getItemScore, "itemscore-=100",
 # item switch in score
 UniLib.insert_in_method_before(:PokeBattle_AI, :getSwitchInScoresParty, "if (i.item == :ROCKYHELMET)",
   "i.apply_item_event(:switch_item_score, self, i, @opponent) { |m| itemscore += m }")
-
-# move score
-UniLib.insert_in_method_before(:PokeBattle_AI, :getMoveScore, "case @move.function",
-  "@attacker.apply_item_event(:move_score, self, @attacker, @opponent, @move) { |m| miniscore *= m }")
 
 }
