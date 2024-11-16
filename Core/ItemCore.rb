@@ -202,6 +202,8 @@ def check_type(type, vtypes, map)
   nil
 end unless UniLib.lib_loaded(__FILE__)
 
+UniLib.with_priority(1000) {
+
 UniLib.insert_in_function(:pbItemIconFile, :HEAD,
   "unless UniLib::CUSTOM_ITEMS[item].nil?
     Dir.mkdir(UNILIB_ASSET_PATH) rescue nil
@@ -247,7 +249,7 @@ UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponen
     opponent.item_event_value(:fake_resistance) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_RESISTANCE_MAP) }
     opponent.apply_item_event(:type_effectiveness_simple, opponent, type, true) { |m| typemod *= m }
   }
-  return 0 if typemod <= 0")
+  typemod = 0 if typemod < 0")
 
 # resistance modifiers and overrides (ai)
 UniLib.insert_in_method_before(:PokeBattle_AI, :pbTypeModNoMessages, "case opponent.crested",
@@ -255,7 +257,7 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :pbTypeModNoMessages, "case oppon
   opponent.item_event_value(:fake_reduce_weakness) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_WEAKNESS_MAP) }
   opponent.item_event_value(:fake_resistance) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_RESISTANCE_MAP) }
   opponent.apply_item_event(:type_effectiveness_simple, opponent, type, true) { |m| typemod *= m }
-  return 0 if typemod <= 0", 1)
+  typemod = 0 if typemod < 0", 1)
 
 # move type effectiveness modifier
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModifier, "return mod1*mod2",
@@ -287,7 +289,7 @@ UniLib.insert_in_method_before(:PokeBattle_Battler, :pbSpeed, "speed = 1 if spee
 
 # move damage modifier
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "case attacker.ability",
-  "ItemModifier.with_consumption { 
+  "ItemModifier.with_consumption {
     attacker.apply_item_event(:damage_mod, attacker, opponent, self, hitnum, nil) { |m| basemult *= m }
     opponent.apply_item_event(:damage_taken_mod, opponent, attacker, self, hitnum, nil) { |m| basemult *= m }
   }")
@@ -435,3 +437,5 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :getSwitchInScoresParty, "if (i.i
 # move score
 UniLib.insert_in_method_before(:PokeBattle_AI, :getMoveScore, "case @move.function",
   "@attacker.apply_item_event(:move_score, self, @attacker, @opponent, @move) { |m| miniscore *= m }")
+
+}

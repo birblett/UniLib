@@ -70,12 +70,12 @@ end unless UniLib.lib_loaded(__FILE__)
 class PokeBattle_Pokemon
 
   def update_ability
-    @abil_cache = PokeBattle_Pokemon_Ability.new(self, self.ability) unless @abil_cache and @abil_cache.base == self.ability
+    @abil_cache = AbilityContainer.new(self, self.ability).abilities unless @abil_cache and @abil_cache.is_a?(Array) and @abil_cache[0] == self.ability
   end unless UniLib.lib_loaded(__FILE__)
 
   def ability_event_value(event)
     update_ability
-    return unless @abil_cache.is_a? AbilityContainer
+    return unless @abil_cache.is_a? Array
     @abil_cache.abilities.each do |ability|
       next unless AbilityModifier.has_event?(ability, event)
       out = AbilityModifier.get_event(ability, event)
@@ -85,8 +85,8 @@ class PokeBattle_Pokemon
 
   def apply_ability_event(event, *args)
     update_ability
-    return unless @abil_cache.is_a? AbilityContainer
-    @abil_cache.abilities.each do |ability|
+    return unless @abil_cache.is_a? Array
+    @abil_cache.each do |ability|
       next unless AbilityModifier.has_event?(ability, event)
       AbilityModifier.get_event(ability, event).each { |e, out = e.(*args)| yield(out) unless out.nil? }
     end
@@ -157,7 +157,7 @@ UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponen
   opponent.ability_event_value(:fake_reduce_weakness) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_WEAKNESS_MAP) }
   opponent.ability_event_value(:fake_resistance) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_RESISTANCE_MAP) }
   opponent.apply_ability_event(:type_effectiveness_simple, opponent, type, true) { |m| typemod *= m }
-  return 0 if typemod <= 0")
+  typemod = 0 if typemod < 0")
 
 # resistance modifiers and overrides (ai)
 UniLib.insert_in_method_before(:PokeBattle_AI, :pbTypeModNoMessages, "case opponent.crested",
@@ -165,7 +165,7 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :pbTypeModNoMessages, "case oppon
   opponent.ability_event_value(:fake_reduce_weakness) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_WEAKNESS_MAP) }
   opponent.ability_event_value(:fake_resistance) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_RESISTANCE_MAP) }
   opponent.apply_ability_event(:type_effectiveness_simple, opponent, type, true) { |m| typemod *= m }
-  return 0 if typemod <= 0", 1)
+  typemod = 0 if typemod < 0", 1)
 
 # move type effectiveness modifier
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModifier, "return mod1*mod2",

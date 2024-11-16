@@ -76,7 +76,7 @@ UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponen
   opponent.effect_event_value(:fake_reduce_weakness) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_WEAKNESS_MAP) }
   opponent.effect_event_value(:fake_resistance) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_RESISTANCE_MAP) }
   opponent.apply_effect_event(:type_effectiveness_simple, opponent, type, true) { |m| typemod *= m }
-  return 0 if typemod <= 0")
+  typemod = 0 if typemod < 0")
 
 # resistance modifiers and overrides (ai)
 UniLib.insert_in_method_before(:PokeBattle_AI, :pbTypeModNoMessages, "case opponent.crested",
@@ -84,7 +84,7 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :pbTypeModNoMessages, "case oppon
   opponent.effect_event_value(:fake_reduce_weakness) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_WEAKNESS_MAP) }
   opponent.effect_event_value(:fake_resistance) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_RESISTANCE_MAP) }
   opponent.apply_effect_event(:type_effectiveness_simple, opponent, type, true) { |m| typemod *= m }
-  return 0 if typemod <= 0", 1)
+  typemod = 0 if typemod < 0", 1)
 
 # move type effectiveness modifier
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModifier, "return mod1*mod2",
