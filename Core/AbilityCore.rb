@@ -38,15 +38,13 @@ class AbilityModifier < EventProvider
 
   def build
     a = $cache.abil[@symbol]
-    if a.nil? or (!@name.nil? and a.name != @name) or (!@full_name.nil? and a.fullName != @full_name) or (!@desc.nil? and a.desc != @desc) or (!@full_desc.nil? and a.fullDesc != @fullDesc)
-      unless a.nil?
-        @name = a.name if @name.nil?
-        @full_name = a.fullName if @full_name.nil?
-        @desc = a.desc if @desc.nil?
-        @full_desc = a.fullDesc if @full_desc.nil?
-      end
-      $cache.abil[@symbol] = AbilityData.new(@symbol, { :name => @name, :fullName => @full_name, :desc => @desc, :fullDesc => @full_desc })
+    unless a.nil?
+      @name = a.name if @name.nil?
+      @full_name = a.fullName if @full_name.nil?
+      @desc = a.desc if @desc.nil?
+      @full_desc = a.fullDesc if @full_desc.nil?
     end
+    $cache.abil[@symbol] = AbilityData.new(@symbol, { :name => @name, :fullName => @full_name, :desc => @desc, :fullDesc => @full_desc })
   end
 
   def self.has_event?(ability, id)
