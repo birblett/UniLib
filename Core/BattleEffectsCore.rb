@@ -101,13 +101,13 @@ UniLib.insert_in_method(:PokeBattle_AI, :pbRoughDamage, "typecrest = false",
 # battle stat modifier (on initialize)
 UniLib.insert_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "crestStats if @crested",
   "stats = NumberContainer.of(@hp, @attack, @defense, @spatk, @spdef, @speed)
-  self.apply_effect_event(:battle_stat_calc, self, stats) { |_| }
+  self.apply_effect_event(:battle_stat_calc, self, stats) {}
   @hp, @attack, @defense, @spatk, @spdef, @speed = *stats.map { |n| n.value }")
 
 # battle stat modifier (on update)
 UniLib.insert_in_method(:PokeBattle_Battler, :pbUpdate, "crestStats if @crested",
   "stats = NumberContainer.of(@hp, @attack, @defense, @spatk, @spdef, @speed)
-  self.apply_effect_event(:battle_stat_calc, self, stats) { |_| }
+  self.apply_effect_event(:battle_stat_calc, self, stats) {}
   @hp, @attack, @defense, @spatk, @spdef, @speed = *stats.map { |n| n.value }")
 
 # battle speed modifier (on calculation)
@@ -196,32 +196,36 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :pbRoughDamage, "case attacker.cr
 
 # effect initialization event
 UniLib.insert_in_method(:PokeBattle_Battler, :pbInitEffects, :TAIL,
-  "self.apply_effect_event(:effects_init, self, self.battle, self.effects, oldeffects, fakebattler) { |_| }")
+  "self.apply_effect_event(:effects_init, self, self.battle, self.effects, oldeffects, fakebattler) {}")
 
 # switch in event
 UniLib.insert_in_method_before(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "if self.ability == :INTIMIDATE && onactive",
-  "self.apply_effect_event(:battle_entry, self, self.battle, index) { |_| } if onactive")
+  "self.apply_effect_event(:battle_entry, self, self.battle, index) {} if onactive")
 
 # move attempted events
 UniLib.insert_in_method_before(:PokeBattle_Battler, :pbTryUseMove, "protype=basemove.pbType(self,basemove.type)",
-  "self.apply_effect_event(:try_move, self, basemove) { |_| }")
+  "self.apply_effect_event(:try_move, self, basemove) {}")
 
 # move effect events
 UniLib.insert_in_method_before(:PokeBattle_Battler, :pbProcessMoveAgainstTarget, "damage = basemove.pbEffect(user,target,i,alltargets,showanimation)",
-  "user.apply_effect_event(:move_effect, user, target, i, basemove) { |_| }")
+  "user.apply_effect_event(:move_effect, user, target, i, basemove) {}")
 
 # after move effect events
 UniLib.insert_in_method(:PokeBattle_Battler, :pbProcessMoveAgainstTarget, "damage = basemove.pbEffect(user,target,i,alltargets,showanimation)",
-  "user.apply_effect_event(:after_move_effect, user, target, i, basemove) { |_| }")
+  "user.apply_effect_event(:after_move_effect, user, target, i, basemove) {}")
+
+# switch out events
+UniLib.insert_in_method_before(:PokeBattle_Battler, :pbInitialize, "pbInitPokemon(pkmn,index)",
+  "self.apply_ability_event(:switch_out, self) {}")
 
 # damage taken/dealt events
 UniLib.insert_in_method(:PokeBattle_Battler, :pbEffectsOnDealingDamage, "return if target.nil?",
-  "user.apply_effect_event(:damage_dealt, user, target, move, damage) { |_| }
-  target.apply_effect_event(:damage_taken, target, user, move, damage) { |_| } if damage > 0")
+  "user.apply_effect_event(:damage_dealt, user, target, move, damage) {}
+  target.apply_effect_event(:damage_taken, target, user, move, damage) {} if damage > 0")
 
 # turn end event handler
 UniLib.insert_in_method_before(:PokeBattle_Battle, :__clauses__pbEndOfRoundPhase, "if i.crested == :VESPIQUEN",
-  "i.apply_effect_event(:turn_end, i) { |_| }")
+  "i.apply_effect_event(:turn_end, i) {}")
 
 # form change handler
 UniLib.insert_in_method(:PokeBattle_Battler, :pbCheckForm, "transformed=false",

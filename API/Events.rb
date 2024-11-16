@@ -65,7 +65,7 @@ class EventProvider
   >> conditional proc to set the user's base primary type. accepts 1 argument, the user (PokeBattle_Pokemon); returns a type symbol.
   DOC
   def primary_type(proc=nil, &block)
-    add_or_create_event(:primary_type, proc.is_a?(Symbol) ? Proc.new { |_| proc } : proc, block)
+    add_or_create_event(:primary_type, proc.is_a?(Symbol) ? Proc.new { proc } : proc, block)
   end
 
   <<-DOC
@@ -73,7 +73,7 @@ class EventProvider
   >> conditional proc to set the user's base secondary type. accepts 1 argument, the user (PokeBattle_Pokemon); returns a type symbol.
   DOC
   def secondary_type(proc=nil, &block)
-    add_or_create_event(:secondary_type, proc.is_a?(Symbol) ? Proc.new { |_| proc } : proc, block)
+    add_or_create_event(:secondary_type, proc.is_a?(Symbol) ? Proc.new { proc } : proc, block)
   end
 
   <<-DOC
@@ -305,6 +305,14 @@ class EventProvider
   DOC
   def after_move_effect(proc=nil, &block)
     add_or_create_event(:after_move_effect, proc, block)
+  end
+
+  <<-DOC
+  @param proc - a void function.
+  >> an event hook called when switching out. accepts 1 argument, the pokemon being switched (PokeBattle_Battler).
+  DOC
+  def switch_out_event(proc=nil, &block)
+    add_or_create_event(:switch_out, proc, block)
   end
 
   <<-DOC

@@ -216,7 +216,7 @@ UniLib.insert_in_function(:pbItemIconFile, :HEAD,
 # base stat modifier
 UniLib.insert_in_method(:PokeBattle_Pokemon, :calcStats, "bs=self.baseStats",
   "stats = NumberContainer.of(*bs)
-  self.apply_item_event(:base_stat_mods, self, stats) { |_| }
+  self.apply_item_event(:base_stat_mods, self, stats) {}
   bs = stats.map { |n| n.value }")
 
 # type1 modifier
@@ -274,13 +274,13 @@ UniLib.insert_in_method(:PokeBattle_AI, :pbRoughDamage, "typecrest = false",
 # battle stat modifier
 UniLib.insert_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "crestStats if @crested",
   "stats = NumberContainer.of(@hp, @attack, @defense, @spatk, @spdef, @speed)
-  self.apply_item_event(:battle_stat_calc, self, stats) { |_| }
+  self.apply_item_event(:battle_stat_calc, self, stats) {}
   @hp, @attack, @defense, @spatk, @spdef, @speed = *stats.map { |n| n.value }")
 
 # battle stat modifier (on update)
 UniLib.insert_in_method(:PokeBattle_Battler, :pbUpdate, "crestStats if @crested",
   "stats = NumberContainer.of(@hp, @attack, @defense, @spatk, @spdef, @speed)
-  self.apply_item_event(:battle_stat_calc, self, stats) { |_| }
+  self.apply_item_event(:battle_stat_calc, self, stats) {}
   @hp, @attack, @defense, @spatk, @spdef, @speed = *stats.map { |n| n.value }")
 
 # battle speed modifier (on calculation)
@@ -375,32 +375,36 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :pbRoughDamage, "case attacker.cr
 
 # effect initialization event
 UniLib.insert_in_method(:PokeBattle_Battler, :pbInitEffects, :TAIL,
-  "ItemModifier.with_consumption { self.apply_item_event(:effects_init, self, self.battle, self.effects, oldeffects, fakebattler) { |_| } }")
+  "ItemModifier.with_consumption { self.apply_item_event(:effects_init, self, self.battle, self.effects, oldeffects, fakebattler) {} }")
 
 # switch in event
 UniLib.insert_in_method_before(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "if self.ability == :INTIMIDATE && onactive",
-  "ItemModifier.with_consumption { self.apply_item_event(:battle_entry, self, self.battle, index) { |_| } } if onactive")
+  "ItemModifier.with_consumption { self.apply_item_event(:battle_entry, self, self.battle, index) {} } if onactive")
 
 # move attempted events
 UniLib.insert_in_method_before(:PokeBattle_Battler, :pbTryUseMove, "protype=basemove.pbType(self,basemove.type)",
-  "ItemModifier.with_consumption { self.apply_item_event(:try_move, self, basemove) { |_| } }")
+  "ItemModifier.with_consumption { self.apply_item_event(:try_move, self, basemove) {} }")
 
 # move effect events
 UniLib.insert_in_method_before(:PokeBattle_Battler, :pbProcessMoveAgainstTarget, "damage = basemove.pbEffect(user,target,i,alltargets,showanimation)",
-  "ItemModifier.with_consumption { user.apply_item_event(:move_effect, user, target, i, basemove) { |_| } }")
+  "ItemModifier.with_consumption { user.apply_item_event(:move_effect, user, target, i, basemove) {} }")
 
 # after move effect events
 UniLib.insert_in_method(:PokeBattle_Battler, :pbProcessMoveAgainstTarget, "damage = basemove.pbEffect(user,target,i,alltargets,showanimation)",
-  "ItemModifier.with_consumption { user.apply_item_event(:after_move_effect, user, target, i, basemove) { |_| } }")
+  "ItemModifier.with_consumption { user.apply_item_event(:after_move_effect, user, target, i, basemove) {} }")
+
+# switch out events
+UniLib.insert_in_method_before(:PokeBattle_Battler, :pbInitialize, "pbInitPokemon(pkmn,index)",
+  "ItemModifier.with_consumption { self.apply_ability_event(:switch_out, self) {} }")
 
 # damage taken/dealt events
 UniLib.insert_in_method(:PokeBattle_Battler, :pbEffectsOnDealingDamage, "return if target.nil?",
-  "ItemModifier.with_consumption { user.apply_item_event(:damage_dealt, user, target, move, damage) { |_| } }
-  ItemModifier.with_consumption { target.apply_item_event(:damage_taken, target, user, move, damage) { |_| } } if damage > 0")
+  "ItemModifier.with_consumption { user.apply_item_event(:damage_dealt, user, target, move, damage) {} }
+  ItemModifier.with_consumption { target.apply_item_event(:damage_taken, target, user, move, damage) {} } if damage > 0")
 
 # turn end event handler
 UniLib.insert_in_method_before(:PokeBattle_Battle, :__clauses__pbEndOfRoundPhase, "if i.crested == :VESPIQUEN",
-  "ItemModifier.with_consumption { i.apply_item_event(:turn_end, i) { |_| } }")
+  "ItemModifier.with_consumption { i.apply_item_event(:turn_end, i) {} }")
 
 # form change handler
 UniLib.insert_in_method(:PokeBattle_Battler, :pbCheckForm, "transformed=false",
