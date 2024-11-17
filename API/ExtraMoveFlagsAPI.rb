@@ -11,7 +11,7 @@ UniLib.verify_version(0.6, __FILE__)
 class PokeBattle_Move
 
   def is_bite_move?
-    UniLib::BITEMOVE.include?(@move)
+    PBStuff::BITEMOVE.include?(@move)
   end
 
   def is_dance_move?
