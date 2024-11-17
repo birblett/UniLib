@@ -327,7 +327,7 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :getMoveScore, "case @move.functi
 
 # role provider
 UniLib.insert_in_method_before(:PokeBattle_AI, :pbGetMonRoles, "partyRoles.push(monRoles)",
-  "mon.apply_ability_event(:move_score, self, mon) { |m| monRoles.push(m) }")
+  "mon.apply_ability_event(:roles, self, mon) { |m| monRoles.push(m) }")
 
 # ========= ability only ========= #
 

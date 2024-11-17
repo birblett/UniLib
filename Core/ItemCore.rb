@@ -429,11 +429,11 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :shouldSwitch?, "switchscore = st
 # move scores
 UniLib.insert_in_method_before(:PokeBattle_AI, :getMoveScore, "case @move.function",
   "@attacker.apply_item_event(:move_score, self, @attacker, @opponent, @move) { |m| return -1 if m == -1; miniscore *= m }
-  @opponent.apply_item_event(:targeted_by_move, self, @opponent, @attacker, @move) { |m| return -1 if m == -1; miniscore *= m }")
+    @opponent.apply_item_event(:targeted_by_move, self, @opponent, @attacker, @move) { |m| return -1 if m == -1; miniscore *= m }")
 
 # role provider
 UniLib.insert_in_method_before(:PokeBattle_AI, :pbGetMonRoles, "partyRoles.push(monRoles)",
-  "mon.apply_item_event(:move_score, self, mon) { |m| monRoles.push(m) }")
+  "mon.apply_item_event(:roles, self, mon) { |m| monRoles.push(m) }")
 
 
 # ========= item only ========= #
