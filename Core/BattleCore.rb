@@ -1,0 +1,296 @@
+# ======================================================================================================================================== #
+# ============================================================= DEPENDENCIES ============================================================= #
+# ======================================================================================================================================== #
+
+UniLib.verify_version(0.6, __FILE__)
+
+# ======================================================================================================================================== #
+# ============================================================ INTERNAL/CORE ============================================================= #
+# ======================================================================================================================================== #
+
+module UniLib
+
+  unless UniLib.lib_loaded(__FILE__)
+    TRAINERS = load_data("Data/trainers.dat")
+    BOSSES = load_data("Data/bossdata.dat")
+  end
+  TRAINER_DATA = {}
+  BOSS_DATA = {}
+  TRAINER_CACHE = {}
+  BOSS_CACHE = {}
+  $trainer_modifier_debug = false
+
+end
+
+class TrainerModifier
+
+  include UniLib
+
+  def get_trainer(tclass, name, id)
+    TRAINERS[tclass][name].each { |a| return deep_copy(a) if a[0] == id }
+  end
+
+  def initialize(tclass, name, id, is_new)
+    unless is_new or TRAINERS[tclass] or TRAINERS[tclass][name] or get_trainer(tclass, name, id)
+      print "TrainerModifier: #{tclass} #{name} with team id #{id} doesn't exist"
+      exit
+    end
+    t = get_trainer(tclass, name, id)
+    TRAINER_CACHE[[tclass, name, id]] = true if $trainer_modifier_debug
+    @is_new = is_new
+    @tclass = tclass
+    @name = name
+    @id = id
+    @pkmn = t[1]
+    @items = t[2]
+    @ace = t[3]
+    @defeat = t[4]
+    @effect = t[5]
+  end
+
+  def build
+    trainers = $cache.trainers
+    trainers[@tclass] = {} unless trainers[@tclass]
+    trainers[@tclass][@name] = [] unless trainers[@tclass][@name]
+    if @is_new
+      trainers[@tclass][@name].push([@id, @pkmn, @items, @ace, @defeat, @effect])
+    else
+      trainers[@tclass][@name].each_with_index do |trainer, i|
+        if trainer[0] == @id
+          trainers[@tclass][@name][i] = [@id, @pkmn, @items, @ace, @defeat, @effect]
+          return
+        end
+      end
+    end
+  end
+
+  def self.party_log(party)
+    str = ""
+    party[1].each_with_index do |pkmn, idx|
+      unless pkmn.nil?
+        str += "               .set_pkmn(#{idx}, :#{pkmn[:species]}, #{pkmn[:level]}, :#{pkmn[:ability]}"
+        pkmn.each do |k, v|
+          case k
+          when :species, :ability, :level then str += ")\n" if k == pkmn.keys.last; next
+          else
+            if v.is_a? String
+              str += ", #{k}: #{'"' + v+ '"'}"
+            elsif v.is_a? Symbol
+              str += ", #{k}: :#{v}"
+            else
+              str += ", #{k}: #{v}"
+            end
+          end
+          str += ")\n" if k == pkmn.keys.last
+        end
+      end
+    end
+    str += "               .set_items(#{party[2] ? party[2] : "nil"})\n"
+    str += "               .set_ace(#{party[3] ? '"' + party[3] + '"' : "nil" })\n"
+    str += "               .set_defeat(#{party[4] ? '"' + party[4] + '"' : "nil" })\n"
+    str += "               .set_effects(#{party[5] ? party[5] : "nil"})\n"
+    UniLib.dev_log(str)
+  end
+
+end
+
+class BossModifier
+
+  include UniLib
+
+  def initialize(id, is_new)
+    unless is_new or BOSSES[id]
+      print "BossModifier: boss with #{id} doesn't exist"
+      exit
+    end
+    @id = id
+    BOSS_CACHE[@id] = true
+    boss = deep_copy(BOSSES[id])
+    @name = boss.name
+    @pkmn = boss.moninfo
+    @shields = boss.shieldCount
+    @immunities = boss.immunities
+    @entry_text = boss.entryText
+    @entry_effects = boss.onEntryEffects
+    @break_effects = boss.onBreakEffects
+    @sos_details = boss.sosDetails
+    @capturable = boss.capturable
+    @can_run = boss.canrun
+  end
+
+  def build
+    if @is_new
+      $cache.bosses[@id].push(BossData.new(@id, {
+        :name => @name,
+        :moninfo => @pkmn,
+        :shieldCount => @shields,
+        :immunities => @immunities,
+        :entryText => @entry_text,
+        :onEntryEffects => @entry_effects,
+        :onBreakEffects => @break_effects,
+        :sosDetails => @sos_details,
+        :capturable => @capturable,
+        :canrun => @can_run
+      }))
+    else
+      boss = $cache.bosses[@id]
+      boss.name = @name
+      boss.moninfo = @pkmn
+      boss.shieldCount = @shields
+      boss.immunities = @immunities
+      boss.entryText = @entry_text
+      boss.onEntryEffects = @entry_effects
+      boss.onBreakEffects = @break_effects
+      boss.sosDetails = @sos_details
+      boss.capturable = @capturable
+      boss.canrun = @can_run
+    end
+  end
+
+  def self.data_log(pkmn)
+    boss = $cache.bosses[pkmn.bossId]
+    s = "BossModifier.add(:#{pkmn.bossId})\n"
+    # name
+    s += "            .set_name(\"#{boss.name}\")\n"
+    pk = boss.moninfo
+    # moninfo
+    s += "            .set_pkmn(:#{pk[:species]}, #{pk[:level]}, :#{pk[:ability]}"
+    pk.each do |k, v|
+      case k
+      when :species, :ability, :level then str += ")\n" if k == pk.keys.last; next
+      else
+        if v.is_a? String
+          s += ", #{k}: #{'"' + v+ '"'}"
+        elsif v.is_a? Symbol
+          s += ", #{k}: :#{v}"
+        else
+          s += ", #{k}: #{v}"
+        end
+      end
+      s += ")\n" if k == pk.keys.last
+    end
+    # shield count
+    s += "            .set_shields(#{boss.shieldCount})\n"
+    # immunities
+    boss.immunities.each { |k, _| s += "            .set_immunity(:#{k})\n" } if boss.immunities
+    # entry message
+    s += "            .set_entry_text(\"#{boss.entryText}\")\n" if boss.entryText
+    # entry effects
+    boss.onEntryEffects.each do |k, v|
+      s += "            .set_entry_effect(#{k}"
+      v.each do |j, c|
+        if c.is_a? String
+          add = "\"#{c}\""
+        elsif c.is_a? Symbol
+          add = ":#{c}"
+        else
+          add = "#{c}"
+        end
+        s += ", #{j}: #{add}"
+      end
+      s += ")\n"
+    end if boss.onEntryEffects
+    # break effects
+    boss.onBreakEffects.each do |k, v|
+      s += "            .set_break_effect(#{k}"
+      v.each do |j, c|
+        if c.is_a? String
+          add = "\"#{c}\""
+        elsif c.is_a? Symbol
+          add = ":#{c}"
+        else
+          add = "#{c}"
+        end
+        s += ", #{j}: #{add}"
+      end
+      s += ")\n"
+    end if boss.onBreakEffects
+    # sos pokemon
+    if boss.sosDetails
+      s += "            .set_sos_condition(\"#{boss.sosDetails[:activationRequirement]}\")\n"
+      s += "            .set_sos_continuous(#{boss.sosDetails[:continuous]})\n" unless boss.sosDetails[:continuous].nil?
+      s += "            .set_sos_count(#{boss.sosDetails[:totalMonCount]})\n"
+      boss.sosDetails[:moninfos].each do |num, pkinfo|
+        s += "            .set_sos_pkmn(#{num}, :#{pkinfo[:species]}, #{pkinfo[:level]}, :#{pkinfo[:ability]}"
+        pkinfo.each do |k, v|
+          case k
+          when :species, :ability, :level then s += ")\n" if k == pkinfo.keys.last; next
+          else
+            if v.is_a? String
+              s += ", #{k}: #{'"' + v+ '"'}"
+            elsif v.is_a? Symbol
+              s += ", #{k}: :#{v}"
+            else
+              s += ", #{k}: #{v}"
+            end
+          end
+          s += ")\n" if k == pkinfo.keys.last
+        end
+      end
+    end
+    # can run from
+    s += "            .set_can_run(#{boss.canrun})" unless boss.canrun.nil?
+    # can catch
+    s += "            .set_capture(#{boss.capturable})" unless boss.capturable.nil?
+    UniLib.dev_log(s)
+  end
+
+end
+
+# ======================================================================================================================================== #
+# ================================================================ EVENTS ================================================================ #
+# ======================================================================================================================================== #
+
+unless UniLib.lib_loaded(__FILE__)
+
+  def register_modified_trainers
+    UniLib::TRAINER_DATA.each { |_, trainer| trainer.build }
+  end
+
+  def register_modified_bosses
+    UniLib::BOSS_DATA.each { |_, boss| boss.build }
+  end
+
+end
+
+UniLib.add_play_event(:register_modified_trainers)
+UniLib.add_play_event(:register_modified_bosses)
+
+# ======================================================================================================================================== #
+# ================================================================ PATCH ================================================================= #
+# ======================================================================================================================================== #
+
+UniLib.insert_in_method(:PokeBattle_Battler, :pbInitBoss, "boss = bossdata[pkmn.bossId]", proc do |pkmn|
+  BossModifier.data_log(pkmn) unless UniLib::BOSS_CACHE[pkmn.bossId]
+end)
+
+UniLib.insert_in_function(:pbTrainerBattle, "end", proc do |trainerid, trainername, trainerparty|
+  unless UniLib::TRAINER_CACHE[[trainerid, trainername, trainerparty]]
+    UniLib.dev_log("TrainerModifier.add(:#{trainerid}, \"#{trainername}\", #{trainerparty})")
+    $cache.trainers[trainerid][trainername].each do |i|
+      next unless i
+      if i[0] == trainerparty
+        TrainerModifier.party_log(i)
+        break
+      end
+    end
+  end
+end)
+
+UniLib.insert_in_function(:pbDoubleTrainerBattle, "end", proc do |trainerid1, trainername1, trainerparty1, trainerid2, trainername2, trainerparty2|
+  keys = [[trainerid1, trainername1, trainerparty1], [trainerid2, trainername2, trainerparty2]]
+  keys.each do |k|
+    unless UniLib::TRAINER_CACHE[k]
+      UniLib.dev_log("TrainerModifier.add(:#{k[0]}, \"#{k[1]}\", #{k[2]})")
+      $cache.trainers[k[0]][k[1]].each do |i|
+        next unless i
+        if i[0] == k[2]
+          TrainerModifier.party_log(i)
+          break
+        end
+      end
+    end
+  end
+end, 1)
+
+UniLib
