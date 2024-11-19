@@ -333,10 +333,10 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :pbGetMonRoles, "partyRoles.push(
 
 # ability score
 UniLib.insert_in_method_before(:PokeBattle_AI, :getSwitchInScoresParty, "case i.ability",
-  "i.apply_ability_event(:weather_score, self, i) { |m| abilityscore += mod }")
+  "i.apply_ability_event(:weather_score, self, i) { |m| abilityscore += m }")
 
 # ability disrupt score
 UniLib.insert_in_method_before(:PokeBattle_AI, :getAbilityDisruptScore, "case opponent.ability",
-  "opponent.apply_ability_event(:disrupt_score, self, attacker, opponent) { |m| abilityscore *= mod }")
+  "opponent.apply_ability_event(:disrupt_score, self, attacker, opponent) { |m| abilityscore *= m }")
 
 }
