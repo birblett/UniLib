@@ -45,4 +45,8 @@ module UniLib
     PBStuff::BURNMOVE.include?(move) || PBStuff::PARAMOVE.include?(move) || PBStuff::SLEEPMOVE.include?(move) || PBStuff::SCREENMOVE.include?(move)
   end
 
+  def self.category(s)
+    yield
+  end
+
 end
