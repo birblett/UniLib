@@ -28,6 +28,14 @@ end
 
 class TrainerModifier
 
+  $defaults = {}
+
+  def self.with_defaults(**kwargs)
+    $defaults = kwargs
+    yield
+    $defaults = nil
+  end
+
   def self.add(tclass, name, id, is_new=false)
     key = [tclass, name, id]
     TRAINER_DATA[key] = TrainerModifier.new(tclass, name, id, is_new) unless TRAINER_DATA[key]
@@ -36,9 +44,10 @@ class TrainerModifier
 
   def set_pkmn(idx, species, level, ability, **kwargs)
     @pkmn[idx] = {} unless @pkmn[idx]
+    $defaults[:trainer].each { |k, v| @pkmn[idx][k] = v } if $defaults[:trainer]
     @pkmn[idx][:species] = species
     @pkmn[idx][:level] = level
-    @pkmn[idx][:ability] = ability
+    ability.nil? ? @pkmn[idx].delete(:ability) : @pkmn[idx][:ability] = ability
     kwargs.each { |k, v| @pkmn[idx][k] = v }
     self
   end
@@ -110,8 +119,9 @@ class BossModifier
 
   def set_break_effect(idx, **kwargs)
     @break_effects = {} unless @break_effects
+    @break_effects.delete(idx) if kwargs[:delete]
     @break_effects[idx] = {} unless @break_effects[idx]
-    kwargs[:delete] ? @break_effects.delete(idx) : kwargs.each { |k, v| @break_effects[idx][k] = v }
+    kwargs.each { |k, v| @break_effects[idx][k] = v if k != :delete }
     self
   end
 
@@ -136,6 +146,7 @@ class BossModifier
   def set_sos_pkmn(idx, species, level, ability, **kwargs)
     @sos_details = {} unless @sos_details
     @sos_details[:moninfos][idx] = {} unless @sos_details[:moninfos][idx]
+    $defaults[:boss].each { |k, v| @sos_details[:moninfos][idx][k] = v } if $defaults[:boss]
     @sos_details[:moninfos][idx][:species] = species
     @sos_details[:moninfos][idx][:level] = level
     @sos_details[:moninfos][idx][:ability] = ability
