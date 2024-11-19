@@ -67,8 +67,8 @@ class TrainerModifier
   def self.party_log(party)
     str = ""
     party[1].each_with_index do |pkmn, idx|
+      str += "               .set_pkmn(#{idx}, :#{pkmn[:species]}, #{pkmn[:level]}, #{pkmn[:ability] ? ':' + pkmn[:ability].to_s : 'nil'}"
       unless pkmn.nil?
-        str += "               .set_pkmn(#{idx}, :#{pkmn[:species]}, #{pkmn[:level]}, :#{pkmn[:ability]}"
         pkmn.each do |k, v|
           case k
           when :species, :ability, :level then str += ")\n" if k == pkmn.keys.last; next
@@ -154,7 +154,7 @@ class BossModifier
     s += "            .set_name(\"#{boss.name}\")\n"
     pk = boss.moninfo
     # moninfo
-    s += "            .set_pkmn(:#{pk[:species]}, #{pk[:level]}, :#{pk[:ability]}"
+    s += "            .set_pkmn(:#{pk[:species]}, #{pk[:level]}, :#{pk[:ability] ? ':' + pk[:ability].to_s : 'nil'}"
     pk.each do |k, v|
       case k
       when :species, :ability, :level then str += ")\n" if k == pk.keys.last; next
@@ -207,9 +207,9 @@ class BossModifier
     end if boss.onBreakEffects
     # sos pokemon
     if boss.sosDetails
-      s += "            .set_sos_condition(\"#{boss.sosDetails[:activationRequirement]}\")\n"
+      s += "            .set_sos_condition(\"#{boss.sosDetails[:activationRequirement]}\")\n" if boss.sosDetails[:activationRequirement]
       s += "            .set_sos_continuous(#{boss.sosDetails[:continuous]})\n" unless boss.sosDetails[:continuous].nil?
-      s += "            .set_sos_count(#{boss.sosDetails[:totalMonCount]})\n"
+      s += "            .set_sos_count(#{boss.sosDetails[:totalMonCount]})\n" if boss.sosDetails[:totalMonCount]
       boss.sosDetails[:moninfos].each do |num, pkinfo|
         s += "            .set_sos_pkmn(#{num}, :#{pkinfo[:species]}, #{pkinfo[:level]}, :#{pkinfo[:ability]}"
         pkinfo.each do |k, v|
@@ -264,33 +264,17 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbInitBoss, "boss = bossdata[pkmn.
   BossModifier.data_log(pkmn) unless UniLib::BOSS_CACHE[pkmn.bossId]
 end)
 
-UniLib.insert_in_function(:pbTrainerBattle, "end", proc do |trainerid, trainername, trainerparty|
-  unless UniLib::TRAINER_CACHE[[trainerid, trainername, trainerparty]]
-    UniLib.dev_log("TrainerModifier.add(:#{trainerid}, \"#{trainername}\", #{trainerparty})")
+UniLib.insert_in_function(:pbLoadTrainer, :HEAD, proc do |trainerid, trainername, partyid|
+  unless UniLib::TRAINER_CACHE[[trainerid, trainername, partyid]]
+    UniLib.dev_log("TrainerModifier.add(:#{trainerid}, \"#{trainername}\", #{partyid})")
     $cache.trainers[trainerid][trainername].each do |i|
       next unless i
-      if i[0] == trainerparty
+      if i[0] == partyid
         TrainerModifier.party_log(i)
         break
       end
     end
   end
 end)
-
-UniLib.insert_in_function(:pbDoubleTrainerBattle, "end", proc do |trainerid1, trainername1, trainerparty1, trainerid2, trainername2, trainerparty2|
-  keys = [[trainerid1, trainername1, trainerparty1], [trainerid2, trainername2, trainerparty2]]
-  keys.each do |k|
-    unless UniLib::TRAINER_CACHE[k]
-      UniLib.dev_log("TrainerModifier.add(:#{k[0]}, \"#{k[1]}\", #{k[2]})")
-      $cache.trainers[k[0]][k[1]].each do |i|
-        next unless i
-        if i[0] == k[2]
-          TrainerModifier.party_log(i)
-          break
-        end
-      end
-    end
-  end
-end, 1)
 
 UniLib
