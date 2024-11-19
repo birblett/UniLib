@@ -35,6 +35,13 @@ class PokeModifier
   end
 
   <<-DOC
+  >> allows ability bans to be configured.
+  DOC
+  def self.add_bans(*args)
+    CUSTOM_ABILITY_BANS.push(*args)
+  end
+
+  <<-DOC
   >> allows the pokemon to choose almost any stab move when learning, with a configurable banlist
   DOC
   def set_stab

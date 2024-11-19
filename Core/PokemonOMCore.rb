@@ -18,6 +18,8 @@ ItemBuilder.add(:CATALYZER, "Catalyzer", "May activate the user's hidden potenti
 
 module UniLib
 
+  CUSTOM_ABILITY_BANS = []
+
   unless lib_loaded(__FILE__)
 
     BANNED_ATTACKS = [:ASTRALBARRAGE, :BOLTBEAK, :CHATTER, :CLANGOROUSSOUL, :DECIMATION, :DOUBLEIRONBASH, :EXTREMESPEED, :FISHIOUSREND,
@@ -65,6 +67,7 @@ module UniLib
       commands = CUSTOM_POKEMON_ABILITIES.clone
       UniLib::CUSTOM_ABILITIES.map { |ability, data| [ability, data.name] }.each { |cmd| commands.push(cmd) unless commands.include?(cmd) }
       list.each { |_, ability| commands.push([ability, UniLib::ABILITY_DATA[ability].name]) if BANNED_ABILITIES.include?(ability) }
+      CUSTOM_ABILITY_BANS.each { |ability| commands.delete_if { |i| ability == i[0] } }
       commands.sort! { |a,b| a[1] <=> b[1] }
       ret = pbCommands2(cmdwin, commands.map { |command| _ISPRINTF("{1:s}", command[1])} ,-1,default-1,true)
       cmdwin.dispose
