@@ -5,6 +5,7 @@
 UniLib.verify_version(0.6, __FILE__)
 UniLib.include "Item"
 UniLib.include "Map"
+UniLib.include "Switch"
 
 # ======================================================================================================================================== #
 # ============================================================ INTERNAL/CORE ============================================================= #
@@ -14,7 +15,6 @@ module UniLib
 
   VALID_CRESTS = {}
   SHOP_CRESTS = [{}, {}, {}, {}]
-  $custom_crest_flags = {}
 
 end
 
@@ -71,21 +71,6 @@ end unless UniLib.lib_loaded(__FILE__)
 # ================================================================ EVENTS ================================================================ #
 # ======================================================================================================================================== #
 
-unless UniLib.lib_loaded(__FILE__)
-
-  def read_custom_crest_flags(save)
-    $custom_crest_flags = save[:CustomCrestFlags] ? save[:CustomCrestFlags] : {}
-  end
-
-  def write_custom_crest_flags(save)
-    save[:CustomCrestFlags] = $custom_crest_flags
-  end
-
-end
-
-UniLib.add_play_event(:read_custom_crest_flags)
-UniLib.add_save_event(:write_custom_crest_flags)
-
 MapEvent.add_map_event(168) do |map|
   chmap = [0, 6, 10, 14, 15]
   idmap = [0, 243, 377, 505, 535]
@@ -117,7 +102,7 @@ MapEvent.add_map_event(168) do |map|
       current[13].parameters[0] = "Kernel.pbReceiveItem(:#{symbol})"
       # [14] set switch
       current[14].instance_variable_set(:@code, 355)
-      current[14].parameters[0] = "$custom_crest_flags[:#{sym}] = true"
+      current[14].parameters[0] = "$unilib_switches[:#{sym}] = true"
       to_add += current
     end
     arr[0] += ", None]"
@@ -193,12 +178,3 @@ UniLib.insert_in_method(:Cache_Game, :map_load, "end", proc do |mapid|
   end
 end)
 =end
-
-UniLib.insert_in_method(:Interpreter, :command_111, "result = false",
-  "if (@parameters[1].is_a? Symbol) and @parameters[1].to_s.start_with?(\"UNILIB_CREST_\")
-    result = !$custom_crest_flags[@parameters[1]].nil?
-  else")
-
-UniLib.replace_in_method(:Interpreter, :command_111, "@branch[@list[@index].indent] = result",
-  "end
-  @branch[@list[@index].indent] = result")
