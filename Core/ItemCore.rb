@@ -131,20 +131,20 @@ end unless UniLib.lib_loaded(__FILE__)
 
 unless UniLib.lib_loaded(__FILE__)
 
-  def add_items
+  def add_items(save)
     $cache.items.each do |item, _|
       if UniLib::ITEM_DATA[item].nil? and UniLib::CUSTOM_ITEMS[item].nil?
         $cache.items.delete(item)
       end
     end
     UniLib::CUSTOM_ITEMS.each { |_, item_builder| item_builder.build }
-    data = UniLib.restore_data("item_backup", {})
+    data = save[:UniLibInvalidItems]
     data.each do |i, c|
       unless UniLib::CUSTOM_ITEMS[i].nil?
         $PokemonBag.pbStoreItem(i, c)
         UniLib::INVALID_ITEMS[i] = "true"
       end
-    end
+    end if save[:UniLibInvalidItems]
   end
 
   def remove_invalid_items
@@ -176,8 +176,8 @@ unless UniLib.lib_loaded(__FILE__)
     end
   end
 
-  def write_invalid_items
-    data = UniLib.restore_data("item_backup", {})
+  def write_invalid_items(save)
+    data = save[:UniLibInvalidItems] ? save[:UniLibInvalidItems] : {}
     UniLib::INVALID_ITEMS.each do |i, c|
       if c != "true"
         data[i] = data[i].nil? ? c : data[i] + c
@@ -185,7 +185,7 @@ unless UniLib.lib_loaded(__FILE__)
         data.delete(i)
       end
     end
-    UniLib.save_data("item_backup", data)
+    save[:UniLibInvalidItems] = data
   end
 
 end
