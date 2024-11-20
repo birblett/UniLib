@@ -20,6 +20,11 @@ class PokeBattle_Battler
     @ability = other.is_a?(AbilityContainer) ? other.copy : AbilityContainer.new(self, other)
   end
 
+  def ability
+    @ability = AbilityContainer.new(self, other) if @ability.is_a? Symbol
+    @ability
+  end
+
 end
 
 class AbilityContainer
@@ -83,6 +88,8 @@ end unless UniLib.lib_loaded(__FILE__)
 # ======================================================================================================================================== #
 
 $cache.abil.extend(Ability_Cache)
+
+UniLib.insert_in_method(:PokeBattle_Battler, :crestStats, :TAIL, "self.ability = @ability if @ability.is_a? Symbol")
 
 UniLib.replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@ability      = pkmn.ability", "@ability = AbilityContainer.new(pkmn, pkmn.ability)")
 
