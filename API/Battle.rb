@@ -90,6 +90,7 @@ class BossModifier
     @pkmn[:species] = species
     @pkmn[:level] = level
     @pkmn[:ability] = ability
+    $defaults[:boss].each { |k, v| @pkmn[k] = v } if $defaults[:boss]
     kwargs.each { |k, v| @pkmn[k] = v }
     self
   end
@@ -110,10 +111,10 @@ class BossModifier
     self
   end
 
-  def set_entry_effect(idx, **kwargs)
+  def set_entry_effect(**kwargs)
     @entry_effects = {} unless @entry_effects
-    @entry_effects[idx] = {} unless @entry_effects[idx]
-    kwargs[:delete] ? @entry_effects.delete(idx) : kwargs.each { |k, v| @entry_effects[idx][k] = v }
+     @entry_effects = {} if kwargs[:delete]
+    kwargs.each { |k, v| @entry_effects[k] = v }
     self
   end
 
@@ -146,7 +147,7 @@ class BossModifier
   def set_sos_pkmn(idx, species, level, ability, **kwargs)
     @sos_details = {} unless @sos_details
     @sos_details[:moninfos][idx] = {} unless @sos_details[:moninfos][idx]
-    $defaults[:boss].each { |k, v| @sos_details[:moninfos][idx][k] = v } if $defaults[:boss]
+    $defaults[:sos].each { |k, v| @sos_details[:moninfos][idx][k] = v } if $defaults[:sos]
     @sos_details[:moninfos][idx][:species] = species
     @sos_details[:moninfos][idx][:level] = level
     @sos_details[:moninfos][idx][:ability] = ability
