@@ -155,9 +155,9 @@ define_method(:pbCallTitle) do
     UniLib::EVENT_ON_SAVE.sort! { |a, b| b[1] <=> a[1]}
     insertions = Time.now
     UniLib::PENDING_PRE_INSERTIONS += [
-      [:PokemonLoad, :startPlayingSaveFile, "$game_player.center($game_player.x, $game_player.y)", "UniLib::EVENT_ON_PLAY.each { |fixer| method(fixer[0]).call }", 0, false, 100000],
+      [:PokemonLoad, :startPlayingSaveFile, "$game_player.center($game_player.x, $game_player.y)", "UniLib::EVENT_ON_PLAY.each { |fixer| a = method(fixer[0]); a.arity != 0 ? a.call(@currentsave) : a.call }", 0, false, 100000],
       [:PokemonLoad, :pbStartLoadScreen, "saveClientData", "UniLib::EVENT_ON_NEW_FILE.each { |fixer| method(fixer[0]).call }", 0, false, 100000],
-      [:Object, :saveNew, "end", "UniLib::EVENT_ON_SAVE.each { |saver| method(saver[0]).call }", 0, false, 100000]]
+      [:Object, :saveNew, "savehash = {}", "UniLib::EVENT_ON_SAVE.each { |saver| a = method(saver[0]); a.arity != 0 ? a.call(savehash) : a.call }", 0, false, 100000]]
     UniLib::PENDING_PRE_INSERTIONS.sort! { |a, b| b[6] <=> a[6]}
     UniLib::PENDING_PRE_INSERTIONS.each { |pending| UniLib.insert_in_method_internal(pending[0], pending[1], pending[2], pending[3], pending[4], pending[5]) }
     UniLib::PENDING_INSERTIONS.sort! { |a, b| b[6] <=> a[6]}
