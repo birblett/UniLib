@@ -154,7 +154,7 @@ class BossModifier
     s += "            .set_name(\"#{boss.name}\")\n"
     pk = boss.moninfo
     # moninfo
-    s += "            .set_pkmn(:#{pk[:species]}, #{pk[:level]}, :#{pk[:ability] ? ':' + pk[:ability].to_s : 'nil'}"
+    s += "            .set_pkmn(:#{pk[:species]}, #{pk[:level]}, #{pk[:ability] ? ':' + pk[:ability].to_s : 'nil'}"
     pk.each do |k, v|
       case k
       when :species, :ability, :level then str += ")\n" if k == pk.keys.last; next
@@ -178,15 +178,19 @@ class BossModifier
     # entry effects
     boss.onEntryEffects.each do |k, v|
       s += "            .set_entry_effect(#{k}"
-      v.each do |j, c|
-        if c.is_a? String
-          add = "\"#{c}\""
-        elsif c.is_a? Symbol
-          add = ":#{c}"
-        else
-          add = "#{c}"
+      if v.is_a? String
+        s += "#{k}: \"#{v}\""
+      else
+        v.each do |j, c|
+          if c.is_a? String
+            add = "\"#{c}\""
+          elsif c.is_a? Symbol
+            add = ":#{c}"
+          else
+            add = "#{c}"
+          end
+          s += ", #{j}: #{add}"
         end
-        s += ", #{j}: #{add}"
       end
       s += ")\n"
     end if boss.onEntryEffects
