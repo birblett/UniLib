@@ -265,7 +265,7 @@ UniLib.add_play_event(:register_modified_bosses)
 # ======================================================================================================================================== #
 
 UniLib.insert_in_method(:PokeBattle_Battler, :pbInitBoss, "boss = bossdata[pkmn.bossId]", proc do |pkmn|
-  BossModifier.data_log(pkmn) unless UniLib::BOSS_CACHE[pkmn.bossId]
+  BossModifier.data_log(pkmn) unless UniLib::BOSS_CACHE[pkmn.bossId] or pkmn.bossId == :SHADOWDEN
 end)
 
 UniLib.insert_in_function(:pbLoadTrainer, :HEAD, proc do |trainerid, trainername, partyid|
