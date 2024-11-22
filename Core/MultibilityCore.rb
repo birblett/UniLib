@@ -21,7 +21,8 @@ class PokeBattle_Battler
   end
 
   def ability
-    @ability = AbilityContainer.new(self, other) if @ability.is_a? Symbol
+    @ability = AbilityContainer.new(self, nil) if @ability.nil?
+    @ability = AbilityContainer.new(self, @ability) unless @ability.is_a? AbilityContainer
     @ability
   end
 
@@ -44,6 +45,7 @@ class AbilityContainer
   end
 
   def ==(other)
+    return false if !other.nil? and @abilities.include?(nil)
     out = @abilities.include?(other)
     @ctx = other if out
     out
@@ -54,13 +56,15 @@ class AbilityContainer
   end
 
   def each
+    return if @abilities == nil or !@abilities.is_a? Array
     @abilities.each { |a| yield(a) }
   end
 
   def self.multibility_case(clazz, method, case_statement, tail, ending, idx=0, idx2=0)
     s = case_statement.sub("case ", "") + ".each " + (ending == "}" ? "{" : "do") + " |ability| case ability"
     UniLib.replace_in_method(clazz, method, case_statement, s, idx)
-    real_ending = ending + " if #{case_statement.sub("case ", "")}.is_a? AbilityContainer"
+    target = "#{case_statement.sub("case ", "")}"
+    real_ending = ending + " if #{target}.is_a? AbilityContainer and !#{target}.nil?"
     ending == "}" ? UniLib.insert_in_method_before(clazz, method, tail, real_ending, idx2) : UniLib.insert_in_method(clazz, method, tail, real_ending, idx2)
   end
 
