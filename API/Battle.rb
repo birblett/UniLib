@@ -74,16 +74,19 @@ class TrainerModifier
 
 end
 
+module BossBuilder
+
+  def self.create(id, species, level, ability, **kwargs)
+    BossModifier.add(id, true).set_pkmn(species, level, ability, **kwargs)
+  end
+
+end
+
 class BossModifier
 
   def self.add(id, is_new=false)
     BOSS_DATA[id] = BossModifier.new(id, is_new) unless BOSS_DATA[id]
     BOSS_DATA[id]
-  end
-
-  def set_name(name)
-    @name = name
-    self
   end
 
   def set_pkmn(species, level, ability, **kwargs)
@@ -92,6 +95,11 @@ class BossModifier
     @pkmn[:ability] = ability
     $defaults[:boss].each { |k, v| @pkmn[k] = v } if $defaults[:boss]
     kwargs.each { |k, v| @pkmn[k] = v }
+    self
+  end
+
+  def set_name(name)
+    @name = name
     self
   end
 
@@ -164,6 +172,10 @@ class BossModifier
   def set_can_run(bool)
     @can_run = bool
     self
+  end
+
+  def add_ability_provider(handler)
+    AbilityContainer.add_handler(@pkmn[:species], handler, @pkmn[:form] ? @pkmn[:form] : 0, BOSS_MULTIBILITY_HANDLER)
   end
 
 end

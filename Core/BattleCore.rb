@@ -98,6 +98,8 @@ class BossModifier
 
   include UniLib
 
+  BOSS_MULTIBILITY_HANDLER = proc { |pkmn| pkmn.is_a?(PokeBattle_Battler) and pkmn.isbossmon }
+
   def initialize(id, is_new)
     unless is_new or BOSSES[id]
       print "BossModifier: boss with #{id} doesn't exist"
@@ -105,33 +107,47 @@ class BossModifier
     end
     @id = id
     BOSS_CACHE[@id] = true
-    boss = deep_copy(BOSSES[id])
-    @name = boss.name
-    @pkmn = boss.moninfo
-    @shields = boss.shieldCount
-    @immunities = boss.immunities
-    @entry_text = boss.entryText
-    @entry_effects = boss.onEntryEffects
-    @break_effects = boss.onBreakEffects
-    @sos_details = boss.sosDetails
-    @capturable = boss.capturable
-    @can_run = boss.canrun
+    @is_new = is_new
+    if is_new
+      @name = id.to_s.gsub("_", " ").split.map(&:capitalize).join(' ')
+      @pkmn = {}
+      @shields = 0
+      @immunities = nil
+      @entry_text = "Test"
+      @entry_effects = nil
+      @break_effects = nil
+      @sos_details = nil
+      @capturable = nil
+      @can_run = nil
+    else
+      boss = deep_copy(BOSSES[id])
+      @name = boss.name
+      @pkmn = boss.moninfo
+      @shields = boss.shieldCount
+      @immunities = boss.immunities
+      @entry_text = boss.entryText
+      @entry_effects = boss.onEntryEffects
+      @break_effects = boss.onBreakEffects
+      @sos_details = boss.sosDetails
+      @capturable = boss.capturable
+      @can_run = boss.canrun
+    end
   end
 
   def build
     if @is_new
-      $cache.bosses[@id].push(BossData.new(@id, {
-        :name => @name,
-        :moninfo => @pkmn,
-        :shieldCount => @shields,
-        :immunities => @immunities,
-        :entryText => @entry_text,
-        :onEntryEffects => @entry_effects,
-        :onBreakEffects => @break_effects,
-        :sosDetails => @sos_details,
-        :capturable => @capturable,
-        :canrun => @can_run
-      }))
+      data = {}
+      data[:name] = @name
+      data[:moninfo] = @pkmn
+      data[:shieldCount] = @shields
+      data[:immunities] = @immunities
+      data[:entryText] = @entry_text
+      data[:onEntryEffects] = @entry_effects
+      data[:onBreakEffects] = @break_effects
+      data[:sosDetails] = @sos_details
+      data[:capturable] = @capturable
+      data[:canrun] = @can_run
+      $cache.bosses[@id] = BossData.new(@id, data)
     else
       boss = $cache.bosses[@id]
       boss.name = @name
