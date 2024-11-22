@@ -53,6 +53,7 @@ unless UniLib.lib_loaded(__FILE__)
 
     def update
       @update.call(@value + @min) unless @update.nil?
+      UniLib.save_data("options", UniLib::UNILIB_CUSTOM_OPTIONS + UniLib::OLD_OPTIONS + [UniLib::SEPARATE_UNILIB_OPTIONS], false)
     end
 
     def get_option
@@ -192,67 +193,71 @@ end
 class UniLibOptionScene
 
   include UniLib
-
-  attr_accessor(:viewport)
   OptionList = []
 
-  def pbStartScene
-    @sprites={}
-    @viewport=Viewport.new(0,0,Graphics.width,Graphics.height)
-    @viewport.z=99999
-    @sprites["title"]=Window_UnformattedTextPokemon.newWithSize(_INTL("UniLib Options"),0,0,Graphics.width,64,@viewport)
-    @sprites["textbox"]=Kernel.pbCreateMessageWindow
-    @sprites["textbox"].letterbyletter=false
-    if SEPARATE_UNILIB_OPTIONS == 1
-      UNILIB_CUSTOM_OPTIONS.each { |option| OptionList.push(option.get_option) unless option.get_option.nil? or OptionList.include?(option.get_option)}
-      OptionList.push(SEPARATE_UNILIB_OPTIONS.get_option) unless OptionList.include?(SEPARATE_UNILIB_OPTIONS.get_option)
-    end
-    @sprites["option"]=Window_PokemonOption.new(OptionList, 0, @sprites["title"].height,Graphics.width, Graphics.height-@sprites["title"].height-@sprites["textbox"].height)
-    @sprites["option"].viewport=@viewport
-    @sprites["option"].visible=true
-    (0...OptionList.length).each { |i| @sprites["option"][i] = (OptionList[i].get || 0) }
-    pbDeactivateWindows(@sprites)
-    pbFadeInAndShow(@sprites) { pbUpdate }
-  end
+  unless UniLib.lib_loaded(__FILE__)
 
-  def pbUpdate
-    pbUpdateSpriteHash(@sprites)
-  end
+    attr_accessor(:viewport)
 
-  def pbOptions
-    pbActivateWindow(@sprites,"option"){
-      loop do
-        Graphics.update
-        Input.update
-        pbUpdate
-        if @sprites["option"].mustUpdateOptions
-          # Set the values of each option
-          (0...OptionList.length).each { |i| OptionList[i].set(@sprites["option"][i]) }
-          @sprites["textbox"].setSkin(MessageConfig.pbGetSpeechFrame())
-          @sprites["textbox"].width=@sprites["textbox"].width  # Necessary evil
-          pbSetSystemFont(@sprites["textbox"].contents)
-          if @sprites["option"].options[@sprites["option"].index].description.is_a?(Proc)
-            @sprites["textbox"].text=@sprites["option"].options[@sprites["option"].index].description.call
-          else
-            @sprites["textbox"].text=@sprites["option"].options[@sprites["option"].index].description
-          end
-        end
-        break if Input.trigger?(Input::B) or Input.trigger?(Input::C) && @sprites["option"].index==OptionList.length
+    def pbStartScene
+      @sprites={}
+      @viewport=Viewport.new(0,0,Graphics.width,Graphics.height)
+      @viewport.z=99999
+      @sprites["title"]=Window_UnformattedTextPokemon.newWithSize(_INTL("UniLib Options"),0,0,Graphics.width,64,@viewport)
+      @sprites["textbox"]=Kernel.pbCreateMessageWindow
+      @sprites["textbox"].letterbyletter=false
+      if SEPARATE_UNILIB_OPTIONS == 1
+        UNILIB_CUSTOM_OPTIONS.each { |option| OptionList.push(option.get_option) unless option.get_option.nil? or OptionList.include?(option.get_option)}
+        OptionList.push(SEPARATE_UNILIB_OPTIONS.get_option) unless OptionList.include?(SEPARATE_UNILIB_OPTIONS.get_option)
       end
-    }
+      @sprites["option"]=Window_PokemonOption.new(OptionList, 0, @sprites["title"].height,Graphics.width, Graphics.height-@sprites["title"].height-@sprites["textbox"].height)
+      @sprites["option"].viewport=@viewport
+      @sprites["option"].visible=true
+      (0...OptionList.length).each { |i| @sprites["option"][i] = (OptionList[i].get || 0) }
+      pbDeactivateWindows(@sprites)
+      pbFadeInAndShow(@sprites) { pbUpdate }
+    end
+
+    def pbUpdate
+      pbUpdateSpriteHash(@sprites)
+    end
+
+    def pbOptions
+      pbActivateWindow(@sprites,"option"){
+        loop do
+          Graphics.update
+          Input.update
+          pbUpdate
+          if @sprites["option"].mustUpdateOptions
+            # Set the values of each option
+            (0...OptionList.length).each { |i| OptionList[i].set(@sprites["option"][i]) }
+            @sprites["textbox"].setSkin(MessageConfig.pbGetSpeechFrame())
+            @sprites["textbox"].width=@sprites["textbox"].width  # Necessary evil
+            pbSetSystemFont(@sprites["textbox"].contents)
+            if @sprites["option"].options[@sprites["option"].index].description.is_a?(Proc)
+              @sprites["textbox"].text=@sprites["option"].options[@sprites["option"].index].description.call
+            else
+              @sprites["textbox"].text=@sprites["option"].options[@sprites["option"].index].description
+            end
+          end
+          break if Input.trigger?(Input::B) or Input.trigger?(Input::C) && @sprites["option"].index==OptionList.length
+        end
+      }
+    end
+
+    def pbEndScene
+      pbFadeOutAndHide(@sprites) { pbUpdate }
+      # Set the values of each option
+      (0...OptionList.length).each { |i| OptionList[i].set(@sprites["option"][i]) }
+      Kernel.pbDisposeMessageWindow(@sprites["textbox"])
+      pbDisposeSpriteHash(@sprites)
+      pbRefreshSceneMap
+      @viewport.dispose
+    end
+
   end
 
-  def pbEndScene
-    pbFadeOutAndHide(@sprites) { pbUpdate }
-    # Set the values of each option
-    (0...OptionList.length).each { |i| OptionList[i].set(@sprites["option"][i]) }
-    Kernel.pbDisposeMessageWindow(@sprites["textbox"])
-    pbDisposeSpriteHash(@sprites)
-    pbRefreshSceneMap
-    @viewport.dispose
-  end
-
-end unless UniLib.lib_loaded(__FILE__)
+end
 
 # ======================================================================================================================================== #
 # ================================================================ EVENTS ================================================================ #
@@ -290,9 +295,6 @@ UniLib.insert_in_method_before(:PokemonOptionScene, :pbStartScene, "for i in 0..
     OptionList.push(UniLib::SEPARATE_UNILIB_OPTIONS.get_option) unless OptionList.include?(UniLib::SEPARATE_UNILIB_OPTIONS.get_option)
   end")
 
-UniLib.insert_in_method(:PokemonOption, :pbStartScreen, "@scene.pbOptions",
-  "UniLib.save_data(\"options\", UniLib::UNILIB_CUSTOM_OPTIONS + UniLib::OLD_OPTIONS + [UniLib::SEPARATE_UNILIB_OPTIONS], false)")
-
 UniLib.insert_in_method(:PokemonMenu, :pbStartPokemonMenu, "commands[cmdOption=commands.length]=_INTL(\"Options\")",
   "uni_cmds = UniLib::UNILIB_PAUSE_COMMANDS.reduce({}) { |c, entry| commands[c[entry[0]] = commands.length] = _INTL(entry[1][0]) if entry[1][2].nil? or entry[1][2].call(self); c}")
 
@@ -309,4 +311,6 @@ UniLib.insert_in_method_before(:PokemonStorageScreen, :pbStartScreen, "command=p
   "uni_cmds = UniLib::UNILIB_BOX_COMMANDS.reduce({}) { |c, entry| commands[c[entry[0]] = commands.length] = _INTL(entry[1][0]) if entry[1][2].nil? or entry[1][2].call(heldpoke ? heldpoke : pokemon, selected[0] == -1); c} if heldpoke or pokemon")
 
 UniLib.insert_in_method(:PokemonStorageScreen, :pbStartScreen, "command=pbShowCommands(helptext,commands)",
-  "uni_cmds.each { |c, idx| UniLib::UNILIB_PARTY_COMMANDS[c][1].call(heldpoke ? heldpoke : pokemon, selected[0] == -1) if command == idx }")
+  "called = false
+  uni_cmds.each { |c, idx| (UniLib::UNILIB_PARTY_COMMANDS[c][1].call(heldpoke ? heldpoke : pokemon, selected[0] == -1); called = true) if command == idx }
+  next if called")
