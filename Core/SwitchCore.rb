@@ -20,7 +20,7 @@ unless UniLib.lib_loaded(__FILE__)
 
 end
 
-UniLib.add_play_event(:unilib_read_switches)
+UniLib.add_load_event(:unilib_read_switches)
 UniLib.add_save_event(:unilib_write_switches)
 
 # ======================================================================================================================================== #
