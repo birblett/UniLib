@@ -91,20 +91,6 @@ module UniLib
   end
 
   <<-DOC
-  returns a path associated with a file in the UniLibAssets directory.
-  DOC
-  def self.resolve_asset(path_relative)
-    "Data/Mods/UniLibAssets/#{path_relative}"
-  end
-
-  <<-DOC
-  returns a bitmap associated with an image in the UniLibAssets directory.
-  DOC
-  def self.bitmap(path_relative)
-    AnimatedBitmap.new(resolve_asset(path_relative))
-  end
-
-  <<-DOC
   loads all files in a subdirectory.
   DOC
   def self.dir_load(path_relative)
