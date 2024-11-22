@@ -146,6 +146,7 @@ class BossModifier
 
   def set_sos_pkmn(idx, species, level, ability, **kwargs)
     @sos_details = {} unless @sos_details
+    @sos_details[:moninfos] = {} unless @sos_details[:moninfos]
     @sos_details[:moninfos][idx] = {} unless @sos_details[:moninfos][idx]
     $defaults[:sos].each { |k, v| @sos_details[:moninfos][idx][k] = v } if $defaults[:sos]
     @sos_details[:moninfos][idx][:species] = species

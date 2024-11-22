@@ -60,7 +60,7 @@ module UniLib
     BANNED_ABILITIES = BANNED_OVERPOWERED_ABILITIES + BANNED_UNCOMPETITIVE_ABILITIES + BANNED_SPEED_ABILITIES + BANNED_SETTING_ABILITIES +
       BANNED_USELESS_ABILITIES + BANNED_ILLEGAL_ABILITIES
 
-    POKEBILITY_PROC = proc { |pkmn, _| next pkmn.getAbilityList }
+    POKEBILITY_PROC = proc { |pkmn, _| next pkmn.getAbilityList if pokebilities_active(pkmn) }
 
     def self.ability_select(default, list)
       cmdwin=pbListWindow([], 200)
@@ -75,7 +75,7 @@ module UniLib
     end
 
     def self.pokebilities_active(pkmn)
-      UniLib::POKEBILITIES_POKEMON[[pkmn.species, pkmn.form]] == 2 or pkmn.item == :CATALYZER
+      UniLib::POKEBILITIES_POKEMON[[pkmn.species, pkmn.form]] == 2 or (pkmn.item == :CATALYZER and UniLib::POKEBILITIES_POKEMON[[pkmn.species, pkmn.form]] == 1)
     end
 
     PLATE_MAP = {:SILKSCARF => :NORMAL, :FISTPLATE => :FIGHTING, :SKYPLATE => :FLYING, :EARTHPLATE => :GROUND, :TOXICPLATE => :POISON,
