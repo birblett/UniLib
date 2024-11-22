@@ -38,7 +38,7 @@ module UniLib
   def self.dev_log(*args)
     Dir.mkdir(LOG_PATH) unless Dir.exist?(LOG_PATH)
     str_final = ""
-    args.each {|msg| str_final += msg.to_s + " " }
+    args.each {|msg| str_final += msg.to_s + (msg == args[-1] ? "" : " ") }
     File.open(LOG_PATH + "dev.out", "a+") { |f| f.write("#{str_final}\n") }
   end
 
