@@ -90,12 +90,21 @@ module UniLib
     return if self.has_valid_cache
     PENDING_DELETIONS.push([clazz, method, target, index, priority])
   end
+
+  <<-DOC
+  @param load_event - a symbolic function reference (i.e. :function)
+  @param priority - a numeric priority
+  >> these events are called as the save is being loaded, so interacting with cache is not safe.. useful for deserializing data. numerically 
+     higher priorities go first.
+  DOC
+  def self.add_load_event(load_event, priority=$injector_global_priority)
+    EVENT_ON_LOAD.push([load_event, priority]) unless EVENT_ON_LOAD.include?([load_event, priority])
+  end
   
   <<-DOC
   @param play_event - a symbolic function reference (i.e. :function)
   @param priority - a numeric priority
-  >> these events are called when the player enters a save file. useful for deserializing data. numerically higher 
-     priorities go first.
+  >> these events are called when a save is fully loaded. useful for deserializing data. numerically higher priorities go first.
   DOC
   def self.add_play_event(play_event, priority=$injector_global_priority)
     EVENT_ON_PLAY.push([play_event, priority]) unless EVENT_ON_PLAY.include?([play_event, priority])

@@ -130,6 +130,7 @@ module UniLib
   PENDING_INSERTIONS = []
   METHOD_MODS = {} if !defined? METHOD_MODS or CLEAR_INJECTOR_CACHE
   NO_OP = {}
+  EVENT_ON_LOAD = []
   EVENT_ON_PLAY = []
   EVENT_ON_SAVE = []
   EVENT_ON_NEW_FILE = []
@@ -155,6 +156,7 @@ define_method(:pbCallTitle) do
     UniLib::EVENT_ON_SAVE.sort! { |a, b| b[1] <=> a[1]}
     insertions = Time.now
     UniLib::PENDING_PRE_INSERTIONS += [
+      [:PokemonLoad, :startPlayingSaveFile, "$PokemonStorage         = @currentsave[:PokemonStorage]", "UniLib::EVENT_ON_LOAD.each { |fixer| a = method(fixer[0]); a.arity != 0 ? a.call(@currentsave) : a.call }", 0, false, 100000],
       [:PokemonLoad, :startPlayingSaveFile, "$game_player.center($game_player.x, $game_player.y)", "UniLib::EVENT_ON_PLAY.each { |fixer| a = method(fixer[0]); a.arity != 0 ? a.call(@currentsave) : a.call }", 0, false, 100000],
       [:PokemonLoad, :pbStartLoadScreen, "saveClientData", "UniLib::EVENT_ON_NEW_FILE.each { |fixer| method(fixer[0]).call }", 0, false, 100000],
       [:Object, :saveNew, "savehash = {}", "UniLib::EVENT_ON_SAVE.each { |saver| a = method(saver[0]); a.arity != 0 ? a.call(savehash) : a.call }", 0, false, 100000]]
