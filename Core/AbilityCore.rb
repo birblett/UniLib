@@ -98,6 +98,7 @@ class PokeBattle_Battler
 
   def ability_event_value(event)
     return unless self.ability.is_a? AbilityContainer
+    return if self.ability == nil
     self.ability.abilities.each do |ability|
       next unless AbilityModifier.has_event?(ability, event)
       out = AbilityModifier.get_event(ability, event)
@@ -107,13 +108,14 @@ class PokeBattle_Battler
 
   def apply_ability_event(event, *args)
     return unless self.ability.is_a? AbilityContainer
+    return if self.ability == nil
     self.ability.abilities.each do |ability|
       next unless AbilityModifier.has_event?(ability, event)
       AbilityModifier.get_event(ability, event).each { |e, out = e.(*args)| yield(out) unless out.nil? }
     end
   end
 
-end unless UniLib.lib_loaded(__FILE__)
+end
 
 # ======================================================================================================================================== #
 # ================================================================ EVENTS ================================================================ #
