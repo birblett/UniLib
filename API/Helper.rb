@@ -49,4 +49,32 @@ module UniLib
     yield
   end
 
+  def self.obj_print(obj, depth=0, label=nil, start=true, s=[""])
+    name = label ? "#{label} " : ""
+    if obj.instance_of? Array
+      if obj.length > 0
+        s[0] += "  " * depth + "#{obj.class} #{name}[\n"
+        obj.each{ |v| obj_print(v, depth + 1, nil, false, s) }
+        s[0] += "  " * depth + "]\n"
+      else
+        s[0] += "  " * depth + "#{obj.class} #{name}[]\n"
+      end
+    elsif obj.instance_of? Hash
+      if obj.length > 0
+        s[0] += "  " * depth + "#{obj.class} #{name}{\n"
+        obj.each{ |k, v| obj_print(v, depth + 1, ":#{k}", false, s) }
+        s[0] += "  " * depth + "}\n"
+      else
+        s[0] += "  " * depth + "#{obj.class} #{name}{}\n"
+      end
+    elsif (vars = obj.instance_variables).length > 0
+      s[0] += "  " * depth + "#{obj.class} #{name}(\n"
+      vars.each { |var| obj_print(obj.instance_variable_get(var), depth + 1, var, false, s) }
+      s[0] += "  " * depth + ")\n"
+    else
+      s[0] += "  " * depth + "#{obj.class} #{name}#{obj}\n"
+    end
+    UniLib.dev_log(s[0]) if start
+  end
+
 end
