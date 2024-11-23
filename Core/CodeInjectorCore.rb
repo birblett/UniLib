@@ -77,9 +77,9 @@ module UniLib
         temp, line = clazz.instance_method(method).source_location rescue clazz.method(method).source_location
       end
       file = temp
-      file = "#{MOD_DIR}#{temp}.rb" unless File.exists?(file)
-      file = "#{MOD_DIR}#{SUB_2}Scripts/Rejuv/#{temp}.rb" unless File.exists?(file)
-      file = "#{MOD_DIR}#{SUB_2}Scripts/#{temp}.rb" unless File.exists?(file)
+      file = "#{MOD_DIR}#{temp}.rb" unless File.exists?(file) and !File.directory?(file)
+      file = "#{MOD_DIR}#{SUB_2}Scripts/Rejuv/#{temp}.rb" unless File.exists?(file) and !File.directory?(file)
+      file = "#{MOD_DIR}#{SUB_2}Scripts/#{temp}.rb" unless File.exists?(file) and !File.directory?(file)
       if File.exists?(file)
         lines, code, code_lines, valid = IO.foreach(file).to_a, "", [], false
         (line - 1..lines.length).each do |index|
