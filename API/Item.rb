@@ -184,7 +184,7 @@ class ItemModifier
   DOC
   def resist_berry
     @data[:resistberry] = true
-    berry
+    self
   end
 
   <<-DOC
@@ -192,7 +192,7 @@ class ItemModifier
   DOC
   def status
     @data[:status] = true
-    medicine
+    self
   end
 
   <<-DOC
@@ -218,7 +218,16 @@ class ItemModifier
   DOC
   def z_crystal
     @data[:zcrystal] = true
-    crystal
+    self
+  end
+
+  <<-DOC
+  >> makes an item unlosable, or optionally makes it conditional. provided blocks take a single PokeBattle_Pokemon argument.
+  DOC
+  def unlosable(func=nil, &block)
+    UNLOSABLE_ITEMS[@symbol] = [] unless UNLOSABLE_ITEMS[@symbol]
+    fn = block ? block : func
+    UNLOSABLE_ITEMS[@symbol].push(fn ? fn : UNLOSABLE_DEFAULT_CONDITION)
   end
 
   <<-DOC

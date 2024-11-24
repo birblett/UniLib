@@ -25,6 +25,8 @@ module UniLib
   EVENT_ITEMS = {}
   INVALID_ITEMS = {}
   CONSUMED_ITEM = []
+  UNLOSABLE_ITEMS = {}
+  UNLOSABLE_DEFAULT_CONDITION = proc { true }
   $should_consume_item = false
 
 end
@@ -438,6 +440,10 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :pbGetMonRoles, "partyRoles.push(
 
 
 # ========= item only ========= #
+
+# unlosable item
+UniLib.insert_in_method(:PokeBattle_Battle, :pbIsUnlosableItem, :HEAD,
+  "UniLib::UNLOSABLE_ITEMS[item].each { |cond| return true if cond.call(pkmn) } if UniLib::UNLOSABLE_ITEMS[item]")
 
 # item update
 UniLib.insert_in_method(:PokeBattle_Battler, :pbDisposeItem, :HEAD, "b = !@item.nil? and UniLib::EVENT_ITEMS[@item]")
