@@ -12,4 +12,8 @@ module UniLib
 
   $unilib_switches = {}
 
+  def set_switch(id, value=true)
+    $unilib_switches[id] = true
+  end
+
 end
