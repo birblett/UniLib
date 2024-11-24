@@ -15,6 +15,7 @@ UniLib.include "Item"
 ItemBuilder.add(:CATALYZER, "Catalyzer", "May activate the user's hidden potential.")
            .no_use
            .no_use_in_battle
+           .unlosable { |pkmn| next (UniLib::POKEBILITIES_POKEMON[key = [pkmn.species, pkmn.form]] == 1 or UniLib::CAMO_POKEMON[key] == 1) }
 
 module UniLib
 
@@ -60,7 +61,7 @@ module UniLib
     BANNED_ABILITIES = BANNED_OVERPOWERED_ABILITIES + BANNED_UNCOMPETITIVE_ABILITIES + BANNED_SPEED_ABILITIES + BANNED_SETTING_ABILITIES +
       BANNED_USELESS_ABILITIES + BANNED_ILLEGAL_ABILITIES
 
-    POKEBILITY_PROC = proc { |pkmn, _| next pkmn.getAbilityList if pokebilities_active(pkmn) }
+    POKEBILITY_PROC = proc { |pkmn, _| pkmn = pkmn.pokemon if pkmn.is_a? PokeBattle_Battler; next pkmn.getAbilityList if pokebilities_active(pkmn) }
 
     def self.ability_select(default, list)
       cmdwin=pbListWindow([], 200)
@@ -82,6 +83,8 @@ module UniLib
                  :STONEPLATE => :ROCK, :INSECTPLATE => :BUG, :SPOOKYPLATE => :GHOST, :IRONPLATE => :STEEL, :FLAMEPLATE => :FIRE,
                  :SPLASHPLATE => :WATER, :MEADOWPLATE => :GRASS, :ZAPPLATE => :ELECTRIC, :MINDPLATE => :PSYCHIC, :ICICLEPLATE => :ICE,
                  :DRACOPLATE => :DRAGON, :DREADPLATE => :DARK, :PIXIEPLATE => :FAIRY}
+
+    PLATE_MAP.each { |plate| ItemModifier.add(plate).unlosable { |pkmn| next true if PLATE_POKEMON[key = [pkmn.pokemon.species, pkmn.pokemon.form]] and PLATE_POKEMON[key].include?(plate) } }
 
     CAMO_PROVIDER_TYPE1 = proc do |pokemon|
       next pokemon.moves[0].type if (UniLib::CAMO_POKEMON[key = [pokemon.species, pokemon.form]] == 2 or (UniLib::CAMO_POKEMON[key] == 1 and pokemon.item == :CATALYZER)) unless pokemon.moves[0].nil?
