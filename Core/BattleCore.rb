@@ -280,9 +280,7 @@ UniLib.add_play_event(:register_modified_bosses)
 # ================================================================ PATCH ================================================================= #
 # ======================================================================================================================================== #
 
-UniLib.insert_in_method(:PokeBattle_Battler, :pbInitBoss, "boss = bossdata[pkmn.bossId]", proc do |pkmn|
-  BossModifier.data_log(pkmn) unless UniLib::BOSS_CACHE[pkmn.bossId] or pkmn.bossId == :SHADOWDEN
-end)
+UniLib.insert_in_method(:PokeBattle_Battler, :pbInitBoss, "boss = bossdata[pkmn.bossId]", "BossModifier.data_log(pkmn) unless UniLib::BOSS_CACHE[pkmn.bossId] or pkmn.bossId == :SHADOWDEN")
 
 UniLib.insert_in_function(:pbLoadTrainer, :HEAD, proc do |trainerid, trainername, partyid|
   unless UniLib::TRAINER_CACHE[[trainerid, trainername, partyid]]
@@ -297,4 +295,5 @@ UniLib.insert_in_function(:pbLoadTrainer, :HEAD, proc do |trainerid, trainername
   end
 end)
 
-UniLib
+UniLib.insert_in_method(:PokeBattle_Battle, :pbShieldEffects, "case onBreakdata[:bossSideStatusChanges][0]",
+  "when :BURN then canstatus = @battle.battlers[i].pbCanBurn?(false)")

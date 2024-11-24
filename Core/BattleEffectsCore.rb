@@ -62,8 +62,8 @@ UniLib.with_priority(999) {
 
 # type modifiers (in battle, on switch in)
 UniLib.insert_in_method(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, :TAIL,
-  "self.apply_effect_event(:primary_type_battle, self, true) { |m| @type1 = m }
-  self.apply_effect_event(:secondary_type_battle, self, true) { |m| @type2 = (m == @type1 ? nil : m) }")
+  "self.apply_effect_event(:primary_type_battle, self, true) { |m| @type1 = m } if onactive
+  self.apply_effect_event(:secondary_type_battle, self, true) { |m| @type2 = (m == @type1 ? nil : m) } if onactive")
 
 # type modifiers (in battle, on update)
 UniLib.insert_in_method(:PokeBattle_Battler, :pbUpdate, "crestStats if @crested",
