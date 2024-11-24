@@ -31,9 +31,10 @@ class TrainerModifier
   $defaults = {}
 
   def self.with_defaults(**kwargs)
+    prev = $defaults
     $defaults = kwargs
     yield
-    $defaults = nil
+    $defaults = prev
   end
 
   def self.add(tclass, name, id, is_new=false)
