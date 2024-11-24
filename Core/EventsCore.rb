@@ -22,7 +22,7 @@ class EventProvider
     if func.nil? and block.nil?
       print "No function or block provided for event #{id} of #{@symbol}:#{self.class}"
       exit
-    elsif func.nil?
+    elsif block
       @event_hash[id] = [] unless @event_hash[id]
       @event_hash[id].push(block)
     else
