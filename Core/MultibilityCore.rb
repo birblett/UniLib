@@ -38,8 +38,8 @@ class AbilityContainer
     @ctx = ability
     key = [pkmn.species, pkmn.form]
     UniLib::MULTIBILITY_HANDLERS[key].each do |handler, condition|
-      next if condition and !condition.call(@pokemon)
-      extra = handler.call(@pokemon, @abilities)
+      next if condition and !condition.call(pkmn)
+      extra = handler.call(pkmn, @abilities)
       @abilities += (extra.is_a?(Array) ? extra : [extra]) - @abilities unless extra.nil?
     end unless UniLib::MULTIBILITY_HANDLERS[key].nil?
   end
