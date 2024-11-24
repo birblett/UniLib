@@ -32,7 +32,7 @@ module UniLib
   def self.damage_pkmn(pkmn, dmg, message=nil)
     pkmn.battle.scene.pbDamageAnimation(pkmn,0)
     pkmn.pbReduceHP(dmg)
-    pkmn.battle.pbDisplay(message)
+    UniLib.display_if_visible(pkmn.battle, message)
     pkmn.pbFaint if pkmn.isFainted?
   end
 
@@ -47,6 +47,10 @@ module UniLib
 
   def self.category(s)
     yield
+  end
+
+  def self.display_if_visible(battle, text)
+    battle.pbDisplay(text) if battle.scene and battle.scene.sprites["messagebox"]
   end
 
   def self.obj_print(obj, depth=0, label=nil, start=true, s=[""])
