@@ -20,12 +20,15 @@ end
 
 class CrestBuilder < ItemModifier
 
+  UNLOSABLE_CREST_PROC = proc { |pkmn| next true if pkmn.crested }
+
   def initialize(symbol, hash)
     super(symbol, hash)
     @tier = 1
     @essence = nil
     @holders = nil
     @event_hash[:crest] = true
+    unlosable(UNLOSABLE_CREST_PROC)
   end
 
   def holders
