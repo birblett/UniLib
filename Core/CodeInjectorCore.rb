@@ -17,6 +17,7 @@ module UniLib
     SUB_2 = "../../"
     MOD_DIR = "#{File.dirname(__FILE__)}/#{SUB_2}"
     CACHE_AGGRESSIVE = [0]
+    CODE_INJECTOR_ENTRYPOINT = method(:pbCallTitle)
 
     def self.get_or_create_method_attr(clazz, method, sym, default)
       METHOD_MODS[clazz][method][sym] = default if METHOD_MODS[clazz][method][sym].nil?
@@ -142,10 +143,9 @@ end
 # ================================================================ PATCH ================================================================= #
 # ======================================================================================================================================== #
 
-entrypoint = method(:pbCallTitle)
 define_method(:pbCallTitle) do
   UniLib::LOADED_FILES.clear
-  ret = entrypoint.()
+  ret = UniLib::CODE_INJECTOR_ENTRYPOINT.()
   if UniLib.has_valid_cache
     t = Time.now
     $code_injector_aggressive_cache.each { |clazz, source| clazz.class_eval(source) }
