@@ -299,7 +299,7 @@ UniLib.insert_in_method(:PokemonMenu, :pbStartPokemonMenu, "commands[cmdOption=c
   "uni_cmds = UniLib::UNILIB_PAUSE_COMMANDS.reduce({}) { |c, entry| commands[c[entry[0]] = commands.length] = _INTL(entry[1][0]) if entry[1][2].nil? or entry[1][2].call(self); c}")
 
 UniLib.insert_in_method(:PokemonMenu, :pbStartPokemonMenu, "command=@scene.pbShowCommands(commands)",
-  "b = false; uni_cmds.each { |c, idx| UniLib::UNILIB_PAUSE_COMMANDS[c][1].call(self) if b |= command == idx }; next if b")
+  "b = false; uni_cmds.each { |c, idx| next if b; UniLib::UNILIB_PAUSE_COMMANDS[c][1].call(self) if b |= command == idx}; next if b")
 
 UniLib.insert_in_method_before(:PokemonScreen, :pbPokemonScreen, "commands[commands.length]=_INTL(\"Cancel\")",
   "uni_cmds = UniLib::UNILIB_PARTY_COMMANDS.reduce({}) { |c, entry| commands[c[entry[0]] = commands.length] = _INTL(entry[1][0]) if entry[1][2].nil? or entry[1][2].call(pkmn); c}")
