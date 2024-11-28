@@ -151,6 +151,10 @@ UniLib.insert_in_method_before(:PokeBattle_Battler, :pbUseMove, "target.damagest
 UniLib.insert_in_method(:PokeBattle_Move, :pbType, :HEAD,
   "attacker.apply_effect_event(:move_type_override, attacker, self, type) { |m| type = m }")
 
+# move type override (ai)
+UniLib.insert_in_method(:PokeBattle_AI, :pbTypeModNoMessages, "id = move.move",
+  "attacker.apply_effect_event(:move_type_override, attacker, move, type) { |m| type = m }")
+
 # move subtype provider
 UniLib.insert_in_method(:PokeBattle_Move, :getSecondaryType, "secondtype = []",
   "attacker.apply_effect_event(:move_subtype, attacker, self) { |m| secondtype.push(m) }")
