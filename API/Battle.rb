@@ -14,14 +14,22 @@ module UniLib
     $trainer_modifier_debug = val
   end
 
+  def self.update_base(battler, iv: nil, ev: nil, nature: nil, item: nil, initial: nil)
+    battler.pokemon.ev = ev if ev
+    battler.pokemon.iv = iv if iv
+    battler.pokemon.nature = nature if nature
+    battler.pokemon.item = item if item
+    battler.pokemon.itemInitial = initial if initial
+    battler.pbUpdate
+  end
+
 end
 
 module TrainerBuilder
 
   def self.create(tclass, name, id)
     key = [tclass, name, id]
-    TRAINER_DATA[key] = TrainerModifier.add(tclass, name, id, true) unless TRAINER_DATA[key]
-    TRAINER_DATA[key]
+    TrainerModifier::TRAINER_DATA[key] = TrainerModifier.add(tclass, name, id, true)
   end
 
 end
@@ -39,6 +47,7 @@ class TrainerModifier
 
   def self.add(tclass, name, id, is_new=false)
     key = [tclass, name, id]
+    TRAINER_DATA[key].delete if is_new and TRAINER_DATA[key]
     TRAINER_DATA[key] = TrainerModifier.new(tclass, name, id, is_new) unless TRAINER_DATA[key]
     TRAINER_DATA[key]
   end
@@ -86,8 +95,13 @@ end
 class BossModifier
 
   def self.add(id, is_new=false)
+    BOSS_DATA[id].delete if is_new and BOSS_DATA[id]
     BOSS_DATA[id] = BossModifier.new(id, is_new) unless BOSS_DATA[id]
     BOSS_DATA[id]
+  end
+
+  def self.register_negative_effect(effect, default=nil)
+    BOSS_NEGATIVE_EFFECTS[effect] = default
   end
 
   def set_pkmn(species, level, ability, **kwargs)

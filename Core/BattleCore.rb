@@ -18,6 +18,7 @@ module UniLib
   BOSS_DATA = {}
   TRAINER_CACHE = {}
   BOSS_CACHE = {}
+  BOSS_NEGATIVE_EFFECTS = {}
   $trainer_modifier_debug = false
 
 end
@@ -35,17 +36,21 @@ class TrainerModifier
       print "TrainerModifier: #{tclass} #{name} with team id #{id} doesn't exist"
       exit
     end
-    t = get_trainer(tclass, name, id)
     TRAINER_CACHE[[tclass, name, id]] = true if $trainer_modifier_debug
     @is_new = is_new
     @tclass = tclass
     @name = name
     @id = id
-    @pkmn = t[1]
-    @items = t[2]
-    @ace = t[3]
-    @defeat = t[4]
-    @effect = t[5]
+    if is_new
+      @pkmn = []
+    else
+      t = get_trainer(tclass, name, id)
+      @pkmn = t[1]
+      @items = t[2]
+      @ace = t[3]
+      @defeat = t[4]
+      @effect = t[5]
+    end
   end
 
   def build
@@ -297,3 +302,6 @@ end)
 
 UniLib.insert_in_method(:PokeBattle_Battle, :pbShieldEffects, "case onBreakdata[:bossSideStatusChanges][0]",
   "when :BURN then canstatus = @battle.battlers[i].pbCanBurn?(false)")
+
+UniLib.insert_in_method(:PokeBattle_Battle, :pbShieldEffects, "if onBreakdata[:effectClear]",
+  "UniLib::BOSS_NEGATIVE_EFFECTS.each { |e, v| (battler.effects[e] = v; animplay = true) if battler.effects[e] } ")
