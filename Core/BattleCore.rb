@@ -200,7 +200,9 @@ class BossModifier
       s += "            .set_entry_effect(#{k}"
       if v.is_a? String
         s += "#{k}: \"#{v}\""
-      else
+      elsif v.is_a? Symbol
+        s += "#{k}: :#{v}"
+      elsif v.is_a? Hash
         v.each do |j, c|
           if c.is_a? String
             add = "\"#{c}\""
@@ -211,6 +213,8 @@ class BossModifier
           end
           s += ", #{j}: #{add}"
         end
+      else
+        s += "#{k}: #{v}"
       end
       s += ")\n"
     end if boss.onEntryEffects
