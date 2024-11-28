@@ -166,7 +166,7 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :pbTypeModNoMessages, "case oppon
   "opponent.ability_event_value(:forced_resistance) { |forced| typemod = forced[type] unless forced[type].nil? }
   opponent.ability_event_value(:fake_reduce_weakness) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_WEAKNESS_MAP) }
   opponent.ability_event_value(:fake_resistance) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_RESISTANCE_MAP) }
-  opponent.apply_ability_event(:type_effectiveness_simple, opponent, type, true) { |m| typemod *= m }
+  opponent.apply_ability_event(:type_effectiveness_simple, opponent, type, false) { |m| typemod *= m }
   typemod = 0 if typemod < 0", 1)
 
 # move type effectiveness modifier
