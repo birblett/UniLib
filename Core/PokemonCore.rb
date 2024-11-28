@@ -226,13 +226,15 @@ unless UniLib.lib_loaded(__FILE__)
       end
     end
     $Trainer.party.each do |pokemon|
+      pokemon.bossId = nil
       pokemon.calcStats
       pokemon.permanent_battle_effects.clear if pokemon.permanent_battle_effects
       pokemon.initAbility if $force_refresh_abilities and is_valid_for_ability_override(pokemon)
     end
     $PokemonStorage.boxes.each do |box|
       box.pokemon.each do |pokemon|
-        next if pokemon.nil?
+        next unless pokemon
+        pokemon.bossId = nil
         pokemon.calcStats
         pokemon.permanent_battle_effects.clear if pokemon.permanent_battle_effects
         pokemon.initAbility if $force_refresh_abilities and is_valid_for_ability_override(pokemon)
