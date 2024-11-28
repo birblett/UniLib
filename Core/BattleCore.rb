@@ -196,28 +196,21 @@ class BossModifier
     # entry message
     s += "            .set_entry_text(\"#{boss.entryText}\")\n" if boss.entryText
     # entry effects
-    boss.onEntryEffects.each do |k, v|
-      s += "            .set_entry_effect(#{k}"
-      if v.is_a? String
-        s += "#{k}: \"#{v}\""
-      elsif v.is_a? Symbol
-        s += "#{k}: :#{v}"
-      elsif v.is_a? Hash
-        v.each do |j, c|
-          if c.is_a? String
-            add = "\"#{c}\""
-          elsif c.is_a? Symbol
-            add = ":#{c}"
-          else
-            add = "#{c}"
-          end
-          s += ", #{j}: #{add}"
+    if boss.onEntryEffects
+      key0 = boss.onEntryEffects.keys[0]
+      boss.onEntryEffects.each do |k, v|
+        s += k == key0 ? "            .set_entry_effect(" : ", "
+        if v.is_a? String
+          add = "\"#{k}\""
+        elsif v.is_a? Symbol
+          add = ":#{v}"
+        else
+          add = "#{v}"
         end
-      else
-        s += "#{k}: #{v}"
+        s += "#{k}: #{add}"
       end
       s += ")\n"
-    end if boss.onEntryEffects
+    end
     # break effects
     boss.onBreakEffects.each do |k, v|
       s += "            .set_break_effect(#{k}"
