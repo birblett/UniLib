@@ -143,4 +143,8 @@ AbilityContainer.multibility_case(:PokeBattle_Battler, :pbSpeed, "case self.abil
 
 AbilityContainer.multibility_case(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "case self.ability", "when :NEUTRALIZINGGAS then @battle.pbDisplay(_INTL(\"{1}'s gas neutralized all other Pokémon's abilities!\",pbThis))", "end")
 
-# ignoring "case $Trainer.party[0].ability" in PokemonEncounters$pbGenerateEncounters
+UniLib.replace_in_method(:PokemonEncounters, :pbGenerateEncounter, "case $Trainer.party[0].ability",
+  "AbilityContainer.new($Trainer.party[0], $Trainer.party[0].ability).each do |ability|
+    case ability")
+
+UniLib.insert_in_method_before(:PokemonEncounters, :pbGenerateEncounter, "return nil if rand(250*16)>=encount", "end")
