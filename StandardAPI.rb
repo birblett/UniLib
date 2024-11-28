@@ -106,9 +106,9 @@ module UniLib
   end
 
   <<-DOC
-  loads from UniLib/Save/Game_<savenum>_<name>.dat
+  loads from UniLib/Save/<name>.dat. prepends "Game_n_" if saveslot set to true.
   DOC
-  def self.restore_data(name, default, saveslot=true)
+  def self.restore_data(name, default, saveslot=false)
     Dir.mkdir(SAVE_PATH) unless Dir.exist?(SAVE_PATH)
     prefix = saveslot ? "Game_#{$Unidata[:saveslot]}_" : ""
     ret = default
@@ -117,9 +117,9 @@ module UniLib
   end
 
   <<-DOC
-  writes to UniLib/Save/Game_<savenum>_<name>.dat
+  writes to UniLib/Save/<name>.dat. prepends "Game_n_" if saveslot set to true.
   DOC
-  def self.save_data(name, data, saveslot=true)
+  def self.save_data(name, data, saveslot=false)
     Dir.mkdir(SAVE_PATH) unless Dir.exist?(SAVE_PATH)
     prefix = saveslot ? "Game_#{$Unidata[:saveslot]}_" : ""
     File.open(SAVE_PATH + prefix + name + ".dat", "wb") { |f| f.write(Marshal.dump(data)) }
