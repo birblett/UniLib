@@ -53,7 +53,7 @@ unless UniLib.lib_loaded(__FILE__)
 
     def update
       @update.call(@value + @min) unless @update.nil?
-      UniLib.save_data("options", UniLib::UNILIB_CUSTOM_OPTIONS + UniLib::OLD_OPTIONS + [UniLib::SEPARATE_UNILIB_OPTIONS], false)
+      UniLib.save_data("options", UniLib::UNILIB_CUSTOM_OPTIONS + UniLib::OLD_OPTIONS + [UniLib::SEPARATE_UNILIB_OPTIONS])
     end
 
     def get_option
@@ -264,7 +264,7 @@ end
 # ======================================================================================================================================== #
 
 def read_option_data
-  options = UniLib.restore_data("options", [], false)
+  options = UniLib.restore_data("options", [])
   options.each do |option|
     if option == UniLib::SEPARATE_UNILIB_OPTIONS
       UniLib::SEPARATE_UNILIB_OPTIONS.value = option.value
