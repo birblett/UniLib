@@ -55,4 +55,12 @@ class BattleEffects
     add_or_create_event(:display, proc, block)
   end
 
+  <<-DOC
+  @param default - default value of the effect on clear
+  >> forces the effect to be reset for bosses with effectClear active
+  DOC
+  def register_negative_effect(default=nil)
+    BOSS_NEGATIVE_EFFECTS[@symbol] = default
+  end
+
 end

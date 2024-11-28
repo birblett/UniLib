@@ -13,6 +13,7 @@ UniLib.include "Events"
 module UniLib
 
   CUSTOM_BATTLE_EFFECTS = {}
+  BOSS_NEGATIVE_EFFECTS = {}
 
 end
 
@@ -83,7 +84,7 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :pbTypeModNoMessages, "case oppon
   "opponent.effect_event_value(:forced_resistance) { |forced| typemod = forced[type] unless forced[type].nil? }
   opponent.effect_event_value(:fake_reduce_weakness) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_WEAKNESS_MAP) }
   opponent.effect_event_value(:fake_resistance) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_RESISTANCE_MAP) }
-  opponent.apply_effect_event(:type_effectiveness_simple, opponent, type, true) { |m| typemod *= m }
+  opponent.apply_effect_event(:type_effectiveness_simple, opponent, type, false) { |m| typemod *= m }
   typemod = 0 if typemod < 0", 1)
 
 # move type effectiveness modifier
@@ -245,5 +246,9 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :getMoveScore, "case @move.functi
 # battle stats
 UniLib.insert_in_function(:pbShowBattleStats, "report.push(_INTL(\"Infatuated with {1}\",@battle.battlers[pkmn.effects[:Attract]].name)) if pkmn.effects[:Attract]>=0",
   "pkmn.apply_effect_event(:display, pkmn) { |m| report.push(m) }")
+
+# clear boss effects
+UniLib.insert_in_method(:PokeBattle_Battle, :pbShieldEffects, "if onBreakdata[:effectClear]",
+  "UniLib::BOSS_NEGATIVE_EFFECTS.each { |e, v| (battler.effects[e] = v; animplay = true) if battler.effects[e] } ")
 
 }

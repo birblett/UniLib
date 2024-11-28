@@ -100,10 +100,6 @@ class BossModifier
     BOSS_DATA[id]
   end
 
-  def self.register_negative_effect(effect, default=nil)
-    BOSS_NEGATIVE_EFFECTS[effect] = default
-  end
-
   def set_pkmn(species, level, ability, **kwargs)
     @pkmn[:species] = species
     @pkmn[:level] = level

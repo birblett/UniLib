@@ -18,7 +18,6 @@ module UniLib
   BOSS_DATA = {}
   TRAINER_CACHE = {}
   BOSS_CACHE = {}
-  BOSS_NEGATIVE_EFFECTS = {}
   $trainer_modifier_debug = false
 
 end
@@ -302,6 +301,3 @@ end)
 
 UniLib.insert_in_method(:PokeBattle_Battle, :pbShieldEffects, "case onBreakdata[:bossSideStatusChanges][0]",
   "when :BURN then canstatus = @battle.battlers[i].pbCanBurn?(false)")
-
-UniLib.insert_in_method(:PokeBattle_Battle, :pbShieldEffects, "if onBreakdata[:effectClear]",
-  "UniLib::BOSS_NEGATIVE_EFFECTS.each { |e, v| (battler.effects[e] = v; animplay = true) if battler.effects[e] } ")
