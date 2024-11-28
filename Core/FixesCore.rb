@@ -9,6 +9,7 @@ UniLib.include "Crest"
 # ============================================================ INTERNAL/CORE ============================================================= #
 # ======================================================================================================================================== #
 
+# fix jaw lock not being considered a bite move
 PBStuff::BITEMOVE |= [:JAWLOCK]
 
 # fix claydol and dedenne crest stat change + stat usage behaviors
@@ -39,3 +40,10 @@ UniLib.replace_in_method(:PokeBattle_AI, :sleeptalkcode, "for i in 0..3", "for i
 
 # fix no fail message for stuff cheeks
 UniLib.insert_in_method_before(:PokeBattle_Move_17A, :pbEffect, "return -1", "@battle.pbDisplay(\"But it failed!\")")
+
+# fix redundant pulse camerupt check
+UniLib.replace_in_method(:PokeBattle_AI, :getMoveScore, "if (@battle.opponent.trainertype==:CAMERUPT)", "if false") if Rejuv
+
+# stop ai from attacking protection
+UniLib.insert_in_method(:PokeBattle_AI, :pbTypeModNoMessages, :HEAD,
+  "return -1 if opponent.pbOwnSide.effects[:MatBlock] || opponent.effects[:Protect] || opponent.effects[:KingsShield] || opponent.effects[:Obstruct] || opponent.effects[:SpikyShield] || opponent.effects[:BanefulBunker] unless opponent.ability == :UNSEENFIST or [0xad, 0xcd, 0x157, 0x159].include? move.function")
