@@ -21,6 +21,7 @@ module Assets
   $unilib_bmp_asset_log = false
   $unilib_audio_asset_log = false
   BGM_REGISTRY = {}
+  BGM_REGISTRY_OLD = {} unless defined? BGM_REGISTRY_OLD
 
   def self.get_asset(hash, str)
     out = hash[str]

@@ -29,8 +29,8 @@ module Assets
   end
 
   def self.register_bgm_provider(type, bgms, persistent=false)
-    id = (persistent and BGM_REGISTRY[type]) ? BGM_REGISTRY[type][1] : -1
-    BGM_REGISTRY[type] = [bgms, id]
+    id = (persistent and BGM_REGISTRY_OLD[type]) ? BGM_REGISTRY_OLD[type][1] : -1
+    BGM_REGISTRY_OLD[type] = BGM_REGISTRY[type] = [bgms, id]
   end
 
 end
