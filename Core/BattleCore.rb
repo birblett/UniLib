@@ -201,7 +201,7 @@ class BossModifier
       boss.onEntryEffects.each do |k, v|
         s += k == key0 ? "            .set_entry_effect(" : ", "
         if v.is_a? String
-          add = "\"#{k}\""
+          add = "\"#{v}\""
         elsif v.is_a? Symbol
           add = ":#{v}"
         else
