@@ -25,6 +25,8 @@ module Assets
 
   def self.get_asset(hash, str)
     out = hash[str]
+    out = hash[str + ".mp3"] if out.nil?
+    out = hash[str + ".ogg"] if out.nil?
     out = out[0] + (out[1].call) if out.is_a? Array
     out.gsub!("../../", "") if str.start_with? "Audio"
     out
