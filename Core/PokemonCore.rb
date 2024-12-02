@@ -227,6 +227,7 @@ unless UniLib.lib_loaded(__FILE__)
     end
     $Trainer.party.each do |pokemon|
       pokemon.bossId = nil
+      pokemon.isbossmon = false
       pokemon.calcStats
       pokemon.permanent_battle_effects.clear if pokemon.permanent_battle_effects
       pokemon.initAbility if $force_refresh_abilities and is_valid_for_ability_override(pokemon)
@@ -235,6 +236,7 @@ unless UniLib.lib_loaded(__FILE__)
       box.pokemon.each do |pokemon|
         next unless pokemon
         pokemon.bossId = nil
+        pokemon.isbossmon = false
         pokemon.calcStats
         pokemon.permanent_battle_effects.clear if pokemon.permanent_battle_effects
         pokemon.initAbility if $force_refresh_abilities and is_valid_for_ability_override(pokemon)
@@ -268,4 +270,4 @@ UniLib.insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
 
 UniLib.insert_in_method(:PokeBattle_Battle, :pbEndOfBattle, "i.rampCrestUsed = false", "i.permanent_battle_effects = {}")
 
-UniLib.insert_in_method(:PokeBattle_BattleCommon, :pbStorePokemon, :HEAD, "pokemon.permanent_battle_effects = {}")
+UniLib.insert_in_method(:PokeBattle_BattleCommon, :pbStorePokemon, :HEAD, "pokemon.permanent_battle_effects = {}; pokemon.bossId = nil; pokemon.isbossmon = false")
