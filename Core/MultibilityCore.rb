@@ -51,6 +51,11 @@ class AbilityContainer
     out
   end
 
+  def +(other)
+    other = other.is_a?(Array) ? other : [other]
+    AbilityContainer.new(@pokemon, @abilities + other)
+  end
+
   def copy
     AbilityContainer.new(@pokemon, @abilities)
   end
