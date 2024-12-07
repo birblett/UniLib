@@ -99,6 +99,7 @@ module UniLib
           end
           break if valid
         end
+        code_lines[0] = "def #{method}#{code_lines[0].match(/\(.*\)/)}\n" if valid unless method.is_a? Proc
         return valid ? code_lines : nil
       end
     rescue Exception
@@ -182,6 +183,7 @@ define_method(:pbCallTitle) do
         ref[:INJECT].clear if ref[:INJECT]
         ref[:DELETE].clear if ref[:DELETE]
       end
+      UniLib.dev_log(UniLib::CODE_SOURCE, "\n\n")
       clazz.class_eval(UniLib::CODE_SOURCE)
       methods.delete_if { |method| method.is_a? Proc}
       $code_injector_aggressive_cache[clazz] = UniLib::CODE_SOURCE if UniLib.cache_aggressive
