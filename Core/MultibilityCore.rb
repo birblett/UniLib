@@ -31,16 +31,18 @@ end
 class AbilityContainer
 
   attr_accessor(:ctx)
+  attr_accessor(:added_abilities)
 
-  def initialize(pkmn, ability)
+  def initialize(pkmn, ability, added_abilities=[])
     @pokemon = pkmn.is_a?(PokeBattle_Battler) ? pkmn.pokemon : pkmn
-    @abilities = ability.is_a?(Array) ? ability.dup : [ability]
+    @abilities = (ability.is_a?(Array) ? ability : [ability]) | added_abilities
+    @added_abilities = added_abilities
     @ctx = ability
     key = [pkmn.species, pkmn.form]
     UniLib::MULTIBILITY_HANDLERS[key].each do |handler, condition|
       next if condition and !condition.call(pkmn)
       extra = handler.call(pkmn, @abilities)
-      @abilities += (extra.is_a?(Array) ? extra : [extra]) - @abilities unless extra.nil?
+      @abilities |= (extra.is_a?(Array) ? extra : [extra]) unless extra.nil?
     end unless UniLib::MULTIBILITY_HANDLERS[key].nil?
   end
 
@@ -53,16 +55,20 @@ class AbilityContainer
 
   def +(other)
     other = other.is_a?(Array) ? other : [other]
-    AbilityContainer.new(@pokemon, @abilities + other)
+    AbilityContainer.new(@pokemon, @abilities + other, @added_abilities + other)
   end
 
   def copy
-    AbilityContainer.new(@pokemon, @abilities)
+    AbilityContainer.new(@pokemon, @abilities, @added_abilities)
   end
 
   def each
     return if @abilities == nil or !@abilities.is_a? Array
     @abilities.each { |a| yield(a) }
+  end
+
+  def capitalize
+    @ctx ? @ctx.capitalize : @abilities[0].capitalize
   end
 
   def self.multibility_case(clazz, method, case_statement, tail, ending, idx=0, idx2=0)
@@ -84,10 +90,35 @@ class Symbol
 
 end unless UniLib.lib_loaded(__FILE__)
 
+class Array
+
+  ARR_INC = Array.instance_method(:include?) unless defined? ARR_INC
+  def include?(other)
+    if other.is_a?(AbilityContainer)
+      other.abilities.each { |ability| return true if ARR_INC.bind(self).call(ability) }
+      return false
+    end
+    ARR_INC.bind(self).call(other)
+  end
+
+end
+
 module Ability_Cache
 
   def [](key)
     super key.is_a?(AbilityContainer) ? key.ctx : key
+  end
+
+end unless UniLib.lib_loaded(__FILE__)
+
+class PokeBattle_Pokemon
+
+  def ability(multi=false)
+    if multi or caller[0]["pbGenerateEncounter"] or caller[0]["pbGenerateWildPokemon"]
+      AbilityContainer.new(self, @ability)
+    else
+      @ability
+    end
   end
 
 end unless UniLib.lib_loaded(__FILE__)
@@ -100,11 +131,11 @@ $cache.abil.extend(Ability_Cache)
 
 UniLib.insert_in_method(:PokeBattle_Battler, :crestStats, :TAIL, "self.ability = @ability if @ability.is_a? Symbol")
 
-UniLib.replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@ability      = pkmn.ability", "@ability = AbilityContainer.new(pkmn, pkmn.ability)")
+UniLib.replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@ability      = pkmn.ability", "@ability = AbilityContainer.new(pkmn, pkmn.ability, @ability.added_abilities)")
 
 UniLib.replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@backupability= pkmn.ability", "@backupability = @ability.copy")
 
-UniLib.replace_in_method(:PokeBattle_Battler, :pbUpdate, "@ability = @pokemon.ability if !@ability.nil? && !((@crested == :SILVALLY || @crested == :ZOROARK))", "@ability = AbilityContainer.new(@pokemon, @pokemon.ability) if !@ability.nil? && !((@crested == :SILVALLY || @crested == :ZOROARK))")
+UniLib.replace_in_method(:PokeBattle_Battler, :pbUpdate, "@ability = @pokemon.ability if !@ability.nil? && !((@crested == :SILVALLY || @crested == :ZOROARK))", "@ability = AbilityContainer.new(@pokemon, @pokemon.ability, @ability.added_abilities) if !@ability.nil? && !((@crested == :SILVALLY || @crested == :ZOROARK))")
 
 UniLib.insert_in_function(:getAbilityName, :HEAD, "abil = abil.ctx.nil? ? abil.abilities[0] : abil.ctx if abil.is_a? AbilityContainer")
 
@@ -149,7 +180,7 @@ AbilityContainer.multibility_case(:PokeBattle_Battler, :pbSpeed, "case self.abil
 AbilityContainer.multibility_case(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "case self.ability", "when :NEUTRALIZINGGAS then @battle.pbDisplay(_INTL(\"{1}'s gas neutralized all other Pokémon's abilities!\",pbThis))", "end")
 
 UniLib.replace_in_method(:PokemonEncounters, :pbGenerateEncounter, "case $Trainer.party[0].ability",
-  "AbilityContainer.new($Trainer.party[0], $Trainer.party[0].ability).each do |ability|
+  "$Trainer.party[0].ability.each do |ability|
     case ability")
 
 UniLib.insert_in_method_before(:PokemonEncounters, :pbGenerateEncounter, "return nil if rand(250*16)>=encount", "end")

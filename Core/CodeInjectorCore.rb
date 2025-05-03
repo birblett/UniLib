@@ -183,7 +183,6 @@ define_method(:pbCallTitle) do
         ref[:INJECT].clear if ref[:INJECT]
         ref[:DELETE].clear if ref[:DELETE]
       end
-      UniLib.dev_log(UniLib::CODE_SOURCE, "\n\n")
       clazz.class_eval(UniLib::CODE_SOURCE)
       methods.delete_if { |method| method.is_a? Proc}
       $code_injector_aggressive_cache[clazz] = UniLib::CODE_SOURCE if UniLib.cache_aggressive

@@ -132,7 +132,7 @@ class BossModifier
 
   def set_entry_effect(**kwargs)
     @entry_effects = {} unless @entry_effects
-     @entry_effects = {} if kwargs[:delete]
+    @entry_effects = {} if kwargs[:delete]
     kwargs.each { |k, v| @entry_effects[k] = v }
     self
   end

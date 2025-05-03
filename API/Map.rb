@@ -68,7 +68,12 @@ module MapEvent
     page = event.pages[0]
     page.condition.switch1_id = switch
     page.condition.switch1_valid = true
+    if kwargs[:switch2]
+      page.condition.switch2_id = kwargs[:switch2]
+      page.condition.switch2_valid = true
+    end
     page = RPG::Event::Page.new
+    page.condition.switch2_id = kwargs[:switch2] if kwargs[:switch2]
     page.condition.switch1_id = switch
     page.graphic.character_name = asset
     page.graphic.direction = kwargs[:dir] ? kwargs[:dir] : 2
@@ -91,6 +96,7 @@ module MapEvent
       events.push(event_cmd(116, 1, [1, 100, 0, 1, 0]))
       events.push(event_cmd(355, 1, ["$unilib_switches[:#{switch}] = true"]))
     end
+    kwargs[:wincommands].each { |event| events.push(event) } if kwargs[:wincommands] # win events
     events.push(event_cmd(355, 1, [kwargs[:winscript]])) if kwargs[:winscript] # run win script
     events.push(event_cmd(101, 1, [kwargs[:wintxt]])) if kwargs[:wintxt] # display win text
     events.push(event_cmd(0, 1, [])) # dummy

@@ -11,9 +11,14 @@ UniLib.verify_version(0.6, __FILE__)
 module UniLib
 
   $unilib_switches = {}
+  $unilib_switch_conditions = {}
 
-  def set_switch(id, value=true)
-    $unilib_switches[id] = true
+  def self.set_switch(id, value=true)
+    $unilib_switches[id] = value
+  end
+
+  def self.set_switch_condition(id, proc)
+    $unilib_switch_conditions[id] = proc
   end
 
 end

@@ -47,3 +47,6 @@ UniLib.replace_in_method(:PokeBattle_AI, :getMoveScore, "if (@battle.opponent.tr
 # stop ai from attacking protection
 UniLib.insert_in_method(:PokeBattle_AI, :pbTypeModNoMessages, :HEAD,
   "return -1 if opponent.pbOwnSide.effects[:MatBlock] || opponent.effects[:Protect] || opponent.effects[:KingsShield] || opponent.effects[:Obstruct] || opponent.effects[:SpikyShield] || opponent.effects[:BanefulBunker] unless opponent.ability == :UNSEENFIST or [0xad, 0xcd, 0x157, 0x159].include? move.function")
+
+# fixes primal reversion
+UniLib.insert_in_method(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "@pokemon.makePrimal", "self.form = @pokemon.form")

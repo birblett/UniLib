@@ -29,12 +29,14 @@ UniLib.add_save_event(:unilib_write_switches)
 
 UniLib.insert_in_method(:Game_Event, :switchIsOn?, :HEAD,
   "if id.is_a? Symbol
-    return !$unilib_switches[id].nil?
+    b = $unilib_switch_conditions[id]
+    return (!$unilib_switches[id].nil? || (b && b.call))
   end")
 
 UniLib.insert_in_method(:Interpreter, :command_111, "result = false",
   "if @parameters[1].is_a? Symbol
-    result = !$unilib_switches[@parameters[1]].nil?
+    b = $unilib_switch_conditions[@parameters[1]]
+    result = (!$unilib_switches[@parameters[1]].nil? || (!b || b.call))
   else")
 
 UniLib.replace_in_method(:Interpreter, :command_111, "@branch[@list[@index].indent] = result",
