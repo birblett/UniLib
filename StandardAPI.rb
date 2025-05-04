@@ -106,6 +106,13 @@ module UniLib
   end
 
   <<-DOC
+  returns a filepath to the mods directory - for use with cross-game mods.
+  DOC
+  def self.path(path_relative)
+    "#{Reborn ? "patch/Mods/" : "Data/Mods/"}#{path_relative}"
+  end
+
+  <<-DOC
   loads from UniLib/Save/<name>.dat. prepends "Game_n_" if saveslot set to true.
   DOC
   def self.restore_data(name, default, saveslot=false)
