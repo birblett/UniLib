@@ -109,19 +109,20 @@ module Ability_Cache
     super key.is_a?(AbilityContainer) ? key.ctx : key
   end
 
-end unless UniLib.lib_loaded(__FILE__)
+end
 
 class PokeBattle_Pokemon
 
   def ability(multi=false)
-    if multi or caller[0]["pbGenerateEncounter"] or caller[0]["pbGenerateWildPokemon"]
+    is_called = caller[0]["pbGenerateEncounter"] or caller[0]["pbGenerateWildPokemon"]
+    if multi or is_called
       AbilityContainer.new(self, @ability)
     else
       @ability
     end
   end
 
-end unless UniLib.lib_loaded(__FILE__)
+end
 
 # ======================================================================================================================================== #
 # ================================================================ PATCH ================================================================= #

@@ -283,12 +283,13 @@ UniLib.add_play_event(:register_modified_bosses)
 
 UniLib.insert_in_method(:PokeBattle_Battler, :pbInitBoss, "boss = bossdata[pkmn.bossId]", "BossModifier.data_log(pkmn) unless UniLib::BOSS_CACHE[pkmn.bossId] or pkmn.bossId == :SHADOWDEN")
 
-UniLib.insert_in_function(:pbLoadTrainer, :HEAD, proc do |trainerid, trainername, partyid|
-  unless UniLib::TRAINER_CACHE[[trainerid, trainername, partyid]]
-    UniLib.dev_log("TrainerModifier.add(:#{trainerid}, \"#{trainername}\", #{partyid})")
-    $cache.trainers[trainerid][trainername].each do |i|
+UniLib.insert_in_function(:pbLoadTrainer, :HEAD, proc do |type, name, id, trainerid, trainername, partyid|
+  type, name, id = trainerid, trainername, partyid if Rejuv
+  unless UniLib::TRAINER_CACHE[[type, name, id]]
+    UniLib.dev_log("TrainerModifier.add(:#{type}, \"#{name}\", #{id})")
+    $cache.trainers[type][name].each do |i|
       next unless i
-      if i[0] == partyid
+      if i[0] == id
         TrainerModifier.party_log(i)
         break
       end

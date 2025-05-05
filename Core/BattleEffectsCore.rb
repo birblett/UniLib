@@ -72,7 +72,7 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbUpdate, "crestStats if @crested"
   self.apply_effect_event(:secondary_type_battle, self, false) { |m| @type2 = (m == @type1 ? nil : m) }")
 
 # resistance modifiers and overrides
-target = Reborn ? "case opponent.crested" : "if opponent.crested"
+target = Reborn ? "if typemod == 0" : "if opponent.crested"
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, target,
   "opponent.effect_event_value(:forced_resistance) { |forced| typemod = forced[type] unless forced[type].nil? }
   opponent.effect_event_value(:fake_reduce_weakness) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_WEAKNESS_MAP) }
@@ -81,7 +81,8 @@ UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, target,
   typemod = 0 if typemod < 0")
 
 # resistance modifiers and overrides (ai)
-UniLib.insert_in_method_before(:PokeBattle_AI, :pbTypeModNoMessages, "case opponent.crested",
+target = Reborn ? "if id == :FLYINGPRESS" : "case opponent.crested"
+UniLib.insert_in_method_before(:PokeBattle_AI, :pbTypeModNoMessages, target,
   "opponent.effect_event_value(:forced_resistance) { |forced| typemod = forced[type] unless forced[type].nil? }
   opponent.effect_event_value(:fake_reduce_weakness) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_WEAKNESS_MAP) }
   opponent.effect_event_value(:fake_resistance) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_RESISTANCE_MAP) }

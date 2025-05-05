@@ -11,6 +11,8 @@ UniLib.include "Helper"
 
 module UniLib
 
+  HIDDEN_ABILITY_SYM = Reborn ? :HiddenAbility : :HiddenAbilities
+
   unless UniLib.lib_loaded(__FILE__)
 
     POKEMON_DATA = load_data("Data/mons.dat") if !defined? POKEMON_DATA or POKEMON_DATA.nil?
@@ -79,7 +81,7 @@ class PokeModifier
       @stats = get_base_data(:BaseStats)
       @types = { :Type1 => get_base_data(:Type1), :Type2 => get_base_data(:Type2)}
       abil2 = get_base_data(:Abilities)[2]
-      @abilities = { 0 => get_base_data(:Abilities)[0], 1 => get_base_data(:Abilities)[1], 2 => abil2.nil? ? get_base_data(:HiddenAbilities) : abil2}
+      @abilities = { 0 => get_base_data(:Abilities)[0], 1 => get_base_data(:Abilities)[1], 2 => abil2.nil? ? get_base_data(HIDDEN_ABILITY_SYM) : abil2}
       @base_learnset = get_base_data(:Moveset)
       @base_learnset = [] if @base_learnset.nil?
       @learnset = []
@@ -120,7 +122,9 @@ class PokeModifier
 
     def get_data(sym)
       if @form == 0 || Reborn
-        mon_data.instance_variable_get(("@" + sym.to_s).to_sym)
+        data = mon_data.instance_variable_get(("@" + sym.to_s).to_sym)
+        data = $cache.pkmn[@species].pokemonData[POKEMON_DATA[@species].forms[0]].instance_variable_get(("@" + sym.to_s).to_sym) if data.nil?
+        data
       else
         mon_data[sym].nil? ? mon_data.instance_variable_get(("@" + sym.to_s).to_sym) : mon_data[sym]
       end
@@ -137,13 +141,22 @@ class PokeModifier
     def set_abilities_internal
       @abilities.each do |index, ability|
         next if index > 2 or index < 0
-        if index == 2 and @form == 0
-          ha = get_data(:flags)
-          ha[:HiddenAbilities] = ability
+        if Reborn
+          if index == 2
+            set_data(HIDDEN_ABILITY_SYM, ability)
+          else
+            (abils = get_data(:Abilities).dup)[index] = ability
+            set_data(:Abilities, abils)
+          end
         else
-          data = get_data(:Abilities)
-          set_data(:Abilities, [data]) unless data.class == Array
-          get_data(:Abilities)[index] = ability
+          if index == 2 and @form == 0
+            ha = get_data(:flags)
+            ha[HIDDEN_ABILITY_SYM] = ability
+          else
+            data = get_data(:Abilities)
+            set_data(:Abilities, [data]) unless data.class == Array
+            get_data(:Abilities)[index] = ability
+          end
         end
       end
       a = get_data(:Abilities)
@@ -190,7 +203,6 @@ class PokeModifier
 
     def build
       EVENT_POKEMODIFIER_PRE_BUILD.each { |event| event.call(self) }
-      UniLib.dev_log(mon_data) if @species == :ROWLET
       set_stats_internal unless @stats.empty?
       set_types_internal unless @types.empty?
       set_abilities_internal unless @abilities.empty?
@@ -279,8 +291,7 @@ UniLib.insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
     return ret unless ret.nil?
   end unless providers.nil?")
 
-if Rejuv
-  UniLib.insert_in_method(:PokeBattle_Battle, :pbEndOfBattle, "i.rampCrestUsed = false", "i.permanent_battle_effects = {}")
-end
+target = Reborn ? "if Rejuv" : "i.rampCrestUsed = false"
+UniLib.insert_in_method(:PokeBattle_Battle, :pbEndOfBattle, target, "i.permanent_battle_effects = {}")
 
 UniLib.insert_in_method(:PokeBattle_BattleCommon, :pbStorePokemon, :HEAD, "pokemon.permanent_battle_effects = {}; pokemon.bossId = nil if Rejuv; pokemon.isbossmon = false")

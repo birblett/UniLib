@@ -15,11 +15,11 @@ PBStuff::BITEMOVE |= [:JAWLOCK]
 # fix claydol and dedenne crest stat change + stat usage behaviors
 CrestBuilder.add_existing(:CLAYCREST)
             .add_receiver(:CLAYDOL)
-            .move_stat_override { |_, _, move| next :def if move.pbIsSpecial?(move) }
+            .move_stat_override { |_, _, move| next :def if move.pbIsSpecial?(move) } if Rejuv
 
 CrestBuilder.add_existing(:DEDECREST)
             .add_receiver(:DEDENNE)
-            .move_stat_override { |_, _, move| next :spe unless move.pbIsSpecial?(move) }
+            .move_stat_override { |_, _, move| next :spe unless move.pbIsSpecial?(move) } if Rejuv
 
 # no longer replace their raw spa stat with def/atk stat with spe
 UniLib.replace_in_method(:PokeBattle_Battler, :crestStats, "@spatk = @defense", "true") if Rejuv
@@ -31,7 +31,7 @@ UniLib.replace_in_method(:PokeBattle_Move, :pbCalcDamage, "case attacker.crested
 # fix cherrim crest attack boost not applied
 CrestBuilder.add_existing(:CHERCREST)
             .add_receiver(:CHERRIM, "Sunshine")
-            .damage_mod { |_, _, move, _, is_ai| next 1.5 if !is_ai and move.pbIsPhysical?(move) }
+            .damage_mod { |_, _, move, _, is_ai| next 1.5 if !is_ai and move.pbIsPhysical?(move) } if Rejuv
 
 # fix silent crash when sleep talk called with less than 4 moves in moveset
 UniLib.replace_in_method(:PokeBattle_Move_0B4, :pbEffect, "choices = (0...4).to_a.select{|i| (attacker.moves[i].move.is_a?(Symbol)) && !blacklist.include?(attacker.moves[i].move) && @battle.pbCanChooseMove?(attacker.index,i,false,{sleeptalk: true})}",

@@ -84,7 +84,7 @@ module UniLib
                  :SPLASHPLATE => :WATER, :MEADOWPLATE => :GRASS, :ZAPPLATE => :ELECTRIC, :MINDPLATE => :PSYCHIC, :ICICLEPLATE => :ICE,
                  :DRACOPLATE => :DRAGON, :DREADPLATE => :DARK, :PIXIEPLATE => :FAIRY}
 
-    PLATE_MAP.each { |plate| ItemModifier.add(plate).unlosable { |pkmn| next true if PLATE_POKEMON[key = [pkmn.pokemon.species, pkmn.pokemon.form]] and PLATE_POKEMON[key].include?(plate) } }
+    PLATE_MAP.each { |plate, _| ItemModifier.add(plate).unlosable { |pkmn| next true if PLATE_POKEMON[key = [pkmn.pokemon.species, pkmn.pokemon.form]] and PLATE_POKEMON[key].include?(plate) } }
 
     CAMO_PROVIDER_TYPE1 = proc do |pokemon|
       next pokemon.moves[0].type if (UniLib::CAMO_POKEMON[key = [pokemon.species, pokemon.form]] == 2 or (UniLib::CAMO_POKEMON[key] == 1 and pokemon.item == :CATALYZER)) unless pokemon.moves[0].nil?

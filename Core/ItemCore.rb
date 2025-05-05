@@ -245,7 +245,7 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbUpdate, "crestStats if @crested"
   }")
 
 # resistance modifiers and overrides
-target = Reborn ? "case opponent.crested" : "if opponent.crested"
+target = Reborn ? "if typemod == 0" : "if opponent.crested"
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, target,
   "ItemModifier.with_consumption {
     opponent.item_event_value(:forced_resistance) { |forced| typemod = forced[type] unless forced[type].nil? }
@@ -256,7 +256,8 @@ UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, target,
   typemod = 0 if typemod < 0")
 
 # resistance modifiers and overrides (ai)
-UniLib.insert_in_method_before(:PokeBattle_AI, :pbTypeModNoMessages, "case opponent.crested",
+target = Reborn ? "if id == :FLYINGPRESS" : "case opponent.crested"
+UniLib.insert_in_method_before(:PokeBattle_AI, :pbTypeModNoMessages, target,
   "opponent.item_event_value(:forced_resistance) { |forced| typemod = forced[type] unless forced[type].nil? }
   opponent.item_event_value(:fake_reduce_weakness) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_WEAKNESS_MAP) }
   opponent.item_event_value(:fake_resistance) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_RESISTANCE_MAP) }
