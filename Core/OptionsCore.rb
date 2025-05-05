@@ -381,7 +381,7 @@ target = Reborn ? "if cmdSummary >= 0 && command == cmdSummary" : "if cmdSummary
 UniLib.insert_in_method_before(:PokemonScreen, :pbPokemonScreen, target,
   "uni_cmds.each { |c, idx| UniLib::UNILIB_PARTY_COMMANDS[c][1].call(pkmn) if command == idx }")
 
-target = Reborn ? "command = pbShowCommands(" : "command=pbShowCommands(helptext,commands)"
+target = Reborn ? "command = pbShowCommands(helptext, commands)" : "command=pbShowCommands(helptext,commands)"
 UniLib.insert_in_method_before(:PokemonStorageScreen, :pbStartScreen, target,
   "uni_cmds = UniLib::UNILIB_BOX_COMMANDS.reduce({}) { |c, entry| commands[c[entry[0]] = commands.length] = _INTL(entry[1][0]) if entry[1][2].nil? or entry[1][2].call(heldpoke ? heldpoke : pokemon, selected[0] == -1); c} if heldpoke or pokemon")
 

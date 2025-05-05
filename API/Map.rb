@@ -27,7 +27,7 @@ module MapEvent
     MAP_EVENTS[mapid].push(func.nil? ? block : func)
   end
 
-  def self.add_overworld_item(map, x, y, name, item, switch, graphic = "Object ball", **kwargs)
+  def self.add_overworld_item(map, x, y, name, item, switch, graphic = Reborn ? "itemball" : "Object ball", **kwargs)
     i = map.events.size + 1
     event = RPG::Event.new(x, y)
     event.id = i
