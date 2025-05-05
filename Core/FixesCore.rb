@@ -22,8 +22,8 @@ CrestBuilder.add_existing(:DEDECREST)
             .move_stat_override { |_, _, move| next :spe unless move.pbIsSpecial?(move) }
 
 # no longer replace their raw spa stat with def/atk stat with spe
-UniLib.replace_in_method(:PokeBattle_Battler, :crestStats, "@spatk = @defense", "true")
-UniLib.replace_in_method(:PokeBattle_Battler, :crestStats, "@attack = @speed", "true")
+UniLib.replace_in_method(:PokeBattle_Battler, :crestStats, "@spatk = @defense", "true") if Rejuv
+UniLib.replace_in_method(:PokeBattle_Battler, :crestStats, "@attack = @speed", "true") if Rejuv
 
 # move calculation to crest/itembuilder internals
 UniLib.replace_in_method(:PokeBattle_Move, :pbCalcDamage, "case attacker.crested", "case nil", 1)

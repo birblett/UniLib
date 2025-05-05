@@ -129,7 +129,7 @@ end unless UniLib.lib_loaded(__FILE__)
 
 $cache.abil.extend(Ability_Cache)
 
-UniLib.insert_in_method(:PokeBattle_Battler, :crestStats, :TAIL, "self.ability = @ability if @ability.is_a? Symbol")
+UniLib.insert_in_method(:PokeBattle_Battler, :crestStats, :TAIL, "self.ability = @ability if @ability.is_a? Symbol") if Rejuv
 
 UniLib.replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@ability      = pkmn.ability", "@ability = AbilityContainer.new(pkmn, pkmn.ability, @ability.added_abilities)")
 
@@ -149,38 +149,57 @@ UniLib.replace_in_function(:pbShowBattleStats, "report.push(_INTL(\"Ability: {1}
     report.push(_INTL(\"Ability: {1}\", getAbilityName(shownmon.ability.abilities[0])))
   end")
 
-AbilityContainer.multibility_case(:PokeBattle_AI, :getMoveScore, "case @opponent.ability", "contactscore*=0.8 if @opponent.species == :AEGISLASH && !checkAImoves([:KINGSSHIELD]) && (@move.pbIsPhysical?() || @battle.FE == :FAIRYTALE)", "}")
+tail = Reborn ? "contactscore *= 0.8 if @opponent.species == :AEGISLASH && !checkAImoves([:KINGSSHIELD]) && (@move.pbIsPhysical?(@attacker) || @battle.FE == :FAIRYTALE)" :
+         "contactscore*=0.8 if @opponent.species == :AEGISLASH && !checkAImoves([:KINGSSHIELD]) && (@move.pbIsPhysical?() || @battle.FE == :FAIRYTALE)"
+AbilityContainer.multibility_case(:PokeBattle_AI, :getMoveScore, "case @opponent.ability", tail, "}")
 
 AbilityContainer.multibility_case(:PokeBattle_AI, :entraincode, "case @attacker.ability", "case @opponent.ability", "}")
 
-AbilityContainer.multibility_case(:PokeBattle_AI, :entraincode, "case @opponent.ability", "when :SLOWSTART  then score +=50", "end")
+tail = Reborn ? "when :SLOWSTART  then score += 50" : "when :SLOWSTART  then score +=50"
+AbilityContainer.multibility_case(:PokeBattle_AI, :entraincode, "case @opponent.ability", tail, "end")
 
-AbilityContainer.multibility_case(:PokeBattle_AI, :moldbreakeronalaser, "case @opponent.ability", "return miniscore", "}")
+AbilityContainer.multibility_case(:PokeBattle_AI, :moldbreakeronalaser, "case @opponent.ability", "return miniscore", "}") if Rejuv
 
-AbilityContainer.multibility_case(:PokeBattle_AI, :pbTypeModNoMessages, "case opponent.ability", "when :TELEPATHY 						then return 0 if  move.basedamage>0 && opponent.index == attacker.pbPartner.index", "end")
+target = Reborn ? "when :TELEPATHY then return 0 if move.basedamage > 0 && opponent.index == attacker.pbPartner.index" :
+           "when :TELEPATHY 						then return 0 if  move.basedamage>0 && opponent.index == attacker.pbPartner.index"
+AbilityContainer.multibility_case(:PokeBattle_AI, :pbTypeModNoMessages, "case opponent.ability", target, "end")
 
-AbilityContainer.multibility_case(:PokeBattle_AI, :getAbilityDisruptScore, "case opponent.ability", "abilityscore*=0.01", "}")
+tail = Reborn ? "abilityscore *= 0.01" : "abilityscore*=0.01"
+AbilityContainer.multibility_case(:PokeBattle_AI, :getAbilityDisruptScore, "case opponent.ability", tail, "}")
 
-AbilityContainer.multibility_case(:PokeBattle_AI, :getSwitchInScoresParty, "case i.ability", "abilityscore+=30 if checkAImoves(PBStuff::PROTECTMOVE,aimem2) && @mondata.skill>=BESTSKILL", "end")
+tail = Reborn ? "abilityscore += 30 if checkAImoves(PBStuff::PROTECTMOVE, aimem2) && @mondata.skill >= BESTSKILL" :
+         "abilityscore+=30 if checkAImoves(PBStuff::PROTECTMOVE,aimem2) && @mondata.skill>=BESTSKILL"
+AbilityContainer.multibility_case(:PokeBattle_AI, :getSwitchInScoresParty, "case i.ability", tail, "end")
 
-AbilityContainer.multibility_case(:PokeBattle_Move, :pbType, "case attacker.ability", "when :LIQUIDVOICE then type= @battle.FE==:ICY ? :ICE : :WATER if isSoundBased?", "end")
+tail = Reborn ? "when :LIQUIDVOICE then type = @battle.FE == :ICY ? :ICE : :WATER if isSoundBased?" :
+         "when :LIQUIDVOICE then type= @battle.FE==:ICY ? :ICE : :WATER if isSoundBased?"
+AbilityContainer.multibility_case(:PokeBattle_Move, :pbType, "case attacker.ability", tail, "end")
 
-AbilityContainer.multibility_case(:PokeBattle_Move, :pbCalcDamage, "case attacker.ability", "when :INEXORABLE    then basemult*=1.3 if type == :DRAGON && (!opponent.hasMovedThisRound? || @battle.switchedOut[opponent.index])", "end")
+tail = Reborn ? "when :INEXORABLE    then basemult *= 1.3 if type == :DRAGON && (!opponent.hasMovedThisRound? || @battle.switchedOut[opponent.index])" :
+         "when :INEXORABLE    then basemult*=1.3 if type == :DRAGON && (!opponent.hasMovedThisRound? || @battle.switchedOut[opponent.index])"
+AbilityContainer.multibility_case(:PokeBattle_Move, :pbCalcDamage, "case attacker.ability", tail, "end")
 
 AbilityContainer.multibility_case(:PokeBattle_Move, :pbCalcDamage, "case opponent.ability", "if attitemworks", "}")
 
-AbilityContainer.multibility_case(:PokeBattle_Move, :pbCalcDamage, "case attacker.ability", "when :QUARKDRIVE then atkmult*=1.3 if (attacker.effects[:Quarkdrive][0] == PBStats::ATTACK && pbIsPhysical?(type)) || (attacker.effects[:Quarkdrive][0] == PBStats::SPATK && pbIsSpecial?(type))", "end", 1)
+tail = Reborn ? "when :QUARKDRIVE then atkmult *= 1.3 if (attacker.effects[:Quarkdrive][0] == PBStats::ATTACK && pbIsPhysical?(attacker, type)) || (attacker.effects[:Quarkdrive][0] == PBStats::SPATK && pbIsSpecial?(attacker, type))" :
+         "when :QUARKDRIVE then atkmult*=1.3 if (attacker.effects[:Quarkdrive][0] == PBStats::ATTACK && pbIsPhysical?(type)) || (attacker.effects[:Quarkdrive][0] == PBStats::SPATK && pbIsSpecial?(type))"
+AbilityContainer.multibility_case(:PokeBattle_Move, :pbCalcDamage, "case attacker.ability", tail, "end", 1)
 
-AbilityContainer.multibility_case(:PokeBattle_Move, :pbCalcDamage, "case attacker.ability", "when :SKILLLINK then atkmult*=1.2 if (@battle.FE == :COLOSSEUM && (@function == 0xC0 || @function == 0x307 || (attacker.crested == :CINCCINO && !pbIsMultiHit)))", "end", 2)
+tail = Reborn ? "when :SKILLLINK then atkmult *= 1.2 if @battle.FE == :COLOSSEUM && (@function == 0xC0 || @function == 0x307 || (attacker.crested == :CINCCINO && !pbIsMultiHit))" :
+         "when :SKILLLINK then atkmult*=1.2 if (@battle.FE == :COLOSSEUM && (@function == 0xC0 || @function == 0x307 || (attacker.crested == :CINCCINO && !pbIsMultiHit)))"
+AbilityContainer.multibility_case(:PokeBattle_Move, :pbCalcDamage, "case attacker.ability", tail, "end", 2)
 
-AbilityContainer.multibility_case(:PokeBattle_Move, :pbCalcDamage, "case opponent.ability", "defmult*=0.5 if type == :FIRE && !(opponent.moldbroken)", "end", 1)
+tail = Reborn ? "defmult *= 0.5 if type == :FIRE && !opponent.moldbroken" : "defmult*=0.5 if type == :FIRE && !(opponent.moldbroken)"
+AbilityContainer.multibility_case(:PokeBattle_Move, :pbCalcDamage, "case opponent.ability", tail, "end", 1)
 
 AbilityContainer.multibility_case(:PokeBattle_Battler, :pbSpeed, "case self.ability", "case @battle.FE", "}")
 
-AbilityContainer.multibility_case(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "case self.ability", "when :NEUTRALIZINGGAS then @battle.pbDisplay(_INTL(\"{1}'s gas neutralized all other Pokémon's abilities!\",pbThis))", "end")
+tail = Reborn ? "when :ASONECHILLING, :ASONEGRIM then @battle.pbDisplay(_INTL(\"{1} has two Abilities!\", pbThis))" : "when :NEUTRALIZINGGAS then @battle.pbDisplay(_INTL(\"{1}'s gas neutralized all other Pokémon's abilities!\",pbThis))"
+AbilityContainer.multibility_case(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "case self.ability", tail, "end")
 
 UniLib.replace_in_method(:PokemonEncounters, :pbGenerateEncounter, "case $Trainer.party[0].ability",
   "$Trainer.party[0].ability.each do |ability|
     case ability")
 
-UniLib.insert_in_method_before(:PokemonEncounters, :pbGenerateEncounter, "return nil if rand(250*16)>=encount", "end")
+target = Reborn ? "return nil if rand(250 * 16) >= encount" : "return nil if rand(250*16)>=encount"
+UniLib.insert_in_method_before(:PokemonEncounters, :pbGenerateEncounter, target, "end")

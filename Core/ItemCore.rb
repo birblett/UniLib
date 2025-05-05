@@ -245,7 +245,8 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbUpdate, "crestStats if @crested"
   }")
 
 # resistance modifiers and overrides
-UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, "if opponent.crested",
+target = Reborn ? "case opponent.crested" : "if opponent.crested"
+UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, target,
   "ItemModifier.with_consumption {
     opponent.item_event_value(:forced_resistance) { |forced| typemod = forced[type] unless forced[type].nil? }
     opponent.item_event_value(:fake_reduce_weakness) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_WEAKNESS_MAP) }
@@ -260,10 +261,11 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :pbTypeModNoMessages, "case oppon
   opponent.item_event_value(:fake_reduce_weakness) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_WEAKNESS_MAP) }
   opponent.item_event_value(:fake_resistance) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_RESISTANCE_MAP) }
   opponent.apply_item_event(:type_effectiveness_simple, opponent, type, false) { |m| typemod *= m }
-  typemod = 0 if typemod < 0", 1)
+  typemod = 0 if typemod < 0", Reborn ? 0 : 1)
 
 # move type effectiveness modifier
-UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModifier, "return mod1*mod2",
+target = Reborn ? "return mod1 * mod2" : "return mod1*mod2"
+UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModifier, target,
   "ItemModifier.with_consumption { attacker.apply_item_event(:type_effectiveness, attacker, opponent, self, mod1, mod2) { |mod| mod1, mod2 = mod[0], mod[1] } }")
 
 # move stab override
@@ -303,10 +305,17 @@ UniLib.insert_in_method(:PokeBattle_AI, :pbRoughDamage, "typecrest = false",
   opponent.apply_item_event(:damage_taken_mod, opponent, attacker, self, move.pbNumHits(attacker), self) { |m| damage *= m }")
 
 # move accuracy modifier
-UniLib.insert_in_method_before(:PokeBattle_Move, :pbAccuracyCheck, "return @battle.pbRandom(100)<(baseaccuracy*accuracy/evasion)",
-  "base, acc, eva = NumberContainer.of(baseaccuracy, accuracy, evasion)
-  ItemModifier.with_consumption { attacker.apply_item_event(:accuracy_mod, attacker, self, base, acc, eva) { |m| return true if m } }
-  baseaccuracy, accuracy, evasion = base.value, acc.value, eva.value")
+if Reborn
+  UniLib.insert_in_method_before(:PokeBattle_Move, :pbAccuracyCheck, "return @battle.pbRandom(100) < (baseaccuracy * accuracy / 100.0).floor",
+    "base, acc, eva = NumberContainer.of(baseaccuracy, accuracy, 1)
+    ItemModifier.with_consumption { attacker.apply_item_event(:accuracy_mod, attacker, self, base, acc, eva) { |m| return true if m } }
+    baseaccuracy, accuracy = base.value, acc.value / eva.value")
+else
+  UniLib.insert_in_method_before(:PokeBattle_Move, :pbAccuracyCheck, "return @battle.pbRandom(100)<(baseaccuracy*accuracy/evasion)",
+    "base, acc, eva = NumberContainer.of(baseaccuracy, accuracy, evasion)
+    ItemModifier.with_consumption { attacker.apply_item_event(:accuracy_mod, attacker, self, base, acc, eva) { |m| return true if m } }
+    baseaccuracy, accuracy, evasion = base.value, acc.value, eva.value")
+end
 
 # move priority modifier
 UniLib.insert_in_method(:PokeBattle_Battle, :pbPriority, "pri += 3 if @battlers[i].ability == :TRIAGE && (PBStuff::HEALFUNCTIONS).include?(@choices[i][2].function)",
@@ -317,7 +326,8 @@ UniLib.insert_in_method(:PokeBattle_Move, :priorityCheck, "pri -= 1 if @battle.F
   "attacker.apply_item_event(:move_priority, attacker, self) { |m| pri += m }")
 
 # move crit rate modifier
-UniLib.insert_in_method_before(:PokeBattle_Move, :pbCritRate?, "c=3 if c>3",
+target = Reborn ? "c = 3 if c > 3" : "c=3 if c>3"
+UniLib.insert_in_method_before(:PokeBattle_Move, :pbCritRate?, target,
   "if (caller_locations.first.label == \"pbRoughDamage\" rescue false)
     attacker.apply_item_event(:crit_mod, attacker, opponent, self) { |m| c += m }
   else
@@ -385,19 +395,22 @@ UniLib.insert_in_method_before(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "if 
   "ItemModifier.with_consumption { self.apply_item_event(:battle_entry, self, self.battle, index) {} } if onactive")
 
 # move attempted events
-UniLib.insert_in_method_before(:PokeBattle_Battler, :pbTryUseMove, "protype=basemove.pbType(self,basemove.type)",
+target = Reborn ? "protype = basemove.pbType(self, basemove.type)" : "protype=basemove.pbType(self,basemove.type)"
+UniLib.insert_in_method_before(:PokeBattle_Battler, :pbTryUseMove, target,
   "ItemModifier.with_consumption { self.apply_item_event(:try_move, self, basemove) {} }")
 
+target = Reborn ? "damage = basemove.pbEffect(user, target, i, alltargets, showanimation)" : "damage = basemove.pbEffect(user,target,i,alltargets,showanimation)"
 # move effect events
-UniLib.insert_in_method_before(:PokeBattle_Battler, :pbProcessMoveAgainstTarget, "damage = basemove.pbEffect(user,target,i,alltargets,showanimation)",
+UniLib.insert_in_method_before(:PokeBattle_Battler, :pbProcessMoveAgainstTarget, target,
   "ItemModifier.with_consumption { user.apply_item_event(:move_effect, user, target, i, basemove) {} }")
 
 # after move effect events
-UniLib.insert_in_method(:PokeBattle_Battler, :pbProcessMoveAgainstTarget, "damage = basemove.pbEffect(user,target,i,alltargets,showanimation)",
+UniLib.insert_in_method(:PokeBattle_Battler, :pbProcessMoveAgainstTarget, target,
   "ItemModifier.with_consumption { user.apply_item_event(:after_move_effect, user, target, i, basemove) {} }")
 
 # switch out events
-UniLib.insert_in_method_before(:PokeBattle_Battler, :pbInitialize, "pbInitPokemon(pkmn,index)",
+target = Reborn ? "pbInitPokemon(pkmn, index)" : "pbInitPokemon(pkmn,index)"
+UniLib.insert_in_method_before(:PokeBattle_Battler, :pbInitialize, target,
   "ItemModifier.with_consumption { self.apply_item_event(:switch_out, self) {} }")
 
 # damage taken/dealt events
@@ -410,8 +423,25 @@ UniLib.insert_in_method_before(:PokeBattle_Battle, :__clauses__pbEndOfRoundPhase
   "ItemModifier.with_consumption { i.apply_item_event(:turn_end, i) {} }")
 
 # form change handler
-UniLib.insert_in_method(:PokeBattle_Battler, :pbCheckForm, "transformed=false",
-  "ItemModifier.with_consumption { self.apply_item_event(:form_change, self, basemove) { |m| transformed = !(self.form = m).nil? } } unless self.isFainted?")
+if Reborn
+  UniLib.insert_in_method(:PokeBattle_Battler, :pbCheckFormRoundEnd, :TAIL,
+    "transformed = false
+    ItemModifier.with_consumption { self.apply_item_event(:form_change, self, nil) { |m| transformed = !(self.form = m).nil? } } unless self.isFainted?
+    if transformed
+      @battle.scene.pbChangePokemon(self,@pokemon)
+      @battle.pbDisplay(_INTL(\"{1} transformed!\",pbThis))
+    end")
+  UniLib.insert_in_method(:PokeBattle_Battler, :pbTryUseMove, "pbCheckStance(basemove) if self.ability == :STANCECHANGE",
+    "transformed = false
+    ItemModifier.with_consumption { self.apply_item_event(:form_change, self, basemove) { |m| transformed = !(self.form = m).nil? } } unless self.isFainted?
+    if transformed
+      @battle.scene.pbChangePokemon(self,@pokemon)
+      @battle.pbDisplay(_INTL(\"{1} transformed!\",pbThis))
+    end")
+else
+  UniLib.insert_in_method(:PokeBattle_Battler, :pbCheckForm, "transformed=false",
+    "ItemModifier.with_consumption { self.apply_item_event(:form_change, self, basemove) { |m| transformed = !(self.form = m).nil? } } unless self.isFainted?")
+end
 
 # switch in score
 UniLib.insert_in_method(:PokeBattle_AI, :getSwitchInScoresParty, "monscore += otherscore",
@@ -452,11 +482,13 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbDisposeItem, :HEAD, "b = !@item.
 UniLib.insert_in_method(:PokeBattle_Battler, :pbDisposeItem, :TAIL, "self.pbUpdate(true) if b")
 
 # item score
-UniLib.insert_in_method_before(:PokeBattle_AI, :getItemScore, "itemscore-=100",
+target = Reborn ? "itemscore -= 100" : "itemscore-=100"
+UniLib.insert_in_method_before(:PokeBattle_AI, :getItemScore, target,
   "@attacker.apply_item_event(:item_score, self, @attacker) { |m| itemscore *= m }")
 
 # item switch in score
-UniLib.insert_in_method_before(:PokeBattle_AI, :getSwitchInScoresParty, "if (i.item == :ROCKYHELMET)",
+target = Reborn ? "if i.item == :ROCKYHELMET" : "if (i.item == :ROCKYHELMET)"
+UniLib.insert_in_method_before(:PokeBattle_AI, :getSwitchInScoresParty, target,
   "i.apply_item_event(:switch_item_score, self, i, @opponent) { |m| itemscore += m }")
 
 }

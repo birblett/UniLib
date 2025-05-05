@@ -97,19 +97,29 @@ class PokeModifier
     end
 
     def mon_data
-      @base_data = @form == 0 ? $cache.pkmn[@species] : $cache.pkmn[@species].formData[$cache.pkmn[@species].forms[@form]] if @base_data.nil?
+      if Reborn
+        @base_data = $cache.pkmn[@species].pokemonData[$cache.pkmn[@species].forms[@form]] if @base_data.nil?
+      else
+        @base_data = @form == 0 ? $cache.pkmn[@species] : $cache.pkmn[@species].formData[$cache.pkmn[@species].forms[@form]] if @base_data.nil?
+      end
       @base_data
     end
 
     def get_base_data(sym, default=nil)
-      ret = POKEMON_DATA[@species].formData[@form_str][sym] if ret.nil? rescue nil
-      ret = POKEMON_DATA[@species].flags[sym] if ret.nil? rescue nil
-      ret = POKEMON_DATA[@species].instance_variable_get(("@" + sym.to_s).to_sym) if ret.nil? rescue nil
+      if Reborn
+        ret = POKEMON_DATA[@species].pokemonData[@form_str].instance_variable_get(("@" + sym.to_s).to_sym) if ret.nil? rescue nil
+        ret = POKEMON_DATA[@species].pokemonData[POKEMON_DATA[@species].forms[0]].instance_variable_get(("@" + sym.to_s).to_sym) if ret.nil? rescue nil
+        ret = POKEMON_DATA[@species].flags[sym] if ret.nil? rescue nil
+      else
+        ret = POKEMON_DATA[@species].formData[@form_str][sym] if ret.nil? rescue nil
+        ret = POKEMON_DATA[@species].flags[sym] if ret.nil? rescue nil
+        ret = POKEMON_DATA[@species].instance_variable_get(("@" + sym.to_s).to_sym) if ret.nil? rescue nil
+      end
       ret.nil? ? default : ret.dup
     end
 
     def get_data(sym)
-      if @form == 0
+      if @form == 0 || Reborn
         mon_data.instance_variable_get(("@" + sym.to_s).to_sym)
       else
         mon_data[sym].nil? ? mon_data.instance_variable_get(("@" + sym.to_s).to_sym) : mon_data[sym]
@@ -117,7 +127,7 @@ class PokeModifier
     end
 
     def set_data(sym, data)
-      @form == 0 ? mon_data.instance_variable_set(("@" + String(sym)).to_sym, data) : mon_data[sym] = data
+      @form == 0 || Reborn ? mon_data.instance_variable_set(("@" + String(sym)).to_sym, data) : mon_data[sym] = data
     end
 
     def set_stats_internal
@@ -180,6 +190,7 @@ class PokeModifier
 
     def build
       EVENT_POKEMODIFIER_PRE_BUILD.each { |event| event.call(self) }
+      UniLib.dev_log(mon_data) if @species == :ROWLET
       set_stats_internal unless @stats.empty?
       set_types_internal unless @types.empty?
       set_abilities_internal unless @abilities.empty?
@@ -226,7 +237,7 @@ unless UniLib.lib_loaded(__FILE__)
       end
     end
     $Trainer.party.each do |pokemon|
-      pokemon.bossId = nil
+      pokemon.bossId = nil if Rejuv
       pokemon.isbossmon = false
       pokemon.calcStats
       pokemon.permanent_battle_effects.clear if pokemon.permanent_battle_effects
@@ -235,7 +246,7 @@ unless UniLib.lib_loaded(__FILE__)
     $PokemonStorage.boxes.each do |box|
       box.pokemon.each do |pokemon|
         next unless pokemon
-        pokemon.bossId = nil
+        pokemon.bossId = nil if Rejuv
         pokemon.isbossmon = false
         pokemon.calcStats
         pokemon.permanent_battle_effects.clear if pokemon.permanent_battle_effects
@@ -268,6 +279,8 @@ UniLib.insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
     return ret unless ret.nil?
   end unless providers.nil?")
 
-UniLib.insert_in_method(:PokeBattle_Battle, :pbEndOfBattle, "i.rampCrestUsed = false", "i.permanent_battle_effects = {}")
+if Rejuv
+  UniLib.insert_in_method(:PokeBattle_Battle, :pbEndOfBattle, "i.rampCrestUsed = false", "i.permanent_battle_effects = {}")
+end
 
-UniLib.insert_in_method(:PokeBattle_BattleCommon, :pbStorePokemon, :HEAD, "pokemon.permanent_battle_effects = {}; pokemon.bossId = nil; pokemon.isbossmon = false")
+UniLib.insert_in_method(:PokeBattle_BattleCommon, :pbStorePokemon, :HEAD, "pokemon.permanent_battle_effects = {}; pokemon.bossId = nil if Rejuv; pokemon.isbossmon = false")

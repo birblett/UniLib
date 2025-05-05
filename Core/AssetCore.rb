@@ -60,7 +60,6 @@ module Audio
   UNILIB_BGM_PLAY_OLD = singleton_method(:bgm_play) unless UniLib.lib_loaded(__FILE__)
   define_singleton_method(:bgm_play) do |file, v=100, p=100|
     Assets.log(file) if $unilib_audio_asset_log
-    UniLib.dev_log(file)
     if UniLib::AUDIO_FILE_REDIRECT[file]
       file = Assets.get_asset(UniLib::AUDIO_FILE_REDIRECT, file)
       next if $game_system.playing_bgm and Assets.strip_bgm(file) == Assets.strip_bgm($game_system.playing_bgm.name) and $game_system.playing_bgm.volume == v and $game_system.playing_bgm.pitch == p
