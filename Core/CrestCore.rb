@@ -16,6 +16,16 @@ module UniLib
   VALID_CRESTS = {}
   SHOP_CRESTS = [{}, {}, {}, {}]
 
+  if Reborn
+
+    CREST_BITMAP = AnimatedBitmap.new(UniLib.asset_path("crest.png"))
+
+    def self.draw_crest(bitmap, opp, doubles)
+      bitmap.blt(opp ? 18 : 58, 42, CREST_BITMAP.bitmap, Rect.new(0, 0, 24, 10))
+    end
+
+  end
+
 end
 
 class CrestBuilder < ItemModifier
@@ -69,6 +79,17 @@ class Symbol
   end
 
 end unless UniLib.lib_loaded(__FILE__)
+
+class PokeBattle_Battler
+
+  attr_accessor(:is_crested)
+
+  def crest?
+    @is_crested = UniLib::VALID_CRESTS[self.item].holders if UniLib::VALID_CRESTS[self.item] and ItemModifier.has_event?(self, :crest) if @is_crested.nil?
+    @is_crested
+  end
+
+end if Reborn
 
 # ======================================================================================================================================== #
 # ================================================================ EVENTS ================================================================ #
@@ -125,3 +146,6 @@ UniLib.insert_in_method(:PokeBattle_Battler, :hasCrest?, "return true if @battle
 UniLib.replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@crested = hasCrest? ? pkmn.species : false",
   "h = hasCrest?
   @crested = h ? (h.is_a?(CrestHolder) ? h : pkmn.species) : false")
+
+UniLib.insert_in_method(:PokemonDataBox, :refresh, "pbShowStatsBoosts if loopstop == false",
+  "UniLib.draw_crest(self.bitmap, @battler.index & 1 == 1, @battler.battle.doublebattle) if @battler.crest?", 0, 10000) if Reborn
