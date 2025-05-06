@@ -95,7 +95,7 @@ class Array
   ARR_INC = Array.instance_method(:include?) unless defined? ARR_INC
   def include?(other)
     if other.is_a?(AbilityContainer)
-      other.abilities.each { |ability| return true if ARR_INC.bind(self).call(ability) }
+      other.abilities.each { |ability| (other.ctx = ability; return true) if ARR_INC.bind(self).call(ability) }
       return false
     end
     ARR_INC.bind(self).call(other)
@@ -114,7 +114,7 @@ end
 class PokeBattle_Pokemon
 
   def ability(multi=false)
-    is_called = caller[0]["pbGenerateEncounter"] or caller[0]["pbGenerateWildPokemon"]
+    is_called = !caller[0]["pbGenerateEncounter"].nil? || !caller[0]["pbGenerateWildPokemon"].nil?
     if multi or is_called
       AbilityContainer.new(self, @ability)
     else
