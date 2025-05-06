@@ -319,7 +319,8 @@ else
 end
 
 # move priority modifier
-UniLib.insert_in_method(:PokeBattle_Battle, :pbPriority, "pri += 3 if @battlers[i].ability == :TRIAGE && (PBStuff::HEALFUNCTIONS).include?(@choices[i][2].function)",
+target = Reborn ? "pri += 3 if @battlers[i].ability == :TRIAGE && PBStuff::HEALFUNCTIONS.include?(@choices[i][2].function)" : "pri += 3 if @battlers[i].ability == :TRIAGE && (PBStuff::HEALFUNCTIONS).include?(@choices[i][2].function)"
+UniLib.insert_in_method(:PokeBattle_Battle, :pbPriority, target,
   "ItemModifier.with_consumption { @battlers[i].apply_item_event(:move_priority, @battlers[i], @choices[i][2]) { |m| pri += m } }")
 
 # move priority modifier (check only)
