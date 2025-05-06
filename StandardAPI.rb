@@ -113,6 +113,13 @@ module UniLib
   end
 
   <<-DOC
+  returns a filepath to the UniLib assets directory.
+  DOC
+  def self.asset_path(path_relative)
+    "#{Reborn ? "patch/Mods/UniLib/Assets/" : "Data/Mods/UniLib/Assets/"}#{path_relative}"
+  end
+
+  <<-DOC
   loads from UniLib/Save/<name>.dat. prepends "Game_n_" if saveslot set to true.
   DOC
   def self.restore_data(name, default, saveslot=false)
