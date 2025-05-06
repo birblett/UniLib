@@ -35,7 +35,7 @@ class TrainerModifier
       print "TrainerModifier: #{tclass} #{name} with team id #{id} doesn't exist"
       exit
     end
-    TRAINER_CACHE[[tclass, name, id]] = true if $trainer_modifier_debug
+    TRAINER_CACHE[[tclass, name, id]] = true
     @is_new = is_new
     @tclass = tclass
     @name = name
