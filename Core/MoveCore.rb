@@ -69,7 +69,6 @@ class MoveModifier
     data[:ID] = ($move_current_max += 1)
     @flags.each { |k, v| data[k] = v }
     $cache.moves[@symbol] = MoveData.new(@symbol, data)
-    UniLib.dev_log(UniLib.obj_print($cache.moves[@symbol]))
   end
 
 end unless UniLib.lib_loaded(__FILE__)
