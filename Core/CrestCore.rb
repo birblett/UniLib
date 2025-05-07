@@ -82,12 +82,17 @@ end unless UniLib.lib_loaded(__FILE__)
 
 class PokeBattle_Battler
 
-  attr_accessor(:is_crested)
-
-  def crest?
-    @is_crested = UniLib::VALID_CRESTS[self.item].holders if UniLib::VALID_CRESTS[self.item] and ItemModifier.has_event?(self, :crest) if @is_crested.nil?
-    @is_crested
+  def hasCrest?
+    UniLib::VALID_CRESTS[self.item].holders if UniLib::VALID_CRESTS[self.item] and ItemModifier.has_event?(self, :crest)
   end
+
+  def crestStats; end
+
+end if Reborn
+
+class PokeBattle_Battle
+
+  def pbCrestEffects(a, b); end
 
 end if Reborn
 
@@ -141,11 +146,11 @@ end if Rejuv
 # ======================================================================================================================================== #
 
 UniLib.insert_in_method(:PokeBattle_Battler, :hasCrest?, "return true if @battle.pbGetOwnerItems(@index).include?(:SILVCREST) && crestmon.species == :SILVALLY && !@battle.pbOwnedByPlayer?(@index)",
-  "return crestmon.form == 0 ? true : UniLib::VALID_CRESTS[crestmon.item].holders if UniLib::VALID_CRESTS[crestmon.item] and ItemModifier.has_event?(crestmon, :crest)")
+  "return crestmon.form == 0 ? true : UniLib::VALID_CRESTS[crestmon.item].holders if UniLib::VALID_CRESTS[crestmon.item] and ItemModifier.has_event?(crestmon, :crest)") if Rejuv
 
 UniLib.replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@crested = hasCrest? ? pkmn.species : false",
   "h = hasCrest?
   @crested = h ? (h.is_a?(CrestHolder) ? h : pkmn.species) : false")
 
 UniLib.insert_in_method(:PokemonDataBox, :refresh, "pbShowStatsBoosts if loopstop == false",
-  "UniLib.draw_crest(self.bitmap, @battler.index & 1 == 1, @battler.battle.doublebattle) if @battler.crest?", 0, 10000) if Reborn
+  "UniLib.draw_crest(self.bitmap, @battler.index & 1 == 1, @battler.battle.doublebattle) if @battler.hasCrest?", 0, 10000) if Reborn
