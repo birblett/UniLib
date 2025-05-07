@@ -57,8 +57,8 @@ module UniLib
     name = label ? "#{label} " : ""
     if obj.instance_of? Array
       if obj.length > 0
-        s[0] += "  " * depth + "#{obj.class} #{name}[\n"
-        obj.each_with_index{ |v, i| obj_print(v, depth + 1, "#{i} = ", false, s) }
+        s[0] += "  " * depth + "#{obj.class} #{name}= [\n"
+        obj.each_with_index{ |v, i| obj_print(v, depth + 1, "#{i}", false, s) }
         s[0] += "  " * depth + "]\n"
       else
         s[0] += "  " * depth + "#{obj.class} #{name}= []\n"
@@ -66,7 +66,8 @@ module UniLib
     elsif obj.instance_of? Hash
       if obj.length > 0
         s[0] += "  " * depth + "#{obj.class} #{name}= {\n"
-        obj.each{ |k, v| obj_print(v, depth + 1, ":#{k} = ", false, s) }
+
+        obj.each{ |k, v| obj_print(v, depth + 1, "#{k.is_a?(Symbol) ? ":" : ""}#{k}", false, s) }
         s[0] += "  " * depth + "}\n"
       else
         s[0] += "  " * depth + "#{obj.class} #{name}{}\n"
@@ -75,6 +76,10 @@ module UniLib
       s[0] += "  " * depth + "#{obj.class} #{name}= (\n"
       vars.each { |var| obj_print(obj.instance_variable_get(var), depth + 1, var, false, s) }
       s[0] += "  " * depth + ")\n"
+    elsif obj.is_a? String
+      s[0] += "  " * depth + "#{obj.class} #{name}= \"#{obj}\"\n"
+    elsif obj.is_a? Symbol
+      s[0] += "  " * depth + "#{obj.class} #{name}= :#{obj}\n"
     else
       s[0] += "  " * depth + "#{obj.class} #{name}= #{obj}\n"
     end
