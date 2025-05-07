@@ -17,7 +17,7 @@ end
 class PokeBattle_Battler
 
   def ability=(other)
-    @ability = other.is_a?(AbilityContainer) ? other.copy : AbilityContainer.new(self, other)
+    @ability = other.is_a?(AbilityContainer) ? other.copy : AbilityContainer.new(self, other, [], true)
   end
 
   def ability
@@ -33,7 +33,7 @@ class AbilityContainer
   attr_accessor(:ctx)
   attr_accessor(:added_abilities)
 
-  def initialize(pkmn, ability, added_abilities=[])
+  def initialize(pkmn, ability, added_abilities=[], ignore=false)
     @pokemon = pkmn.is_a?(PokeBattle_Battler) ? pkmn.pokemon : pkmn
     @abilities = (ability.is_a?(Array) ? ability : [ability]) | added_abilities
     @added_abilities = added_abilities
@@ -43,7 +43,7 @@ class AbilityContainer
       next if condition and !condition.call(pkmn)
       extra = handler.call(pkmn, @abilities)
       @abilities |= (extra.is_a?(Array) ? extra : [extra]) unless extra.nil?
-    end unless UniLib::MULTIBILITY_HANDLERS[key].nil?
+    end unless UniLib::MULTIBILITY_HANDLERS[key].nil? or ignore
   end
 
   def ==(other)

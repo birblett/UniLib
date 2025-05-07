@@ -13,7 +13,7 @@ module UniLib
   CUSTOM_MOVES = {}
   MOVE_DATA = load_data("Data/moves.dat") unless defined? MOVE_DATA
   MOVE_MAX_ID = MOVE_DATA.max_by { |_, v| v.flags[:ID].nil? ? 0 : v.flags[:ID] }[1].flags[:ID] unless defined? MOVE_MAX_ID
-  $move_current_max = MOVE_MAX_ID + 1
+  $move_current_max = MOVE_MAX_ID
 
 end
 
@@ -66,6 +66,7 @@ class MoveModifier
     data[:maxpp] = @maxpp if @maxpp
     data[:target] = @target if @target
     data[:priority] = @priority if @priority
+    data[:ID] = ($move_current_max += 1)
     @flags.each { |k, v| data[k] = v }
     $cache.moves[@symbol] = MoveData.new(@symbol, data)
     UniLib.dev_log(UniLib.obj_print($cache.moves[@symbol]))
