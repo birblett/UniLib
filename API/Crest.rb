@@ -42,6 +42,15 @@ class CrestBuilder
   end
 
   <<-DOC
+  @param hook - event hook returning a CrestHolder or symbol. returning nil makes it do nothing. accepts 2 arguments, the holder 
+                (PokeBattle_Battler), and the battle (PokeBattle_Battle).
+  >> allows overrides for hasCrest? function.
+  DOC
+  def self.add_hook(&hook)
+    CREST_HOOKS.push(hook)
+  end
+
+  <<-DOC
   @param tier - tier at which the crest begins appearing. must be 1-4.
   @param price - price, in red essence, of the crest
   >> adds the crest to cairo's shop, at the specified tier and price
