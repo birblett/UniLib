@@ -13,8 +13,8 @@ module Assets
   def self.redirect(type, base, target=nil, &block)
     return if target.nil? and block.nil?
     case type
-    when :BMP then ANIMATED_BITMAP_REDIRECT[base] = block ? ["Data/Mods/", block] : "Data/Mods/#{target}"
-    when :AUDIO then AUDIO_FILE_REDIRECT[base] = block ? ["../../Data/Mods/", block] : "../../Data/Mods/#{target}"
+    when :BMP then ANIMATED_BITMAP_REDIRECT[base] = block ? [UniLib.path(""), block] : UniLib.path(target)
+    when :AUDIO then AUDIO_FILE_REDIRECT[base] = block ? ["../../#{UniLib.path("")}", block] : "../../#{UniLib.path(target)}"
     else print "Unsupported asset redirection type: #{type}"
     end
     self
