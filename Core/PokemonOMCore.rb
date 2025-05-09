@@ -237,6 +237,7 @@ UniLib.insert_in_method(:PokemonSummaryScene, :drawPageFour, "abilitydesc = abil
     list.each { |abil| abilitydesc += getAbilityName(abil, true) + (abil != list.last ? \" + \" : \".\")}
   end")
 
-UniLib.insert_in_method(:PokemonStorageScene, :pbUpdateOverlay, "abilityname=getAbilityName(pokemon.ability)", "abilityname = \"Pokebilities\" if UniLib.pokebilities_active(pokemon)")
+target = Reborn ? "abilityname = getAbilityName(pokemon.ability)" : "abilityname=getAbilityName(pokemon.ability)"
+UniLib.insert_in_method(:PokemonStorageScene, :pbUpdateOverlay, target, "abilityname = \"Pokebilities\" if UniLib.pokebilities_active(pokemon)")
 
 UniLib.insert_in_method(:PokeBattle_Pokemon, :initAbility, :TAIL, "@ability = abillist[0] if UniLib.pokebilities_active(self)")
