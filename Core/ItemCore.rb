@@ -217,7 +217,8 @@ UniLib.insert_in_function(:pbItemIconFile, :HEAD,
   end")
 
 # base stat modifier
-UniLib.insert_in_method(:PokeBattle_Pokemon, :calcStats, "bs=self.baseStats",
+target = Reborn ? "bs = self.baseStats" : "bs=self.baseStats"
+UniLib.insert_in_method(:PokeBattle_Pokemon, :calcStats, target,
   "stats = NumberContainer.of(*bs)
   self.apply_item_event(:base_stat_mods, self, stats) {}
   bs = stats.map { |n| n.value }")
