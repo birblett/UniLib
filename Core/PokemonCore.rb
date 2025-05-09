@@ -82,9 +82,11 @@ class PokeModifier
       @types = { :Type1 => get_base_data(:Type1), :Type2 => get_base_data(:Type2)}
       abil2 = get_base_data(:Abilities)[2]
       @abilities = { 0 => get_base_data(:Abilities)[0], 1 => get_base_data(:Abilities)[1], 2 => abil2.nil? ? get_base_data(HIDDEN_ABILITY_SYM) : abil2}
+      @removed_learnset = []
       @base_learnset = get_base_data(:Moveset)
       @base_learnset = [] if @base_learnset.nil?
       @learnset = []
+      @removed_compatible = []
       @base_egg_moves = get_base_data(:EggMoves)
       @base_egg_moves = [] if @base_egg_moves.nil?
       @egg_moves = []
@@ -168,6 +170,7 @@ class PokeModifier
     end
 
     def set_level_moves_internal(sort=false)
+      @base_learnset.reject! { |a| @removed_learnset.include?(a[1]) }
       @learnset.sort_by!{ |a| a[0] } if sort
       @learnset.each do |move|
         add = true
@@ -180,11 +183,13 @@ class PokeModifier
     end
 
     def set_egg_moves_internal
+      @base_egg_moves.reject! { |a| @removed_compatible.include?(a) }
       @egg_moves.each { |move| @base_egg_moves.push(move) unless @base_egg_moves.include?(move) }
       set_data(:EggMoves, @base_egg_moves)
     end
 
     def set_compatible_moves_internal
+      @compatible_moves.reject { |a| @removed_compatible.include?(a) }
       @compatible_moves.each { |move| @base_compatible_moves.push(move) unless @base_compatible_moves.include?(move) }
       set_data(:compatiblemoves, @base_compatible_moves)
     end
