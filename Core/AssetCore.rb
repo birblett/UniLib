@@ -93,7 +93,8 @@ UniLib.insert_in_function(:pbCueBGM, "return if !bgm",
 
 UniLib.insert_in_function(:pbGetTrainerBattleBGM, "if $PokemonGlobal.nextBattleBGM", "p = $PokemonGlobal.nextBattleBGM; s = p.is_a?(RPG::AudioFile) ? p.name : p;  p = Assets.get_asset(UniLib::AUDIO_FILE_REDIRECT, s) if UniLib::AUDIO_FILE_REDIRECT[s]")
 
-UniLib.insert_in_function(:pbGetTrainerBattleBGM, "music=$cache.trainertypes[trainertype].battleBGM",
+target = Reborn ? "music = $cache.trainertypes[trainertype].battleBGM" : "music=$cache.trainertypes[trainertype].battleBGM"
+UniLib.insert_in_function(:pbGetTrainerBattleBGM, target,
   "if UniLib::AUDIO_FILE_REDIRECT[s]
     s = music.is_a?(RPG::AudioFile) ? music.name : music;  music = Assets.get_asset(UniLib::AUDIO_FILE_REDIRECT, s)
     return nil if $game_system.playing_bgm and Assets.strip_bgm(s) == Assets.strip_bgm($game_system.playing_bgm.name)

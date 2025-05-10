@@ -289,6 +289,13 @@ class ItemModifier
   end
 
   <<-DOC
+  >> returns the item symbol
+  DOC
+  def sym
+    @symbol
+  end
+
+  <<-DOC
   @param pkmn - the pokemon whose item is consumed (PokeBattle_Battler)
   >> flags a pokemon's item as consumed in-battle. safe to call when when doing ai calculations.
   DOC

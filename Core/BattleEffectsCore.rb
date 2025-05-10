@@ -100,7 +100,7 @@ UniLib.insert_in_method(:PokeBattle_Move, :pbCalcDamage, "typecrest = false",
 
 # move stab override (ai)
 UniLib.insert_in_method(:PokeBattle_AI, :pbRoughDamage, "typecrest = false",
-  "attacker.effect_event_value(:stab_type) { |types| typecrest = true if types.include?(type) }", 1)
+  "attacker.effect_event_value(:stab_type) { |types| typecrest = true if types.include?(type) }", Reborn ? 0 : 1)
 
 # battle stat modifier (on initialize)
 UniLib.insert_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "crestStats if @crested",
@@ -280,7 +280,9 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :getMoveScore, "case @move.functi
 # ========= effects only ========= #
 
 # battle stats
-UniLib.insert_in_function(:pbShowBattleStats, "report.push(_INTL(\"Infatuated with {1}\",@battle.battlers[pkmn.effects[:Attract]].name)) if pkmn.effects[:Attract]>=0",
+target = Reborn ? "report.push(_INTL(\"Infatuated with {1}\", @battle.battlers[pkmn.effects[:Attract]].name)) if pkmn.effects[:Attract] >= 0" :
+           "report.push(_INTL(\"Infatuated with {1}\",@battle.battlers[pkmn.effects[:Attract]].name)) if pkmn.effects[:Attract]>=0"
+UniLib.insert_in_function(:pbShowBattleStats, target,
   "pkmn.apply_effect_event(:display, pkmn) { |m| report.push(m) }")
 
 # clear boss effects

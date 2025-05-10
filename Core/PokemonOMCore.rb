@@ -217,7 +217,8 @@ UniLib.insert_in_function_before(:pbGetRelearnableMoves, target,
   UniLib::STAB_POKEMON[key].each { |type| moves |= UniLib::TYPE_MAPPED_MOVES[type] unless UniLib::TYPE_MAPPED_MOVES[type].nil? } unless UniLib::STAB_POKEMON[key].nil?
   UniLib::ALPHABET_POKEMON[key].each { |letter| moves |= UniLib::ALPHABET_MOVES[letter] unless UniLib::ALPHABET_MOVES[letter].nil? } unless UniLib::ALPHABET_POKEMON[key].nil?")
 
-UniLib.insert_in_method(:PokemonSummaryScene, :drawAbilPage, "memo+=_INTL(\"<c3=F8F8F8,686868>Ability:<c3=404040,B0B0B0>\n\")", "abilname = \"Pokebilities\" if UniLib.pokebilities_active(@pokemon)")
+target = Reborn ? "memo += _INTL(\"<c3=F8F8F8,686868>Ability:<c3=404040,B0B0B0>\\n\")" : "memo+=_INTL(\"<c3=F8F8F8,686868>Ability:<c3=404040,B0B0B0>\n\")"
+UniLib.insert_in_method(:PokemonSummaryScene, :drawAbilPage, target, "abilname = \"Pokebilities\" if UniLib.pokebilities_active(@pokemon)")
 
 UniLib.insert_in_method(:PokemonSummaryScene, :drawPageThree, "abilitydesc = abil.nil? ? (@pokemon.ability.nil? ? NoAbilDesc : NotRealAbil) : abil.desc.nil? ? MissingAbilDesc : abil.desc",
    "if UniLib.pokebilities_active(@pokemon)

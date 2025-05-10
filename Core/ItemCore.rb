@@ -276,7 +276,7 @@ UniLib.insert_in_method(:PokeBattle_Move, :pbCalcDamage, "typecrest = false",
 
 # move stab override (ai)
 UniLib.insert_in_method(:PokeBattle_AI, :pbRoughDamage, "typecrest = false",
-  "attacker.item_event_value(:stab_type) { |types| typecrest = true if types.include?(type) }", 1)
+  "attacker.item_event_value(:stab_type) { |types| typecrest = true if types.include?(type) }", Reborn ? 0 : 1)
 
 # battle stat modifier
 UniLib.insert_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "crestStats if @crested",
@@ -304,7 +304,7 @@ UniLib.insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "case attacker.a
 # move damage modifier (ai)
 UniLib.insert_in_method(:PokeBattle_AI, :pbRoughDamage, "typecrest = false",
   "attacker.apply_item_event(:damage_mod, attacker, opponent, move, move.pbNumHits(attacker), self) { |m| damage *= m }
-  opponent.apply_item_event(:damage_taken_mod, opponent, attacker, self, move.pbNumHits(attacker), self) { |m| damage *= m }")
+  opponent.apply_item_event(:damage_taken_mod, opponent, attacker, self, move.pbNumHits(attacker), self) { |m| damage *= m }", 0, 1001)
 
 # move accuracy modifier
 if Reborn

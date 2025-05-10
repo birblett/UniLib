@@ -7,7 +7,7 @@ module UniLib
 
   LOADED_LIBRARIES = {} unless defined? LOADED_LIBRARIES
   LOADED_FILES = {} unless defined? LOADED_FILES
-  DEBUG_ENABLED = false
+  UNILIB_LOGGING_ENABLED = false unless defined? UNILIB_LOGGING_ENABLED
   VERSION = 0.6
   PATH = File.dirname(__FILE__) + "/"
   ASSET_PATH = File.dirname(__FILE__) + "/../UniLibAssets/"
@@ -22,7 +22,7 @@ module UniLib
   writes to current debug file, if enabled.
   DOC
   def self.log(*args)
-    if DEBUG_ENABLED
+    if UNILIB_LOGGING_ENABLED
       Dir.mkdir(LOG_PATH) unless Dir.exist?(LOG_PATH)
       unless SESSION_DEBUG == ""
         str_final = ""
@@ -117,6 +117,13 @@ module UniLib
   DOC
   def self.asset_path(path_relative)
     "#{Reborn ? "patch/Mods/UniLib/Assets/" : "Data/Mods/UniLib/Assets/"}#{path_relative}"
+  end
+
+  <<-DOC
+  returns an asset path relative to folders in Graphics
+  DOC
+  def self.from_graphics_path(path_relative)
+    "../../#{path(path_relative)}"
   end
 
   <<-DOC

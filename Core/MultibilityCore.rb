@@ -134,13 +134,21 @@ UniLib.insert_in_method(:PokeBattle_Battler, :crestStats, :TAIL, "self.ability =
 
 UniLib.replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@ability      = pkmn.ability", "@ability = AbilityContainer.new(pkmn, pkmn.ability, @ability.added_abilities)")
 
-UniLib.replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@backupability= pkmn.ability", "@backupability = @ability.copy")
+target = Reborn ? "@backupability = pkmn.ability" : "@backupability= pkmn.ability"
+UniLib.replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, target, "@backupability = @ability.copy")
 
-UniLib.replace_in_method(:PokeBattle_Battler, :pbUpdate, "@ability = @pokemon.ability if !@ability.nil? && !((@crested == :SILVALLY || @crested == :ZOROARK))", "@ability = AbilityContainer.new(@pokemon, @pokemon.ability, @ability.added_abilities) if !@ability.nil? && !((@crested == :SILVALLY || @crested == :ZOROARK))")
-
+if Reborn
+  UniLib.insert_in_method_before(:PokeBattle_Battler, :changeAbility, "@effects[:GorillaLock] = nil",
+    "@ability = AbilityContainer.new(@pokemon, @pokemon.ability, @ability.added_abilities) if !@ability.nil?")
+else
+  UniLib.replace_in_method(:PokeBattle_Battler, :pbUpdate, "@ability = @pokemon.ability if !@ability.nil? && !((@crested == :SILVALLY || @crested == :ZOROARK))",
+    "@ability = AbilityContainer.new(@pokemon, @pokemon.ability, @ability.added_abilities) if !@ability.nil? && !((@crested == :SILVALLY || @crested == :ZOROARK))")
+end
 UniLib.insert_in_function(:getAbilityName, :HEAD, "abil = abil.ctx.nil? ? abil.abilities[0] : abil.ctx if abil.is_a? AbilityContainer")
 
-UniLib.replace_in_function(:pbShowBattleStats, "report.push(_INTL(\"Ability: {1}\",pkmn.ability.nil? ? \"Ability Negated\" : getAbilityName(shownmon.ability)))",
+target = Reborn ? "report.push(_INTL(\"Ability: {1}\", pkmn.ability.nil? ? \"Ability Negated\" : getAbilityName(shownmon.ability)))" :
+           "report.push(_INTL(\"Ability: {1}\",pkmn.ability.nil? ? \"Ability Negated\" : getAbilityName(shownmon.ability)))"
+UniLib.replace_in_function(:pbShowBattleStats, target,
   "if pkmn.ability == nil
     report.push(_INTL(\"Ability: Ability Negated\"))
   elsif shownmon.ability.is_multiple?

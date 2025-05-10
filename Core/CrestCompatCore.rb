@@ -49,7 +49,7 @@ if Reborn
               .on_battle_entry { |pkmn, _, _| UniLib.display_if_visible(pkmn.battle, _INTL("{1} gained strength from The Power of Friendship!", pkmn.pbThis)) }
               .battle_stat_mods { |pkmn, bs|
                 pkmn.battle.pbParty(pkmn.index).each { |member|
-                  next if member.nil? or member == pkmn or member.fainted
+                  next if member.nil? or member == pkmn or member.hp <= 0
                   bs[1].add(member.attack * 0.1)
                   bs[2].add(member.defense * 0.1)
                   bs[3].add(member.spatk * 0.1)

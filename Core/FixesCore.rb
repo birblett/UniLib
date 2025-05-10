@@ -35,7 +35,7 @@ CrestBuilder.add_existing(Reborn ? :CHERRIMCREST : :CHERCREST)
 
 # fix silent crash when sleep talk called with less than 4 moves in moveset
 UniLib.replace_in_method(:PokeBattle_Move_0B4, :pbEffect, "choices = (0...4).to_a.select{|i| (attacker.moves[i].move.is_a?(Symbol)) && !blacklist.include?(attacker.moves[i].move) && @battle.pbCanChooseMove?(attacker.index,i,false,{sleeptalk: true})}",
-  "choices = (0...attacker.moves.length).to_a.select{|i| (attacker.moves[i].move.is_a?(Symbol)) && !blacklist.include?(attacker.moves[i].move) && @battle.pbCanChooseMove?(attacker.index,i,false,{sleeptalk: true})}")
+  "choices = (0...attacker.moves.length).to_a.select{|i| (attacker.moves[i].move.is_a?(Symbol)) && !blacklist.include?(attacker.moves[i].move) && @battle.pbCanChooseMove?(attacker.index,i,false,{sleeptalk: true})}") if Rejuv
 UniLib.replace_in_method(:PokeBattle_AI, :sleeptalkcode, "for i in 0..3", "for i in 0...@attacker.moves.length")
 
 # fix no fail message for stuff cheeks

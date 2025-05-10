@@ -34,6 +34,10 @@ module UniLib
       clazz = Kernel.const_get(clazz) if clazz.is_a? Symbol
       base = (METHOD_MODS[clazz].nil? or METHOD_MODS[clazz][method].nil? or METHOD_MODS[clazz][method][:CODE].nil?) ? get_method_source(clazz, method) : METHOD_MODS[clazz][method][:CODE].values
       deletion_index = get_target_index(base, target, index)
+      if deletion_index.nil?
+        UniLib.log("Couldn't find target \"#{target}\" (index #{index}) in method \"#{method}\" of class \"#{clazz}\"")
+        return false
+      end
       get_or_create_method(clazz, method, base)
       get_or_create_method_attr(clazz, method, :DELETE, {})[deletion_index] = true unless deletion_index.nil?
       !deletion_index.nil?
@@ -44,6 +48,10 @@ module UniLib
       base = (METHOD_MODS[clazz].nil? or METHOD_MODS[clazz][method].nil? or METHOD_MODS[clazz][method][:CODE].nil?) ? get_method_source(clazz, method) : METHOD_MODS[clazz][method][:CODE].values
       inserted = proc.class == String ? [""] + proc.split("\n") + [""] : get_method_source(nil, proc)
       insertion_index = get_target_index(base, target, index)
+      if insertion_index.nil?
+        UniLib.log("Couldn't find target \"#{target}\" (index #{index}) in method \"#{method}\" of class \"#{clazz}\"")
+        return false
+      end
       insertion_index -= 1 if prepend
       get_or_create_method(clazz, method, base)
       injected = get_or_create_method_attr(clazz, method, :INJECT, {})
