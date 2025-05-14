@@ -139,7 +139,8 @@ UniLib.replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, target, "
 
 if Reborn
   UniLib.insert_in_method_before(:PokeBattle_Battler, :changeAbility, "@effects[:GorillaLock] = nil",
-    "@ability = AbilityContainer.new(@pokemon, @pokemon.ability, @ability.added_abilities) if !@ability.nil?")
+    "@ability = AbilityContainer.new(@pokemon, @pokemon.ability) if @ability.is_a? Symbol
+    @ability = AbilityContainer.new(@pokemon, @pokemon.ability, @ability.added_abilities) if !@ability.nil?")
 else
   UniLib.replace_in_method(:PokeBattle_Battler, :pbUpdate, "@ability = @pokemon.ability if !@ability.nil? && !((@crested == :SILVALLY || @crested == :ZOROARK))",
     "@ability = AbilityContainer.new(@pokemon, @pokemon.ability, @ability.added_abilities) if !@ability.nil? && !((@crested == :SILVALLY || @crested == :ZOROARK))")
