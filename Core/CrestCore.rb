@@ -94,7 +94,7 @@ end if Reborn
 
 class PokeBattle_Battle
 
-  def pbCrestEffects(a, b); end
+  def pbCrestEffects(index, pkmn); end
 
 end if Reborn
 
@@ -157,4 +157,4 @@ UniLib.replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@crested
 
 UniLib.insert_in_method(:PokemonDataBox, :refresh, "pbShowStatsBoosts if loopstop == false",
   "shownmon = @battler.effects[:Illusion]
-  UniLib.draw_crest(self.bitmap, @battler.index & 1 == 1, @battler.battle.doublebattle) if shownmon ? shownmon.hasCrest? : @battler.hasCrest?", 0, 10000) if Reborn
+  UniLib.draw_crest(self.bitmap, @battler.index & 1 == 1, @battler.battle.doublebattle) if shownmon ? shownmon.crested : @battler.crested", 0, 10000) if Reborn
