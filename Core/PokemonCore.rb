@@ -189,7 +189,7 @@ class PokeModifier
     end
 
     def set_compatible_moves_internal
-      @compatible_moves.reject { |a| @removed_compatible.include?(a) }
+      @compatible_moves.reject! { |a| @removed_compatible.include?(a) }
       @compatible_moves.each { |move| @base_compatible_moves.push(move) unless @base_compatible_moves.include?(move) }
       set_data(:compatiblemoves, @base_compatible_moves)
     end
@@ -215,8 +215,8 @@ class PokeModifier
       @base_egg_moves = [] if @eggs_overwrite
       @base_compatible_moves = [] if @moves_overwrite
       set_level_moves_internal(true) unless @learnset.empty?
-      set_egg_moves_internal unless @egg_moves.empty?
-      set_compatible_moves_internal unless @compatible_moves.empty?
+      set_egg_moves_internal unless @egg_moves.empty? and @removed_compatible.empty?
+      set_compatible_moves_internal unless @compatible_moves.empty? and @removed_compatible.empty?
       EVENT_POKEMODIFIER_POST_BUILD.each { |event| event.call(self) }
     end
 
