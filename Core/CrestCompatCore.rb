@@ -36,9 +36,9 @@ if Reborn
 
   CrestBuilder.add(:CRYOGONAL, "1.2x Sp. Defense. Other stats are boosted by Sp. Defense.")
               .battle_stat_mods { |_, bs|
-                bs[5].mul(1.2)
-                val = (bs[5].value * 0.1).to_i
-                bs.each_with_index { |stat, i| stat.add(val) unless i == 5 }
+                bs[4].mul(1.2)
+                val = (bs[4].value * 0.1).to_i
+                bs.each_with_index { |stat, i| stat.add(val) unless i == 4 or i == 0 }
               }
 
   CrestBuilder.add(:DARMANITAN, "Forces user into Zen Mode.")
@@ -123,9 +123,7 @@ if Reborn
               .battle_stat_mods { |_, bs| bs[2].mul(1.2) }
 
   CrestBuilder.add(:ORICORIO, "1.25x Sp. Attack/Defense.")
-              .add_receiver(:ORICORIO, "Oriocorio-Pom-Pom")
-              .add_receiver(:ORICORIO, "Oriocorio-Pa'u")
-              .add_receiver(:ORICORIO, "Oriocorio-Sensu")
+              .add_receiver(:ORICORIO, 1).add_receiver(:ORICORIO, 2).add_receiver(:ORICORIO, 3)
               .battle_stat_mods { |_, bs| bs[3].mul(1.25); bs[4].mul(1.25) }
 
   CrestBuilder.add(:PHIONE, "1.5x defenses. Aqua Ring on entry.")
@@ -192,8 +190,27 @@ if Reborn
               .battle_stat_mods { |_, bs| bs[1].mul(1.2); bs[3].mul(1.2) }
 
   CrestBuilder.add(:ZANGOOSE, "Poisons on entry, and poison restores HP.")
+              .on_battle_entry { |pkmn, _, _|
+                pkmn.status = :POISON
+                pkmn.battle.pbCommonAnimation("Poison", pkmn, nil)
+                UniLib.display_if_visible(pkmn.battle, _INTL("{1} was poisoned by its {2}!", pkmn.pbThis,getItemName(pkmn.item)))
+              }
 
   CrestBuilder.add(:ZOROARK, "Gains ability and STAB of the copied Pokemon.")
+              .on_battle_entry { |pkmn, _, _| UniLib.zoroark_crest_handler(pkmn) }
+              .conditional_stab_override { |pkmn, move|
+                UniLib.zoroark_crest_handler(pkmn)
+                pkmn.permanent_effect(:ZOROARK_CREST)[1].include?(move)
+              }
+
+  def UniLib.zoroark_crest_handler(pkmn, m = nil)
+    pkmn.battle.pbParty(pkmn.index).each { |member| m = member if member }
+    unless m.nil? or m == pkmn or pkmn.permanent_effect(:ZOROARK_CREST)
+      (arr = [m.type1]).push(m.type2) if m.type2
+      pkmn.set_permanent_effect(:ZOROARK_CREST, [m.ability, arr])
+    end
+    pkmn.ability = pkmn.ability + pkmn.permanent_effect(:ZOROARK_CREST)[0]
+  end
 
 end
 
