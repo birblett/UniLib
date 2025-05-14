@@ -55,7 +55,7 @@ module MapEvent
     map.events[i] = event
   end
 
-  def self.add_static_pkmn_obj(map, obj)
+  def self.add_event(map, obj)
     i = map.events.size + 1
     event = obj.clone
     event.id = i
@@ -74,7 +74,6 @@ module MapEvent
     end
     page = RPG::Event::Page.new
     page.condition.switch2_id = kwargs[:switch2] if kwargs[:switch2]
-    page.condition.switch1_id = switch
     page.graphic.character_name = asset
     page.graphic.direction = kwargs[:dir] ? kwargs[:dir] : 2
     page.move_type = kwargs[:move_type] ? kwargs[:move_type] : 0
@@ -106,6 +105,52 @@ module MapEvent
     events.push(event_cmd(412, 0, [])) # end conditional
     page.list.prepend(*events)
     event.pages.prepend(0, page)
+    event
+  end
+
+  def self.basic_npc(x, y, name, asset, dialogue, **kwargs)
+    event = RPG::Event.new(x, y)
+    event.name = name
+    page = event.pages[0]
+    page.condition.switch1_valid = false
+    page.condition.switch2_valid = false
+    page.condition.variable_valid = false
+    if kwargs[:switch]
+      page.condition.switch1_id = kwargs[:switch]
+      page.condition.switch1_valid = true
+    end
+    if kwargs[:switch2]
+      page.condition.switch2_id = kwargs[:switch2]
+      page.condition.switch2_valid = true
+    end
+    if kwargs[:variable_id]
+      page.condition.variable_id = kwargs[:variable_id]
+      page.condition.variable_value = kwargs[:variable_value]
+      page.condition.variable_valid = true
+    end
+    page.graphic.character_name = asset
+    page.graphic.direction = kwargs[:dir] ? kwargs[:dir] : 2
+    page.move_type = kwargs[:move_type] ? kwargs[:move_type] : 0
+    page.move_speed = kwargs[:move_speed] ? kwargs[:move_speed] : 3
+    page.move_frequency = kwargs[:move_freq] ? kwargs[:move_freq] : 3
+    page.move_route.list.insert(0, RPG::MoveCommand.new(25))
+    page.step_anime = true
+    page.direction_fix = kwargs[:fix_dir] ? true : false
+    events = []
+    events.push(event_cmd(250, 0, [RPG::AudioFile.new(kwargs[:sfx])])) if kwargs[:sfx] # sound effect
+    dialogue.each do |d|
+      if d.is_a? Array
+        events.push(event_cmd(101, 0, [d[0]]))
+        (1..d.length).each { |i| events.push(event_cmd(401, 0, [d[i]])) }
+      else
+        events.push(event_cmd(101, 0, [d]))
+      end
+    end
+    if kwargs[:script]
+      events.push(event_cmd(0, 0, [])) # dummy
+      events.push(event_cmd(355, 0, [kwargs[:script]]))
+    end
+    page.list.prepend(*events)
     event
   end
 
