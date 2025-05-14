@@ -55,7 +55,7 @@ module UniLib
             required_modules |= modules
           end
           mods.push(mod = UniLibMod.new(id, version, entrypoints, d))
-          mod.unilib_version = (unilib_version * 1000).to_i / 1000 if unilib_version and unilib_version.is_a? Numeric
+          mod.unilib_version = (unilib_version * 1000).to_i / 1000.0 if unilib_version and unilib_version.is_a? Numeric
           raise except("unilib version #{mod.unilib_version} required, #{VERSION} found") if mod.unilib_version unless mod.unilib_version == VERSION
           mod.dependencies = dependencies if dependencies and dependencies.is_a? Array
           mod.unilib_version = priority if priority and priority.is_a? Numeric
