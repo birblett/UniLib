@@ -248,11 +248,7 @@ unless UniLib.lib_loaded(__FILE__)
   end
 
   def register_modified_pokemon
-    UniLib::MODIFIED_POKEMON.each do |_, forms|
-      forms.each do |_, builder|
-        builder.build
-      end
-    end
+    UniLib::MODIFIED_POKEMON.each { |_, forms| forms.each { |_, builder| builder.build } }
     $Trainer.party.each do |pokemon|
       pokemon.bossId = nil if Rejuv
       pokemon.isbossmon = false
