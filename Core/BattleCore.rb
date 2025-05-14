@@ -35,11 +35,8 @@ class TrainerModifier
       print "TrainerModifier: #{tclass} #{name} with team id #{id} doesn't exist"
       exit
     end
-    TRAINER_CACHE[[tclass, name, id]] = true
+    TRAINER_CACHE[@key = [@tclass = tclass, @name = name, @id = id]] = true
     @is_new = is_new
-    @tclass = tclass
-    @name = name
-    @id = id
     if is_new
       @pkmn = []
     else
@@ -93,6 +90,7 @@ class TrainerModifier
     str += "               .set_ace(#{party[3] ? '"' + party[3] + '"' : "nil" })\n"
     str += "               .set_defeat(#{party[4] ? '"' + party[4] + '"' : "nil" })\n"
     str += "               .set_effects(#{party[5] ? party[5] : "nil"})\n"
+    str += "               .forced_fe(:#{$game_variables[:Forced_Field_Effect]})\n" if $game_variables[:Forced_Field_Effect].is_a? Symbol
     UniLib.dev_log(str)
   end
 
@@ -285,7 +283,9 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbInitBoss, "boss = bossdata[pkmn.
 
 UniLib.insert_in_function(:pbLoadTrainer, :HEAD, proc do |type, name, id, trainerid, trainername, partyid|
   type, name, id = trainerid, trainername, partyid if Rejuv
-  unless UniLib::TRAINER_CACHE[[type, name, id]]
+  if (s = UniLib::TRAINER_CACHE[[type, name, id]])
+    $game_variables[:Forced_Field_Effect] = s if s.is_a? Symbol
+  else
     UniLib.dev_log("TrainerModifier.add(:#{type}, \"#{name}\", #{id})")
     $cache.trainers[type][name].each do |i|
       next unless i

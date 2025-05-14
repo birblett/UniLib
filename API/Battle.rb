@@ -82,6 +82,10 @@ class TrainerModifier
     self
   end
 
+  def forced_fe(fe)
+    TRAINER_CACHE[@key] = fe
+  end
+
 end
 
 module BossBuilder
