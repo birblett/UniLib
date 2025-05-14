@@ -28,7 +28,7 @@ end
 # ======================================================================================================================================== #
 
 UniLib.insert_in_method(:Cache_Game, :map_load, "end", proc do |mapid|
-  UniLib.dev_log("Entered map:", mapid) if $map_debug
+  UniLib.obj_print(@cachedmaps[mapid]) if $map_debug
   if UniLib::MAP_EVENTS[mapid]
     unless UniLib::CACHED_MAPS[mapid]
       UniLib::CACHED_MAPS[mapid] = UniLib.deep_copy(@cachedmaps[mapid])
