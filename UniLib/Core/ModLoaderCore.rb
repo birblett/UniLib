@@ -59,7 +59,7 @@ module UniLib
           end
           mods.push(mod = UniLibMod.new(id, version, entrypoints, d))
           mod.unilib_version = unilib_version if unilib_version and unilib_version.is_a? Numeric
-          raise except("unilib version #{mod.unilib_version} required, #{0.6} found") if mod.unilib_version unless mod.unilib_version == 0.6
+          raise except("unilib version #{mod.unilib_version} required, #{VERSION} found") if mod.unilib_version unless mod.unilib_version == VERSION
           mod.dependencies = dependencies if dependencies and dependencies.is_a? Array
           mod.unilib_version = priority if priority and priority.is_a? Numeric
         rescue Exception => e
