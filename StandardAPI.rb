@@ -86,7 +86,7 @@ module UniLib
   used for loading files in subdirectories. makes sure the file is not loaded more than once.
   DOC
   def self.file_load(path_relative)
-    load PATH + "../" + path_relative + ".rb" unless LOADED_FILES[path_relative]
+    load path_relative + ".rb" unless LOADED_FILES[path_relative]
     LOADED_FILES[path_relative] = true
   end
 
@@ -94,11 +94,11 @@ module UniLib
   loads all files in a subdirectory.
   DOC
   def self.dir_load(path_relative)
-    files = Dir.entries(File.dirname(__FILE__) + "../" + path_relative)
-    files.each do |entry|
+    files = Dir.entries(File.dirname(__FILE__) + "/../" + path_relative)
+    files.sort.each do |entry|
       name = path_relative + "/" + entry
       unless LOADED_FILES[name]
-        path = File.dirname(__FILE__) + "../" + name
+        path = File.dirname(__FILE__) + "/../" + name
         load path if entry != "." and entry != ".." and entry.end_with? ".rb" and File.file? path
         LOADED_FILES[name] = true
       end
