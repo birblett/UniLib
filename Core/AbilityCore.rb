@@ -178,11 +178,13 @@ UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModifier, target,
 
 # move stab override
 UniLib.insert_in_method(:PokeBattle_Move, :pbCalcDamage, "typecrest = false",
-  "attacker.ability_event_value(:stab_type) { |types| typecrest = true if types.include?(type) }")
+  "attacker.ability_event_value(:stab_type) { |types| typecrest = true if types.include?(type) }
+  attacker.apply_ability_event(:conditional_stab_type, attacker, self) { |c| typecrest ||= true }")
 
 # move stab override (ai)
 UniLib.insert_in_method(:PokeBattle_AI, :pbRoughDamage, "typecrest = false",
-  "attacker.ability_event_value(:stab_type) { |types| typecrest = true if types.include?(type) }", Reborn ? 0 : 1)
+  "attacker.ability_event_value(:stab_type) { |types| typecrest = true if types.include?(type) }
+  attacker.apply_ability_event(:conditional_stab_type, attacker, self) { |c| typecrest ||= true }", Reborn ? 0 : 1)
 
 # battle stat modifier (on initialize)
 UniLib.insert_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "crestStats if @crested",

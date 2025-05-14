@@ -105,6 +105,15 @@ class EventProvider
   end
 
   <<-DOC
+  @param proc - a proc returning a true or false/nil value
+  >> when returning true, allows the user to receive STAB-bonuses from the move used. does not stack with regular STAB. accepts 2 arguments,
+     the user (PokeBattle_Battler) and the move (PokeBattle_Move)
+  DOC
+  def conditional_stab_override(proc=nil, &block)
+    add_or_create_event(:conditional_stab_type, proc, block)
+  end
+
+  <<-DOC
   @param type - type id (or array of type ids)
   @param resistance_level - the amount to resist by (4 => neutral, 2 => 2x resist, 1 => 4x resist)
   >> forces the user resist the given type(s).
