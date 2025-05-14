@@ -10,10 +10,10 @@ UniLib.verify_version(0.6, __FILE__)
 module UniLib
 
   def self.get_form_number(holder, form)
+    UniLib.include "Pokemon"
     return [form, FORM_MAP[holder][form]] if form.is_a? Integer
     form_str = nil
     if form.is_a? String
-      UniLib.include "Pokemon"
       tmp = FORM_MAP[holder][form_str = form + " Form"]
       tmp = FORM_MAP[holder][form_str = form + " Forme"] if tmp.nil?
       tmp = FORM_MAP[holder][form_str = form + " Rotom"] if tmp.nil?
@@ -87,6 +87,78 @@ module UniLib
 
   def self.print_obj(obj)
     self.obj_print(obj)
+  end
+
+end
+
+class NumberContainer
+
+  def self.of(*numbers)
+    numbers.map { |n| new(n) }
+  end
+
+  def initialize(number)
+    @number = number
+  end
+
+  def set(other)
+    @number = other
+  end
+
+  def +(other)
+    @number + other
+  end
+
+  def -(other)
+    @number - other
+  end
+
+  def *(other)
+    @number * other
+  end
+
+  def /(other)
+    @number / other
+  end
+
+  def add(other)
+    @number += other
+  end
+
+  def sub(other)
+    @number -= other
+  end
+
+  def mul(other)
+    @number *= other
+  end
+
+  def div(other)
+    @number /= other
+  end
+
+  def ==(other)
+    @number == other
+  end
+
+  def >=(other)
+    @number >= other
+  end
+
+  def <=(other)
+    @number <= other
+  end
+
+  def >(other)
+    @number > other
+  end
+
+  def <(other)
+    @number < other
+  end
+
+  def value
+    @number
   end
 
 end
