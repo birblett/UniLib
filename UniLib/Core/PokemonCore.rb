@@ -125,7 +125,7 @@ class PokeModifier
     def get_data(sym)
       if @form == 0 || Reborn
         data = mon_data.instance_variable_get(("@" + sym.to_s).to_sym)
-        data = $cache.pkmn[@species].pokemonData[POKEMON_DATA[@species].forms[0]].instance_variable_get(("@" + sym.to_s).to_sym) if data.nil?
+        data = $cache.pkmn[@species].pokemonData[POKEMON_DATA[@species].forms[0]].instance_variable_get(("@" + sym.to_s).to_sym) if data.nil? and Reborn
         data
       else
         mon_data[sym].nil? ? mon_data.instance_variable_get(("@" + sym.to_s).to_sym) : mon_data[sym]
