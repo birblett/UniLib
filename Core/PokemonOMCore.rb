@@ -207,9 +207,9 @@ UniLib.insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
   return UniLib::PLATE_MAP[@item] if !UniLib::PLATE_POKEMON[key].nil? and UniLib::PLATE_POKEMON[key].include?(@item) and UniLib::PLATE_MAP.include?(@item)
   return UniLib::CUSTOM_PLATE_MAP[@item] if !UniLib::PLATE_POKEMON[key].nil? and UniLib::PLATE_POKEMON[key].include?(@item) and UniLib::CUSTOM_PLATE_MAP.include?(@item)")
 
-UniLib.insert_in_method_before(:PokeBattle_Battle, :pbIsUnlosableItem, :HEAD,
+UniLib.insert_in_method(:PokeBattle_Battle, :pbIsUnlosableItem, :HEAD,
   "key = [pkmn.species, pkmn.form]
-  return true if !UniLib::PLATE_POKEMON[key].nil? and UniLib::PLATE_POKEMON[key].include?(item) and (UniLib::PLATE_MAP.include?(item) or UniLib::CUSTOM_PLATE_MAP.include?(item))")
+  return true if !UniLib::PLATE_POKEMON[key].nil? and UniLib::PLATE_POKEMON[key].include?(item)")
 
 target = Reborn ? "return moves | []" : "return moves|[]"
 UniLib.insert_in_function_before(:pbGetRelearnableMoves, target,
