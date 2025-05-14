@@ -29,8 +29,14 @@ class UniLibMod
 end
 
 module UniLib
+
+  def self.except(exception)
+    return Exception.new("#{exception}")
+  end
+
   def self.load_mods
     mods = []
+    required_modules = []
     loaded = {}
 
     Dir.entries(UniLib.path("")).each { |f|
@@ -39,24 +45,29 @@ module UniLib
         data = File.read(p)
         begin
           data = JSON.parse(data)
-          id, version, entrypoints, unilib_version, dependencies, priority =
-            data["id"], data["version"], data["entrypoints"], data["unilib_version"], data["dependencies"], data["priority"]
-          raise Exception.new("id must be a string") unless id and id.is_a? String
-          raise Exception.new("mod already exists with id #{id}") if loaded[id]
+          id, version, entrypoints, unilib_version, modules, dependencies, priority =
+            data["id"], data["version"], data["entrypoints"], data["unilib_version"], data["modules"], data["dependencies"], data["priority"]
+          raise except("id #{id} must be a string") unless id and id.is_a? String
+          raise except("mod already exists with matching id") if loaded[id]
           loaded[id] = true
-          raise Exception.new("version must be a number") unless version and version.is_a? Numeric
-          raise Exception.new("entrypoints must be an array") unless entrypoints and entrypoints.is_a? Array
+          raise except("version must be a number") unless version and version.is_a? Numeric
+          raise except("entrypoints must be an array") unless entrypoints and entrypoints.is_a? Array
+          if modules
+            raise except("modules must be an array") unless modules.is_a? Array
+            modules.each { |m| raise except("no such module #{m}") unless UniLib::MODULES[m] }
+            required_modules |= modules
+          end
           mods.push(mod = UniLibMod.new(id, version, entrypoints, d))
           mod.unilib_version = unilib_version if unilib_version and unilib_version.is_a? Numeric
+          raise except("unilib version #{mod.unilib_version} required, #{0.6} found") if mod.unilib_version unless mod.unilib_version == 0.6
           mod.dependencies = dependencies if dependencies and dependencies.is_a? Array
           mod.unilib_version = priority if priority and priority.is_a? Numeric
-
         rescue Exception => e
           UniLib.dev_log("failed to parse modfile #{f}/unilib_mod.json: #{e}")
         end
       end
     }
-
+    required_modules.sort_by! { |m| UniLib::MODULES[m] }.reverse!.each { |m| UniLib.include m }
     mods.sort_by! { |m| m.priority }.reverse!.each(&:modload)
   end
 

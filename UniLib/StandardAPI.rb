@@ -18,6 +18,28 @@ module UniLib
   SESSION_DEBUG = Time.now.strftime("%Y_%m_%d-%H_%M_%S.log") unless defined? SESSION_DEBUG
   CLEAR_INJECTOR_CACHE = false
 
+  MODULES = {
+    (ABILITY = "Ability") => 3,
+    (ASSET = "Asset") => 0,
+    (BATTLE = "Battle") => 0,
+    (BATTLE_EFFECTS = "BattleEffects") => 1,
+    (CONSTANTS = "Constants") => 3,
+    (CREST = "Crest") => 2,
+    (CREST_COMPATIBILITY = "CrestCompat") => 3,
+    (EVENTS = "Events") => 0,
+    (EXTRA_MOVE_FLAGS = "ExtraMoveFlags") => 1,
+    (FIXES = "Fixes") => 3,
+    (HELPER = "Helper") => 0,
+    (ITEM = "Item") => 1,
+    (MAP = "Map") => 2,
+    (MOVE = "Move") => 0,
+    (MULTIBILITY = "Multibility") => 0,
+    (OPTIONS = "Options") => 0,
+    (POKEMON = "Pokemon") => 1,
+    (POKEMON_OM = "PokemonOM") => 2,
+    (SWITCH = "Switch") => 0,
+  } unless defined? MODULES
+
   <<-DOC
   writes to current debug file, if enabled.
   DOC
@@ -148,4 +170,4 @@ module UniLib
 
 end
 
-UniLib.include "CodeInjector"
+UniLib.include "ModLoader"
