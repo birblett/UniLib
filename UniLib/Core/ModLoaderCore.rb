@@ -4,8 +4,6 @@
 
 UniLib.verify_version(0.7, __FILE__)
 
-require "json"
-
 # ======================================================================================================================================== #
 # ============================================================ INTERNAL/CORE ============================================================= #
 # ======================================================================================================================================== #
@@ -38,13 +36,12 @@ module UniLib
     mods = []
     required_modules = []
     loaded = {}
-
     Dir.entries(UniLib.path("")).each { |f|
       if File.directory?(d = UniLib.path(f)) and File.file?(p = UniLib.path("#{f}/unilib_mod.json")) and !UniLib::LOADED_FILES[p]
         UniLib::LOADED_FILES[p] = true
         data = File.read(p)
         begin
-          data = JSON.parse(data)
+          data = HTTPLite::JSON.parse(data)
           id, version, entrypoints, unilib_version, modules, dependencies, priority =
             data["id"], data["version"], data["entrypoints"], data["unilib_version"], data["modules"], data["dependencies"], data["priority"]
           raise except("id #{id} must be a string") unless id and id.is_a? String
