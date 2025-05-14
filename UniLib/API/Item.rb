@@ -249,7 +249,6 @@ class ItemModifier
      corresponding to hp, atk, def, spa, spd, spe. use the NumberContainers to perform in-place modifications to stats.
   DOC
   def base_stat_mods(proc=nil, &block)
-    UniLib.include "NumberContainer"
     add_or_create_event(:base_stat_mods, proc, block)
   end
 
