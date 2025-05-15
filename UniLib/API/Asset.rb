@@ -20,6 +20,14 @@ module Assets
     self
   end
 
+  def self.redirect_pkmn_icon(species, form, asset)
+    PKMN_ICON_BITMAP_REDIRECT[[species, form]] = UniLib.path(asset)
+  end
+
+  def self.redirect_pkmn_detailed(species, form, asset)
+    PKMN_BITMAP_REDIRECT[[species, form]] = UniLib.path(asset)
+  end
+
   def self.set_bmp_debug_log(default=true)
     $unilib_bmp_asset_log = default
   end

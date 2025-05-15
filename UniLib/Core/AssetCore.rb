@@ -12,6 +12,8 @@ module UniLib
 
   ANIMATED_BITMAP_REDIRECT = {}
   AUDIO_FILE_REDIRECT = {}
+  PKMN_ICON_BITMAP_REDIRECT = {}
+  PKMN_BITMAP_REDIRECT = {}
 
 end
 
@@ -98,4 +100,25 @@ UniLib.insert_in_function(:pbGetTrainerBattleBGM, target,
   "if UniLib::AUDIO_FILE_REDIRECT[s]
     s = music.is_a?(RPG::AudioFile) ? music.name : music;  music = Assets.get_asset(UniLib::AUDIO_FILE_REDIRECT, s)
     return nil if $game_system.playing_bgm and Assets.strip_bgm(s) == Assets.strip_bgm($game_system.playing_bgm.name)
+  end")
+
+UniLib.insert_in_function(:pbPokemonBitmap, "bitmapFileName = sprintf(\"Graphics/Battlers/%03d%s\", dexnum, gendermod)",
+  "k = [species, form]
+  if UniLib::PKMN_BITMAP_REDIRECT[k]
+    bitmapFileName = UniLib::PKMN_BITMAP_REDIRECT[k]
+    form = 0
+  end")
+
+UniLib.insert_in_function(:pbLoadPokemonBitmapSpecies, "x = pokemon.isShiny? ? 192 : 0",
+  "k, k1 = [species, form], nil
+  form = 0 if (k1 = UniLib::PKMN_BITMAP_REDIRECT[k])")
+
+UniLib.insert_in_function_before(:pbLoadPokemonBitmapSpecies, "spritesheet = RPG::Cache.load_bitmap(bitmapFileName)",
+  "bitmapFileName = k1 if k1")
+
+UniLib.insert_in_function(:pbPokemonIconBitmap, "filename = sprintf(\"Graphics/Icons/icon%03d%s%s\", species, girl, eggtag)",
+  "k = [pokemon.species, form]
+  if UniLib::PKMN_ICON_BITMAP_REDIRECT[k]
+    filename = UniLib::PKMN_ICON_BITMAP_REDIRECT[k] if UniLib::PKMN_ICON_BITMAP_REDIRECT[k]
+    form = 0
   end")
