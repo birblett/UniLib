@@ -64,7 +64,7 @@ module UniLib
         end
       end
     }
-    required_modules.sort_by! { |m| UniLib::MODULES[m] }.reverse!.each { |m| UniLib.include m }
+    required_modules.sort_by! { |m| UniLib::MODULES[m] }.each { |m| UniLib.include m }
     mods.sort_by! { |m| m.priority }.reverse!.each(&:modload)
   end
 
