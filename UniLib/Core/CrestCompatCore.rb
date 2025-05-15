@@ -198,10 +198,7 @@ if Reborn
 
   CrestBuilder.add(:ZOROARK, "Gains ability and STAB of the copied Pokemon.")
               .on_battle_entry { |pkmn, _, _| UniLib.zoroark_crest_handler(pkmn) }
-              .conditional_stab_override { |pkmn, move|
-                UniLib.zoroark_crest_handler(pkmn)
-                pkmn.permanent_effect(:ZOROARK_CREST)[1].include?(move)
-              }
+              .conditional_stab_override { |pkmn, move| UniLib.zoroark_crest_handler(pkmn)[1].include?(move) }
 
   def UniLib.zoroark_crest_handler(pkmn, m = nil)
     pkmn.battle.pbParty(pkmn.index).each { |member| m = member if member }
@@ -210,6 +207,7 @@ if Reborn
       pkmn.set_permanent_effect(:ZOROARK_CREST, [m.ability, arr])
     end
     pkmn.ability = pkmn.ability + pkmn.permanent_effect(:ZOROARK_CREST)[0]
+    pkmn.permanent_effect(:ZOROARK_CREST)
   end
 
 end
