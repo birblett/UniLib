@@ -23,16 +23,16 @@ class PokeModifier
 
   <<-DOC
   @param species - pokemon symbolic constant (i.e. :NINETALES)
-  @param form - a form, in string representation (i.e. "Alolan", "Mega") - default 0
+  @param form - a form, in string or integer representation (i.e. "Alolan", "Mega") - default 0
   @param force - if true, replaces the existing entry if it exists - default false
   >> returns an existing pokemodifier entry, or creates one if it doesn't exist
   DOC
   def self.add(species, form=0, force=false)
+    initial_form = form
     if POKEMON_DATA[species].nil?
       Kernel.pbMessage("Failed to register PokeModifer for species #{species}#{initial_form != 0 ? " with form #{initial_form}." : ""}")
       exit
     end
-    initial_form = form
     form, form_str = UniLib.get_form_number(species, form)
     if form.nil?
       Kernel.pbMessage("Failed to register PokeModifer for species #{species}#{initial_form != 0 ? " with form #{initial_form}." : ""}")
@@ -40,6 +40,17 @@ class PokeModifier
     end
     MODIFIED_POKEMON[species] = {} if MODIFIED_POKEMON[species].nil?
     MODIFIED_POKEMON[species][form] = PokeModifier.new(species, form, form_str) if MODIFIED_POKEMON[species][form].nil? or force
+    MODIFIED_POKEMON[species][form]
+  end
+
+  <<-DOC
+  @param species - pokemon symbolic constant (i.e. :NINETALES)
+  @param form_str - a form, in string representation (i.e. "Alolan", "Mega")
+  DOC
+  def self.add_form(species, form_str)
+    form = UniLib.add_form(species, form_str)
+    MODIFIED_POKEMON[species] = {} if MODIFIED_POKEMON[species].nil?
+    MODIFIED_POKEMON[species][form] = PokeModifier.new(species, form, form_str) if MODIFIED_POKEMON[species][form].nil?
     MODIFIED_POKEMON[species][form]
   end
 
@@ -53,6 +64,7 @@ class PokeModifier
   >> overwrites a pokemon's existing stats with the provided stats
   DOC
   def stats(hp = 0, attack = 0, defense = 0, spa = 0, spd = 0, spe = 0)
+    @stats = get_base_data(:BaseStats) unless @stats
     stats = hp.is_a?(Array) ? hp : [hp, attack, defense, spa, spd, spe]
     if stats.length != 6
       print("PokeModifer for species #{@species} of form #{@form} failed: stat array requires length 6, got #{stats.length}")
@@ -68,6 +80,7 @@ class PokeModifier
   >> overwrites an existing stat for a pokemon
   DOC
   def stat(index, value)
+    @stats = get_base_data(:BaseStats) unless @stats
     if index.class == Symbol
       @stats[STAT_INDEX[index]] = value
     else
@@ -81,6 +94,7 @@ class PokeModifier
   >> swaps the values of two stats - respects previously changed stats
   DOC
   def swap(stat1, stat2)
+    @stats = get_base_data(:BaseStats) unless @stats
     i1 = stat1.class == Symbol ? STAT_INDEX[stat1] : stat1
     i2 = stat2.class == Symbol ? STAT_INDEX[stat2] : stat2
     @stats[i1], @stats[i2] = @stats[i2], @stats[i1]
@@ -245,10 +259,29 @@ class PokeModifier
   end
 
   <<-DOC
-  >> if enabled, the selected species will not be affected by the ability override - for overriding modules only
+  >> if enabled, the current form will always be set to the specified number at the end of a battle
   DOC
-  def ability_override
-    true
+  def end_of_battle_reset(form)
+    @end_of_battle_reset = form
+    self
+  end
+
+  <<-DOC
+  @param asset - string representing a path relative to the Mods folder
+  >> overrides the existing asset with the given one
+  DOC
+  def asset_override(icon_asset, battler_asset)
+    UniLib.include "Asset"
+    Assets.redirect_pkmn_icon(@species, @form, icon_asset)
+    Assets.redirect_pkmn_detailed(@species, @form, battler_asset)
+    self
+  end
+
+  <<-DOC
+  >> returns the form number
+  DOC
+  def get_form
+    @form
   end
 
 end
