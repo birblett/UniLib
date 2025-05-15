@@ -29,14 +29,15 @@ module UniLib
     (EVENTS = "Events") => 0,
     (EXTRA_MOVE_FLAGS = "ExtraMoveFlags") => 1,
     (FIXES = "Fixes") => 3,
+    (FORM_PORTS = "FormPorts") => 4,
     (HELPER = "Helper") => 0,
     (ITEM = "Item") => 1,
     (MAP = "Map") => 2,
     (MOVE = "Move") => 0,
     (MULTIBILITY = "Multibility") => 0,
     (OPTIONS = "Options") => 0,
-    (POKEMON = "Pokemon") => 1,
-    (POKEMON_OM = "PokemonOM") => 2,
+    (POKEMON = "Pokemon") => 0,
+    (POKEMON_OM = "PokemonOM") => 1,
     (SWITCH = "Switch") => 0,
   } unless defined? MODULES
 
