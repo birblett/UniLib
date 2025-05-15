@@ -132,6 +132,7 @@ class PokeModifier
   end
 
   OM_MODIFIER_BUILD = proc do |modifier|
+    next unless modifier.alphabet
     modifier.set_aaa_internal if modifier.aaa
     key = [modifier.species, modifier.form]
     if modifier.stab
