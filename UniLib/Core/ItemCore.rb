@@ -397,7 +397,8 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbInitEffects, :TAIL,
   "ItemModifier.with_consumption { self.apply_item_event(:effects_init, self, self.battle, self.effects, oldeffects, fakebattler) {} }")
 
 # switch in event
-UniLib.insert_in_method_before(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "if self.ability == :INTIMIDATE && onactive",
+target = Reborn ? "return if @hp <= 0" : "return if @hp<=0"
+UniLib.insert_in_method_before(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, target,
   "ItemModifier.with_consumption { self.apply_item_event(:battle_entry, self, self.battle, index) {} } if onactive")
 
 # move attempted events
@@ -423,6 +424,10 @@ UniLib.insert_in_method_before(:PokeBattle_Battler, :pbInitialize, target,
 UniLib.insert_in_method(:PokeBattle_Battler, :pbEffectsOnDealingDamage, "return if target.nil?",
   "ItemModifier.with_consumption { user.apply_item_event(:damage_dealt, user, target, move, damage) {} }
   ItemModifier.with_consumption { target.apply_item_event(:damage_taken, target, user, move, damage) {} } if damage > 0")
+
+# ko events
+UniLib.insert_in_method(:PokeBattle_Battler, :pbUseMove, "if !@battle.pbAllFainted?(@battle.pbParty(target.index))",
+  "ItemModifier.with_consumption { user.apply_item_event(:on_ko, user, target, basemove) {} }")
 
 # turn end event handler
 UniLib.insert_in_method_before(:PokeBattle_Battle, :__clauses__pbEndOfRoundPhase, "if i.crested == :VESPIQUEN",

@@ -327,6 +327,15 @@ class EventProvider
 
   <<-DOC
   @param proc - a void function.
+  >> an event hook for when a pokemon achieves a ko in battle. accepts 3 arguments, the attacker (PokeBattle_Battler), the target 
+     (PokeBattle_Battler), and the move used (PokeBattle_Move).
+  DOC
+  def on_ko(proc=nil, &block)
+    add_or_create_event(:on_ko, proc, block)
+  end
+
+  <<-DOC
+  @param proc - a void function.
   >> an event hook for when a pokemon is damaged in battle. accepts 4 arguments, the defender (PokeBattle_Battler), the attacker
      (PokeBattle_Battler), the move used (PokeBattle_Move), and the numeric damage value.
   DOC

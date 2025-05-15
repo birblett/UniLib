@@ -304,7 +304,8 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbInitEffects, :TAIL,
   "self.apply_ability_event(:effects_init, self, self.battle, self.effects, oldeffects, fakebattler) {}")
 
 # switch in event
-UniLib.insert_in_method_before(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "if self.ability == :INTIMIDATE && onactive",
+target = Reborn ? "return if @hp <= 0" : "return if @hp<=0"
+UniLib.insert_in_method_before(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, target,
   "self.apply_ability_event(:battle_entry, self, self.battle, index) {} if onactive")
 
 # move attempted events
@@ -330,6 +331,10 @@ UniLib.insert_in_method_before(:PokeBattle_Battler, :pbInitialize, target,
 UniLib.insert_in_method(:PokeBattle_Battler, :pbEffectsOnDealingDamage, "return if target.nil?",
   "user.apply_ability_event(:damage_dealt, user, target, move, damage) {}
   target.apply_ability_event(:damage_taken, target, user, move, damage) {} if damage > 0")
+
+# ko events
+UniLib.insert_in_method(:PokeBattle_Battler, :pbUseMove, "if !@battle.pbAllFainted?(@battle.pbParty(target.index))",
+  "user.apply_ability_event(:on_ko, user, target, basemove) {}")
 
 # turn end event handler
 UniLib.insert_in_method_before(:PokeBattle_Battle, :__clauses__pbEndOfRoundPhase, "if i.crested == :VESPIQUEN",

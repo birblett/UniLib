@@ -218,7 +218,8 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbInitEffects, :TAIL,
   "self.apply_effect_event(:effects_init, self, self.battle, self.effects, oldeffects, fakebattler) {}")
 
 # switch in event
-UniLib.insert_in_method_before(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "if self.ability == :INTIMIDATE && onactive",
+target = Reborn ? "return if @hp <= 0" : "return if @hp<=0"
+UniLib.insert_in_method_before(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, target,
   "self.apply_effect_event(:battle_entry, self, self.battle, index) {} if onactive")
 
 # move attempted events
@@ -245,6 +246,10 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbEffectsOnDealingDamage, "return 
   "user.apply_effect_event(:damage_dealt, user, target, move, damage) {}
   target.apply_effect_event(:damage_taken, target, user, move, damage) {} if damage > 0")
 
+# ko events
+UniLib.insert_in_method(:PokeBattle_Battler, :pbUseMove, "if !@battle.pbAllFainted?(@battle.pbParty(target.index))",
+  "user.apply_effect_event(:on_ko, user, target, basemove) {}")
+
 # turn end event handler
 UniLib.insert_in_method_before(:PokeBattle_Battle, :__clauses__pbEndOfRoundPhase, "if i.crested == :VESPIQUEN",
   "i.apply_effect_event(:turn_end, i) {}")
@@ -255,7 +260,7 @@ if Reborn
     "transformed = false
     self.apply_effect_event(:form_change, self, nil) { |m| transformed = !(self.form = m).nil? } unless self.isFainted?
     if transformed
-      @battle.scene.pbChangePokemon(self,@pokemon)
+      @battle.scene.pbChangePokemon(self, @pokemon)
       @battle.pbDisplay(_INTL(\"{1} transformed!\",pbThis))
     end")
   UniLib.insert_in_method(:PokeBattle_Battler, :pbTryUseMove, "pbCheckStance(basemove) if self.ability == :STANCECHANGE",
