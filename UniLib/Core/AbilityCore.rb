@@ -240,8 +240,9 @@ UniLib.insert_in_method_before(:PokeBattle_Move, :pbCritRate?, target,
   "attacker.apply_ability_event(:crit_mod, attacker, opponent, self) { |m| c += m }")
 
 # hit number modifier
-UniLib.insert_in_method_before(:PokeBattle_Battler, :pbUseMove, "target.damagestate.reset",
-  "self.apply_ability_event(:hit_count_mod, self, target, basemove) { |m| self.effects[:Multihit] = (numhits += m) > 1 }")
+UniLib.insert_in_method(:PokeBattle_Move, :pbNumHits, :HEAD,
+  "attacker.effects[:Multihit] = nil
+  attacker.apply_ability_event(:hit_count_mod, attacker, self) { |m| return m if m and (attacker.effects[:Multihit] = m > 1) }")
 
 # move type override
 UniLib.insert_in_method(:PokeBattle_Move, :pbType, :HEAD,
