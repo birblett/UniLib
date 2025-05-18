@@ -73,6 +73,8 @@ end
 
 UniLib.insert_in_method(:AnimatedBitmap, :initialize, :HEAD, "file = Assets.get_asset(UniLib::ANIMATED_BITMAP_REDIRECT, file) if UniLib::ANIMATED_BITMAP_REDIRECT[file]")
 
+UniLib.insert_in_method(:AnimatedBitmap, :setBitmap, :HEAD, "bitmap = Assets.get_asset(UniLib::ANIMATED_BITMAP_REDIRECT, bitmap) if UniLib::ANIMATED_BITMAP_REDIRECT[bitmap]")
+
 UniLib.insert_in_function(:pbStringToAudioFile, :HEAD, "str = Assets.get_asset(UniLib::AUDIO_FILE_REDIRECT, str) if UniLib::AUDIO_FILE_REDIRECT[str]")
 
 UniLib.insert_in_function(:pbResolveAudioFile, "if str.is_a?(String)", "str = Assets.get_asset(UniLib::AUDIO_FILE_REDIRECT, str) if UniLib::AUDIO_FILE_REDIRECT[str]")
