@@ -198,7 +198,7 @@ class PokeModifier
     end
 
     def set_level_moves_internal(sort=false)
-      @base_learnset += get_base_data(:Moveset)
+      @base_learnset += get_base_data(:Moveset) unless @learnset_overwrite
       @base_learnset.reject! { |a| @removed_learnset.include?(a[1]) }
       @learnset.sort_by!{ |a| a[0] } if sort
       @learnset.each do |move|
@@ -212,7 +212,7 @@ class PokeModifier
     end
 
     def set_egg_moves_internal
-      d = get_base_data(:EggMoves)
+      d = get_base_data(:EggMoves) unless @eggs_overwrite
       @base_egg_moves += d if d
       @base_egg_moves.reject! { |a| @removed_compatible.include?(a) }
       @egg_moves.each { |move| @base_egg_moves.push(move) unless @base_egg_moves.include?(move) }
@@ -220,7 +220,7 @@ class PokeModifier
     end
 
     def set_compatible_moves_internal
-      @base_compatible_moves += get_base_data(:compatiblemoves)
+      @base_compatible_moves += get_base_data(:compatiblemoves) unless @moves_overwrite
       @compatible_moves.reject! { |a| @removed_compatible.include?(a) }
       @compatible_moves.each { |move| @base_compatible_moves.push(move) unless @base_compatible_moves.include?(move) }
       set_data(:compatiblemoves, @base_compatible_moves)
