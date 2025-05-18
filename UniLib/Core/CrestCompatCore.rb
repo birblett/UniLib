@@ -4,6 +4,7 @@
 
 UniLib.verify_version(0.7, __FILE__)
 UniLib.include "Crest"
+UniLib.include "Move"
 
 # ======================================================================================================================================== #
 # ============================================================ INTERNAL/CORE ============================================================= #
@@ -84,13 +85,15 @@ if Reborn
                 end
               }
 
-  CrestBuilder.add(:FERALIGATR, "First moves gains priority if damage. 1.5x damage on biting moves.")
+  CrestBuilder.add(:FERALIGATR, "First moves gains priority if damaging. 1.5x damage on biting moves.")
 
   CrestBuilder.add(:GLACEON, "Grants resistances to Rock and Fighting.")
 
   CrestBuilder.add(:GOTHITELLE, "Dark and Psychic moves change Gothitelle's type. Recovers HP.")
 
   CrestBuilder.add(:HYPNO, "1.5x Sp. Attack and accuracy.")
+              .battle_stat_mods { |_, bs| bs[3].mul(1.5) }
+              .accuracy_mod { |_, _, acc, _, _| acc.mul(1.5); next nil }
 
   CrestBuilder.add(:INFERNAPE, "Swaps attacking and defensive stats. Recovers HP.")
               .battle_stat_mods { |_, bs|
@@ -122,9 +125,9 @@ if Reborn
   CrestBuilder.add(:NOCTOWL, "Boost Sp. Defense when hit. 1.2x Defense.")
               .battle_stat_mods { |_, bs| bs[2].mul(1.2) }
 
-  CrestBuilder.add(:ORICORIO, "1.25x Sp. Attack/Defense.")
+  CrestBuilder.add(:ORICORIO, "1.25x Sp. Attack and Speed.")
               .add_receiver(:ORICORIO, 1).add_receiver(:ORICORIO, 2).add_receiver(:ORICORIO, 3)
-              .battle_stat_mods { |_, bs| bs[3].mul(1.25); bs[4].mul(1.25) }
+              .battle_stat_mods { |_, bs| bs[3].mul(1.25); bs[5].mul(1.25) }
 
   CrestBuilder.add(:PHIONE, "1.5x defenses. Aqua Ring on entry.")
               .battle_stat_mods { |_, bs| bs[2].mul(1.5); bs[4].mul(1.5) }
@@ -138,6 +141,29 @@ if Reborn
                 pkmn.effects[:MagnetRise] = 8
                 battle.pbAnimation(:MAGNETRISE, pkmn, nil)
               }
+
+  MoveBuilder.add(:PROBOPOG, "Probopass PogChampion", "Please don't hack it in, it's a bad move on its own, don't be weirdchamp",
+                  :NORMAL, :special, 15, 20, 100, 0x1000, :SingleNonUser, 0, { kingrock: true })
+
+  class PokeBattle_Move_1000 < PokeBattle_Move
+
+    def pbEffect(attacker, opponent, hitnum=0, alltargets=nil, showanimation=true)
+      self.type = case hitnum
+      when 0 then :STEEL
+      when 1 then :ROCK
+      else :ELECTRIC
+      end
+      super(attacker, opponent, hitnum, alltargets, showanimation)
+    end
+
+    def pbIsMultiHit = true
+
+    def pbNumHits(attacker) = 3
+
+    # Replacement animation till a proper one is made
+    def pbShowAnimation(id, attacker, opponent, hitnum = 0, alltargets = nil, showanimation = true) = (@battle.pbAnimation(:BULLETSEED, attacker, opponent, hitnum) if showanimation)
+
+  end
 
   CrestBuilder.add(:RAMPARDOS, "Always hang on with 1 HP once per battle. No recoil taken.")
 
@@ -153,10 +179,13 @@ if Reborn
   CrestBuilder.add(:SEVIPER, "1.5x Speed. More damage against healthier foes.")
 
   CrestBuilder.add(:SIMIPOUR, "Grass STAB and resistances, Normal moves become Grass, offenses boosted by 1.2x.")
+              .resistance_fake(:GRASS)
 
   CrestBuilder.add(:SIMISAGE, "Fire STAB and resistances, Normal moves become Fire, offenses boosted by 1.2x.")
+              .resistance_fake(:FIRE)
 
   CrestBuilder.add(:SIMISEAR, "Water STAB and resistances, Normal moves become Water, offenses boosted by 1.2x.")
+              .resistance_fake(:WATER)
 
   CrestBuilder.add(:SILVALLY, "Memories grant abilities and boost their respective type.")
   CrestBuilder.add_hook { |pkmn, battle|
@@ -202,10 +231,8 @@ if Reborn
 
   def UniLib.zoroark_crest_handler(pkmn, m = nil)
     pkmn.battle.pbParty(pkmn.index).each { |member| m = member if member }
-    unless m.nil? or m == pkmn or pkmn.permanent_effect(:ZOROARK_CREST)
-      (arr = [m.type1]).push(m.type2) if m.type2
-      pkmn.set_permanent_effect(:ZOROARK_CREST, [m.ability, arr])
-    end
+    return [nil, []] if m.nil? or m == pkmn
+    pkmn.set_permanent_effect(:ZOROARK_CREST, [m.ability, m.type2 ? [m.type1, m.type2] : [m.type1]]) unless pkmn.permanent_effect(:ZOROARK_CREST)
     pkmn.ability = pkmn.ability + pkmn.permanent_effect(:ZOROARK_CREST)[0]
     pkmn.permanent_effect(:ZOROARK_CREST)
   end
