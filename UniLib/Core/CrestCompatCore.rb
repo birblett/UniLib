@@ -44,6 +44,17 @@ if Reborn
 
   CrestBuilder.add(:DARMANITAN, "Forces user into Zen Mode.")
 
+  # fix zenmode reset at end of turn with crest
+  if Reborn
+
+    UniLib.replace_in_method(:PokeBattle_Battler, :pbCheckFormRoundEnd, "if self.crested == :DARMANITAN && self.form == 0",
+                             "if self.crested == :DARMANITAN")
+
+    UniLib.replace_in_method(:PokeBattle_Battler, :pbCheckFormRoundEnd, "zenModeTransform",
+                             "zenModeTransform if self.form == 0")
+
+  end
+
   CrestBuilder.add(:DEDENNE, "Physical attacks use the Speed stat.")
 
   CrestBuilder.add(:DELCATTY, "Delcatty's non-KO'd allies boost its stats.")
@@ -178,6 +189,8 @@ if Reborn
 
   CrestBuilder.add(:SEVIPER, "1.5x Speed. More damage against healthier foes.")
 
+  CrestBuilder.add(:SHIINOTIC, "Drains 1/16th hp from statused pokemon. 1.3x drain effect recovery.")
+
   CrestBuilder.add(:SIMIPOUR, "Grass STAB and resistances, Normal moves become Grass, offenses boosted by 1.2x.")
               .resistance_fake(:GRASS)
 
@@ -197,6 +210,7 @@ if Reborn
               .battle_stat_mods { |_, bs| bs[1].mul(1.2); bs[3].mul(1.2) }
 
   CrestBuilder.add(:SPIRITOMB, "Boosts damage by 20% for every KO'd ally. Heals based on KO'd foes.")
+              .role_provider { :ACE }
 
   CrestBuilder.add(:STANTLER, "1.5x Attack and Accuracy.")
               .battle_stat_mods { |_, bs| bs[1].mul(1.5) }
