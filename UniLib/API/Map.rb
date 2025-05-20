@@ -134,7 +134,7 @@ module MapEvent
     page.move_speed = kwargs[:move_speed] ? kwargs[:move_speed] : 3
     page.move_frequency = kwargs[:move_freq] ? kwargs[:move_freq] : 3
     page.move_route.list.insert(0, RPG::MoveCommand.new(25))
-    page.step_anime = true
+    page.step_anime = kwargs[:step_anime].nil? ? true : kwargs[:step_anime]
     page.direction_fix = kwargs[:fix_dir] ? true : false
     events = []
     events.push(event_cmd(250, 0, [RPG::AudioFile.new(kwargs[:sfx])])) if kwargs[:sfx] # sound effect
