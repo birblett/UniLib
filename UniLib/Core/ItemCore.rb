@@ -360,16 +360,16 @@ UniLib.insert_in_method_before(:PokeBattle_Move, :pbCalcDamage, "if opponent.abi
     case m.downcase
       when :hp then atk = attacker.hp
       when :atk then atk = attacker.attack; atkstage = attacker.stages[PBStats::ATTACK]+6
-      when :def then atk = attacker.defense; atkstage = attacker.stages[PBStats::DEFENSE]+6
+      when :def then atk = attacker.pbCalcDefense; atkstage = attacker.stages[PBStats::DEFENSE]+6
       when :spa then atk = attacker.spatk; atkstage = attacker.stages[PBStats::SPATK]+6
-      when :spd then atk = attacker.spdef; atkstage = attacker.stages[PBStats::SPDEF]+6
-      when :spe then atk = attacker.speed; atkstage = attacker.stages[PBStats::SPEED]+6
+      when :spd then atk = attacker.pbCalcSpDef; atkstage = attacker.stages[PBStats::SPDEF]+6
+      when :spe then atk = attacker.pbSpeed; atkstage = attacker.stages[PBStats::SPEED]+6
       when :opphp then atk = opponent.hp
       when :oppatk then atk = opponent.attack; atkstage = opponent.stages[PBStats::ATTACK]+6
-      when :oppdef then atk = opponent.defense; atkstage = opponent.stages[PBStats::DEFENSE]+6
+      when :oppdef then atk = opponent.pbCalcDefense; atkstage = opponent.stages[PBStats::DEFENSE]+6
       when :oppspa then atk = opponent.spatk; atkstage = opponent.stages[PBStats::SPATK]+6
-      when :oppspd then atk = opponent.spdef; atkstage = opponent.stages[PBStats::SPDEF]+6
-      when :oppspe then atk = opponent.speed; atkstage = opponent.stages[PBStats::SPEED]+6
+      when :oppspd then atk = opponent.pbCalcSpDef; atkstage = opponent.stages[PBStats::SPDEF]+6
+      when :oppspe then atk = opponent.pbSpeed; atkstage = opponent.stages[PBStats::SPEED]+6
     end if m.is_a? Symbol
   } }")
 
@@ -380,16 +380,16 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :pbRoughDamage, "case attacker.cr
     case m.downcase
       when :hp then atk = attacker.hp
       when :atk then atk = attacker.attack; atkstage = attacker.stages[PBStats::ATTACK]+6
-      when :def then atk = attacker.defense; atkstage = attacker.stages[PBStats::DEFENSE]+6
+      when :def then atk = attacker.pbCalcDefense; atkstage = attacker.stages[PBStats::DEFENSE]+6
       when :spa then atk = attacker.spatk; atkstage = attacker.stages[PBStats::SPATK]+6
-      when :spd then atk = attacker.spdef; atkstage = attacker.stages[PBStats::SPDEF]+6
-      when :spe then atk = attacker.speed; atkstage = attacker.stages[PBStats::SPEED]+6
+      when :spd then atk = attacker.pbCalcSpDef; atkstage = attacker.stages[PBStats::SPDEF]+6
+      when :spe then atk = attacker.pbSpeed; atkstage = attacker.stages[PBStats::SPEED]+6
       when :opphp then atk = opponent.hp
       when :oppatk then atk = opponent.attack; atkstage = opponent.stages[PBStats::ATTACK]+6
-      when :oppdef then atk = opponent.defense; atkstage = opponent.stages[PBStats::DEFENSE]+6
+      when :oppdef then atk = opponent.pbCalcDefense; atkstage = opponent.stages[PBStats::DEFENSE]+6
       when :oppspa then atk = opponent.spatk; atkstage = opponent.stages[PBStats::SPATK]+6
-      when :oppspd then atk = opponent.spdef; atkstage = opponent.stages[PBStats::SPDEF]+6
-      when :oppspe then atk = opponent.speed; atkstage = opponent.stages[PBStats::SPEED]+6
+      when :oppspd then atk = opponent.pbCalcSpDef; atkstage = opponent.stages[PBStats::SPDEF]+6
+      when :oppspe then atk = opponent.pbSpeed; atkstage = opponent.stages[PBStats::SPEED]+6
     end if m.is_a? Symbol
   }")
 
@@ -478,7 +478,7 @@ UniLib.insert_in_method_before(:PokeBattle_AI, :getMoveScore, "case @move.functi
 
 # role provider
 UniLib.insert_in_method_before(:PokeBattle_AI, :pbGetMonRoles, "partyRoles.push(monRoles)",
-  "mon.apply_item_event(:roles, self, mon) { |m| monRoles.push(m) }")
+  "mon.apply_item_event(:roles, self, mon) { |m| (m.is_a?(Array) ? monRoles += m : monRoles.push(m)) if m }")
 
 
 # ========= item only ========= #
