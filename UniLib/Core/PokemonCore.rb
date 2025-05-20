@@ -117,6 +117,7 @@ class PokeModifier
       @egg_moves = []
       @base_compatible_moves = []
       @compatible_moves = []
+      @megas = {}
       @learnset_overwrite = false
       @eggs_overwrite = false
       @moves_overwrite = false
@@ -158,8 +159,23 @@ class PokeModifier
       end
     end
 
+    def get_form_data(sym)
+      if Reborn
+        mon_data.instance_variable_get(("@" + sym.to_s).to_sym)
+      else
+        mon_data[sym]
+      end
+    end
+
     def set_data(sym, data)
       @form == 0 || Reborn ? mon_data.instance_variable_set(("@" + String(sym)).to_sym, data) : mon_data[sym] = data
+    end
+
+    def set_megas_internal
+      megas = get_data(:MegaEvolutions)
+      megas = megas.nil? ? {} : megas.dup
+      @megas.each { |k, v| megas[k] = v }
+      set_data(:MegaEvolutions, @megas)
     end
 
     def set_stats_internal
@@ -240,6 +256,7 @@ class PokeModifier
 
     def build
       EVENT_POKEMODIFIER_PRE_BUILD.each { |event| event.call(self) }
+      set_megas_internal unless @megas.empty?
       set_stats_internal unless @stats.empty?
       set_types_internal unless @types.empty?
       set_abilities_internal unless @abilities.empty?
