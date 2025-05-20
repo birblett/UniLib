@@ -14,6 +14,7 @@ module UniLib
   API_PATH = PATH + "API/"
   LIB_PATH = PATH + "Core/"
   LOG_PATH = PATH + "../UniLibLog/"
+  CONFIG_DIR = PATH + "../UniLibConfig"
   SAVE_PATH = PATH + "../UniLibSave/"
   SESSION_DEBUG = Time.now.strftime("%Y_%m_%d-%H_%M_%S.log") unless defined? SESSION_DEBUG
   CLEAR_INJECTOR_CACHE = false
@@ -80,7 +81,7 @@ module UniLib
   <<-DOC
   used to check for the presence of a mod in the mods directory.
   DOC
-  def self.mod_included?(other)
+  def self.file_present?(other)
     File.file?(PATH + "../" + other + ".rb")
   end
 
@@ -129,10 +130,17 @@ module UniLib
   end
 
   <<-DOC
-  returns a filepath to the mods directory - for use with cross-game mods.
+  returns a filepath to the mods directory
   DOC
   def self.path(path_relative)
     "#{Reborn ? "patch/Mods/" : "Data/Mods/"}#{path_relative}"
+  end
+
+  <<-DOC
+  returns a filepath to the config directory
+  DOC
+  def self.config_path(path_relative)
+    "#{Reborn ? "patch/Mods/" : "Data/Mods/"}UniLibConfig/#{path_relative}"
   end
 
   <<-DOC
