@@ -55,6 +55,15 @@ class PokeModifier
   end
 
   <<-DOC
+  @param stone - stone item id
+  @param form_str - a form in string representation only
+  DOC
+  def add_mega(stone, form_str)
+    @megas[stone] = form_str
+    self
+  end
+
+  <<-DOC
   @param hp - hp stat, or a 6-number array
   @param atk - attack stat
   @param defe - defense stat
@@ -272,8 +281,8 @@ class PokeModifier
   DOC
   def asset_override(icon_asset, battler_asset)
     UniLib.include "Asset"
-    Assets.redirect_pkmn_icon(@species, @form, icon_asset)
-    Assets.redirect_pkmn_detailed(@species, @form, battler_asset)
+    Assets.redirect_pkmn_icon(@species, @form, icon_asset) if icon_asset
+    Assets.redirect_pkmn_detailed(@species, @form, battler_asset) if battler_asset
     self
   end
 
