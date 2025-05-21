@@ -5,6 +5,7 @@
 # override its base asset to make it more angry
 PokeModifier.add(:MAGIKARP)
             .stats(100, 100, 100 ,100, 100, 100)
+            .type2(:GRASS)
             .ability(0, :PROTEAN)
             .ability(2, :DRAGONFORCE)
             .level_moves([[10, :SUNSTEELSTRIKE], [15, :DRAGONASCENT]])
