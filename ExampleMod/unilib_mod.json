@@ -1,0 +1,15 @@
+{
+  "id": "example_mod",
+  "version": 1.0,
+  "unilib_version": 0.7,
+  "priority": 1000,
+  "modules": [
+    "Pokemon",
+    "Ability",
+    "CrestCompat",
+    "Options"
+  ],
+  "entrypoints": [
+    "Example.rb"
+  ]
+}
