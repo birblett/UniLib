@@ -28,6 +28,7 @@ module UniLib
     (CONSTANTS = "Constants") => 3,
     (CREST = "Crest") => 2,
     (CREST_COMPATIBILITY = "CrestCompat") => 3,
+    (DISPLAY = "Display") => 0,
     (EVENTS = "Events") => 0,
     (EXTRA_MOVE_FLAGS = "ExtraMoveFlags") => 1,
     (FIXES = "Fixes") => 3,
