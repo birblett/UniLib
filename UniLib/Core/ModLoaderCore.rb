@@ -38,6 +38,7 @@ module UniLib
   LOADED_MODS = {} unless defined? LOADED_MODS
   MOD_CONFIGS = {} unless defined? MOD_CONFIGS
   LOADED_LIBRARIES = {} unless defined? LOADED_LIBRARIES
+  $unilib_refresh_configs = true unless defined? $refresh_configs
 
   def self.except(exception)
     return Exception.new("#{exception}")
@@ -65,7 +66,8 @@ module UniLib
   def self.load_mods
     mods = []
     required_modules = []
-    [STAGED_MODS, LOADED_MODS, MOD_CONFIGS].map(&:clear)
+    [STAGED_MODS, LOADED_MODS].map(&:clear)
+    MOD_CONFIGS.clear if $unilib_refresh_configs
     Dir.mkdir(CONFIG_DIR) unless Dir.exist?(CONFIG_DIR)
     File.open(CONFIG_PATH, "w") { _1.write("{\n  \"disabled\": [\n  ]\n}") } unless File.exist?(CONFIG_PATH)
     disabled = begin
@@ -96,48 +98,51 @@ module UniLib
           mod.unilib_version = (unilib_version * 1000).to_i / 1000.0 if unilib_version and unilib_version.is_a? Numeric
           raise except("unilib version #{mod.unilib_version} required, #{VERSION} found") if mod.unilib_version unless mod.unilib_version == VERSION
           mod.dependencies = dependencies if dependencies and dependencies.is_a? Array
-          mod.unilib_version = priority if priority and priority.is_a? Numeric
-          STAGED_MODS[id] = true
+          mod.priority = priority if priority and priority.is_a? Numeric
 
-          # parse default configs
-          cfg = UniLib.config_path("#{id}")
-          begin
-            if File.directory?("#{d}/DefaultConfigs")
-              post = false
-              if !File.directory?(cfg)
-                Dir.mkdir(cfg)
-                Dir.glob("#{d}/DefaultConfigs/*.json") { |file| FileUtils.cp(file, "#{cfg}/#{File.basename(file)}") }
-                post = true
-              elsif File.exist?("#{cfg}/version.json")
-                version = (HTTPLite::JSON.parse(File.read("#{cfg}/version.json"))["version"] * 1000).to_i / 1000.0
-                if version != mod.unilib_version
-                  Dir.glob("#{d}/DefaultConfigs/*.json") { |file|
-                    old_cfg_file = "#{cfg}/#{File.basename(file)}"
-                    old_configs = File.exist?(old_cfg_file) ? {} : HTTPLite::JSON.parse(File.read(old_cfg_file))
-                    new_configs = HTTPLite::JSON.parse(File.read(file))
-                    new_configs.keys.each { |k| new_configs[k] = old_configs[k] if old_configs[k] }
-                    File.write(old_cfg_file, HTTPLite::JSON.stringify(new_configs))
-                  }
+          if $unilib_refresh_configs
+            # parse default configs
+            cfg = UniLib.config_path("#{id}")
+            begin
+              if File.directory?("#{d}/DefaultConfigs")
+                post = false
+                if !File.directory?(cfg)
+                  Dir.mkdir(cfg)
+                  Dir.glob("#{d}/DefaultConfigs/*.json") { |file| FileUtils.cp(file, "#{cfg}/#{File.basename(file)}") }
+                  post = true
+                elsif File.exist?("#{cfg}/version.json")
+                  version = (HTTPLite::JSON.parse(File.read("#{cfg}/version.json"))["version"] * 1000).to_i / 1000.0
+                  if version != mod.version
+                    Dir.glob("#{d}/DefaultConfigs/*.json") { |file|
+                      old_cfg_file = "#{cfg}/#{File.basename(file)}"
+                      old_configs = File.exist?(old_cfg_file) ? {} : HTTPLite::JSON.parse(File.read(old_cfg_file))
+                      new_configs = HTTPLite::JSON.parse(File.read(file))
+                      new_configs.keys.each { |k| new_configs[k] = old_configs[k] if old_configs[k] }
+                      File.write(old_cfg_file, HTTPLite::JSON.stringify(new_configs))
+                    }
+                  end
+                  post = true
                 end
-                post = true
+                if post
+                  File.write("#{cfg}/version.json", HTTPLite::JSON.stringify({ "version" => mod.version })) if mod.version
+                  UniLib.config_read(cfg, id)
+                end
               end
-              if post
-                File.write("#{cfg}/version.json", HTTPLite::JSON.stringify({ "version" => mod.version })) if mod.version
-                UniLib.config_read(cfg, id)
-              end
+            rescue Exception => e
+              UniLib.dev_log("failed to parse default configs for #{id}: #{e}")
             end
-          rescue Exception => e
-            UniLib.dev_log("failed to parse default configs for #{id}: #{e}")
-          end
 
-          # read configs
-          UniLib.config_read(cfg, id) if File.directory?(cfg)
+            # read configs
+            UniLib.config_read(cfg, id) if File.directory?(cfg)
+          end
+          STAGED_MODS[id] = true
         rescue Exception => e
           UniLib.dev_log("failed to parse modfile #{f}/unilib_mod.json: #{e}")
         end
       end
     }
     required_modules.sort_by! { |m| UniLib::MODULES[m] }.each { |m| UniLib.include m }
+    UniStringOption.new("Autorefresh Configs", "Refresh configs on F12 restart.", %w[Off On], proc { |value| $unilib_refresh_configs = value == 1 }) if MODULES["Options"]
     mods.sort_by! { |m| m.priority }.reverse!.each(&:mod_load)
   end
 
