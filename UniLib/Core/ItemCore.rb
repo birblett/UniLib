@@ -491,7 +491,7 @@ UniLib.insert_in_method(:PokeBattle_Battle, :pbIsUnlosableItem, :HEAD,
 UniLib.insert_in_method(:PokeBattle_Battler, :pbDisposeItem, :HEAD, "b = !@item.nil? and UniLib::EVENT_ITEMS[@item]")
 
 # item update
-UniLib.insert_in_method(:PokeBattle_Battler, :pbDisposeItem, :TAIL, "self.pbUpdate(true) if b")
+UniLib.insert_in_method(:PokeBattle_Battler, :pbDisposeItem, :TAIL, "self.pbUpdate(false) if b")
 
 # item score
 target = Reborn ? "itemscore -= 100" : "itemscore-=100"
