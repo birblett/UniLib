@@ -52,7 +52,7 @@ UniLib.insert_in_method(:PokeBattle_AI, :pbTypeModNoMessages, :HEAD,
 UniLib.insert_in_method(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "@pokemon.makePrimal", "self.form = @pokemon.form")
 
 # fix instruct + struggle exception
-UniLib.insert_in_method_before(:PokeBattle_AI, :instructcode, "lastmove = @attacker.pbPartner.lastMoveUsed", "return 0 if lastmove  == :STRUGGLE")
+UniLib.insert_in_method(:PokeBattle_AI, :instructcode, "lastmove = @attacker.pbPartner.lastMoveUsed", "return 0 if lastmove  == :STRUGGLE")
 
 # based on alemi and matt's implementation
 UniLib.replace_in_method(:PokeBattle_Pokemon, :getEggMoveList, "movelist = $cache.pkmn[babyspecies[0]].formData.dig(formname,:EggMoves)",
