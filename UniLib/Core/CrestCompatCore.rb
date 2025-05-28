@@ -178,6 +178,17 @@ if Reborn
 
   CrestBuilder.add(:RAMPARDOS, "Always hang on with 1 HP once per battle. No recoil taken.")
 
+  class PokeBattle_Pokemon
+
+    attr_accessor :rampCrestUsed
+
+    def rampCrestUsed
+      @rampCrestUsed = false if !@rampCrestUsed
+      @rampCrestUsed
+    end
+
+  end if Reborn
+
   CrestBuilder.add(:RELICANTH, "1.2x Attack, 1.3x Sp. Defense.")
               .battle_stat_mods { |_, bs| bs[1].mul(1.2); bs[4].mul(1.3) }
 
@@ -186,19 +197,25 @@ if Reborn
   CrestBuilder.add(:SAMUROTT, "Fighting STAB and resistances. Slicing moves always crit.")
 
   CrestBuilder.add(:SAWSBUCK, "Replaces base type and Normal moves with a seasonal type.")
+              .add_receiver(:SAWSBUCK, 1).add_receiver(:SAWSBUCK, 2).add_receiver(:SAWSBUCK, 3)
+              .primary_type { |pkmn|
+                case pkmn.form
+                when 0 then :WATER
+                when 1 then :FIRE
+                when 2 then :GROUND
+                else :ICE
+                end
+              }
 
   CrestBuilder.add(:SEVIPER, "1.5x Speed. More damage against healthier foes.")
 
   CrestBuilder.add(:SHIINOTIC, "Drains 1/16th hp from statused pokemon. 1.3x drain effect recovery.")
 
   CrestBuilder.add(:SIMIPOUR, "Grass STAB and resistances, Normal moves become Grass, offenses boosted by 1.2x.")
-              .resistance_fake(:GRASS)
 
   CrestBuilder.add(:SIMISAGE, "Fire STAB and resistances, Normal moves become Fire, offenses boosted by 1.2x.")
-              .resistance_fake(:FIRE)
 
   CrestBuilder.add(:SIMISEAR, "Water STAB and resistances, Normal moves become Water, offenses boosted by 1.2x.")
-              .resistance_fake(:WATER)
 
   CrestBuilder.add(:SILVALLY, "Memories grant abilities and boost their respective type.")
   CrestBuilder.add_hook { |pkmn, battle|
