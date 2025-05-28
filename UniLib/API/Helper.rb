@@ -20,6 +20,19 @@ module UniLib
     pkmn.pbFaint if pkmn.isFainted?
   end
 
+  def self.heal_pkmn(pkmn, amount, liquid_ooze, message=nil)
+    if liquid_ooze
+      amount *= 2 if [:WASTELAND, :MURKWATERSURFACE, :CORRUPTED].include?(pkmn.battle.FE)
+      pkmn.pbReduceHP(amount, true)
+      pkmn.battle.pbDisplay(_INTL("{1} sucked up the liquid ooze!", pkmn.pbThis))
+    else
+      amount = (amount * (Rejuv && pkmn.battle.FE == :GRASSY ? 1.6 : 1.3)).floor if pkmn.hasWorkingItem(:BIGROOT)
+      amount = (amount * 1.3).floor if pkmn.crested == :SHIINOTIC
+      pkmn.pbRecoverHP(amount, true)
+      UniLib.display_if_visible(pkmn.battle, message)
+    end
+  end
+
   def self.get_opposing(pkmn)
     pkmn.battle.battlers[[1, 0, 3, 2][pkmn.index]]
   end
