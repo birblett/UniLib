@@ -83,7 +83,13 @@ class TrainerModifier
   end
 
   def forced_fe(fe)
-    TRAINER_CACHE[@key] = fe
+    TRAINER_CACHE[@key][0] = fe
+    self
+  end
+
+  def tclass_name_override(name)
+    TRAINER_CACHE[@key][1] = name
+    self
   end
 
 end
