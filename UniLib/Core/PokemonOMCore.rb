@@ -76,7 +76,7 @@ module UniLib
     end
 
     def self.pokebilities_active(pkmn)
-      UniLib::POKEBILITIES_POKEMON[[pkmn.species, pkmn.form]] == 2 or (pkmn.item == :CATALYZER and UniLib::POKEBILITIES_POKEMON[[pkmn.species, pkmn.form]] == 1)
+      UniLib::POKEBILITIES_POKEMON[key = [pkmn.species, pkmn.form]] == 2 or (pkmn.item == :CATALYZER and UniLib::POKEBILITIES_POKEMON[key] == 1)
     end
 
     PLATE_MAP = {:SILKSCARF => :NORMAL, :FISTPLATE => :FIGHTING, :SKYPLATE => :FLYING, :EARTHPLATE => :GROUND, :TOXICPLATE => :POISON,
