@@ -13,6 +13,13 @@ class EventProvider
   <<-DOC
   >> injects a block of code after the specified target in the target move.
   DOC
+  def self.get_event(ability, id)
+    CUSTOM_ABILITIES[ability].event_hash[id]
+  end
+
+  <<-DOC
+  >> injects a block of code after the specified target in the target move.
+  DOC
   def insert_in_move(id, method, target, proc, index=0, priority=1000)
     return self if UniLib.has_valid_cache
     clazz = ("PokeBattle_Move_" + id.to_s).to_sym
@@ -39,6 +46,15 @@ class EventProvider
     insert_in_move_before(id, method, target, proc, index, priority)
     UniLib.delete_in_method(clazz, method, target, index, priority)
     self
+  end
+
+  <<-DOC
+  @param proc - a void function
+  >> adds a conditional base stat modifier. accepts 2 arguments; the holder (PokeBattle_Pokemon) and an array of 6 NumberContainers
+     corresponding to hp, atk, def, spa, spd, spe. use the NumberContainers to perform in-place modifications to stats.
+  DOC
+  def base_stat_mods(proc=nil, &block)
+    add_or_create_event(:base_stat_mods, proc, block)
   end
 
   <<-DOC
@@ -81,8 +97,8 @@ class EventProvider
   >> conditional proc to set the user's type in battle. accepts 2 arguments, the user (PokeBattle_Battler) and whether the context is on
      switch-in or not; returns a type symbol.
   DOC
-  def primary_type_battle(proc=nil, &block)
-    add_or_create_event(:primary_type_battle, proc, block)
+  def type1_battle(proc=nil, &block)
+    add_or_create_event(:type1_battle, proc, block)
   end
 
   <<-DOC
@@ -90,8 +106,8 @@ class EventProvider
   >> conditional proc to set the user's type in battle. accepts 2 arguments, the user (PokeBattle_Battler) and whether the context is on
      switch-in or not; returns a type symbol.
   DOC
-  def secondary_type_battle(proc=nil, &block)
-    add_or_create_event(:secondary_type_battle, proc, block)
+  def type2_battle(proc=nil, &block)
+    add_or_create_event(:type2_battle, proc, block)
   end
 
   <<-DOC

@@ -244,15 +244,6 @@ class ItemModifier
   end
 
   <<-DOC
-  @param proc - a void function
-  >> adds a conditional base stat modifier. accepts 2 arguments; the holder (PokeBattle_Pokemon) and an array of 6 NumberContainers
-     corresponding to hp, atk, def, spa, spd, spe. use the NumberContainers to perform in-place modifications to stats.
-  DOC
-  def base_stat_mods(proc=nil, &block)
-    add_or_create_event(:base_stat_mods, proc, block)
-  end
-
-  <<-DOC
   @param proc - a function returning an ability symbol (or array of them).
   >> a conditional ability provider. accepts 2 arguments, the user (PokeBattle_Pokemon) and its current abilities (array of symbols).
      return an ability symbol or array of them; 
@@ -261,10 +252,8 @@ class ItemModifier
     if proc.nil? and block.nil?
       print "No function or block provided for event ability_provider of #{@symbol}:#{self.class}"
       exit
-    elsif proc.nil?
-      @ability_providers.push(block)
     else
-      @ability_providers.push(proc)
+      @ability_providers.push(proc ? proc : block)
     end
     self
   end
