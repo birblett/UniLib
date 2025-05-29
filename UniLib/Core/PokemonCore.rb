@@ -17,13 +17,17 @@ module UniLib
     POKEMON_DATA = load_data("Data/mons.dat") if !defined? POKEMON_DATA or POKEMON_DATA.nil?
     STAT_INDEX = {:HP => 0, :ATK => 1, :DEF => 2, :SPA => 3, :SPD => 4, :SPE => 5}
 
-    FORM_MAP = {}
-    POKEMON_DATA.each do |species, mondata|
-      mondata.forms.each do |index, form|
-        FORM_MAP[species] = {} if FORM_MAP[species].nil?
-        FORM_MAP[species][form] = index
-        FORM_MAP[species][index] = form
+    unless defined? FORM_MAP
+
+      FORM_MAP = {}
+      POKEMON_DATA.each do |species, mondata|
+        mondata.forms.each do |index, form|
+          FORM_MAP[species] = {} if FORM_MAP[species].nil?
+          FORM_MAP[species][form] = index
+          FORM_MAP[species][index] = form
+        end
       end
+
     end
 
     def self.get_form_number(holder, form)
