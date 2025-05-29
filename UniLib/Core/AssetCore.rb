@@ -59,7 +59,7 @@ end
 
 module Audio
 
-  UNILIB_BGM_PLAY_OLD = singleton_method(:bgm_play) unless UniLib.lib_loaded(__FILE__)
+  UNILIB_BGM_PLAY_OLD = singleton_method(:bgm_play) unless defined? UNILIB_BGM_PLAY_OLD
   define_singleton_method(:bgm_play) do |file, v=100, p=100|
     Assets.log(file) if $unilib_audio_asset_log
     if UniLib::AUDIO_FILE_REDIRECT[file]
