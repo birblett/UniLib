@@ -11,6 +11,7 @@ UniLib.verify_version(0.8, __FILE__)
 module UniLib
 
   HIDDEN_ABILITY_SYM = Reborn ? :HiddenAbility : :HiddenAbilities
+  FORM_PROVIDERS = {}
 
   unless UniLib.lib_loaded(__FILE__)
 
@@ -270,6 +271,27 @@ class PokeModifier
       set_level_moves_internal(true) unless @learnset.empty?
       set_egg_moves_internal unless @egg_moves.empty? and @removed_compatible.empty?
       set_compatible_moves_internal unless @compatible_moves.empty? and @removed_compatible.empty?
+      set_data(:EVs, @ev) if @ev
+      set_data(:GrowthRate, @growth_rate) if @growth_rate
+      set_data(:GenderRatio, @gender_ratio) if @gender_ratio
+      set_data(:BaseEXP, @base_exp) if @base_exp
+      set_data(:CatchRate, @catch_rate) if @catch_rate
+      set_data(:Happiness, @happiness) if @happiness
+      set_data(:EggSteps, @egg_steps) if @egg_steps
+      set_data(:Color, @color) if @color
+      set_data(:Habitat, @habitat) if @habitat
+      set_data(:EggGroups, @egg_groups) if @egg_groups
+      set_data(:Height, @height) if @height
+      set_data(:Weight, @weight) if @weight
+      set_data(:kind, @kind) if @kind
+      set_data(:dexentry, @dex_entry) if @dex_entry
+      set_data(:BattlerPlayerY, @battler_player_y) if @battler_player_y
+      set_data(:BattlerEnemyY, @battler_enemy_y) if @battler_enemy_y
+      set_data(:BattlerAltitude, @battler_altitude) if @battler_altitude
+      set_data(:BattlerShadow, @battler_shadow) if @battler_shadow
+      set_data(:preevo, @preevo) if @preevo
+      set_data(:evolutions, @evolutions) if @evolutions
+      FORM_PROVIDERS[@species] = @form_overrides if @form_overrides
       END_OF_BATTLE_RESET[[@species, @form]] = @end_of_battle_reset if @end_of_battle_reset
       EVENT_POKEMODIFIER_POST_BUILD.each { |event| event.call(self) }
     end
@@ -289,17 +311,17 @@ class PokeBattle_Pokemon
 
 end unless UniLib.lib_loaded(__FILE__)
 
+class MonWrapper
+
+  def formInit = "proc { $game_map && UniLib::FORM_PROVIDERS[@mon] && (f = UniLib::FORM_PROVIDERS[@mon][$game_map.map_id]) ? f : #{@formInit.is_a?(String) ? "#{@formInit}.call" : 0} }"
+
+end
+
 # ======================================================================================================================================== #
 # ================================================================ EVENTS ================================================================ #
 # ======================================================================================================================================== #
 
 unless UniLib.lib_loaded(__FILE__)
-
-  def is_valid_for_ability_override(pokemon)
-    return false if pokemon.nil?
-    return false unless UniLib::MODIFIED_POKEMON.include?(pokemon::species) and UniLib::MODIFIED_POKEMON[pokemon::species].include?(pokemon::form)
-    UniLib::MODIFIED_POKEMON[pokemon::species][pokemon::form].ability_override and pokemon..include?(pokemon::ability)
-  end
 
   def register_modified_pokemon
     UniLib::MODIFIED_POKEMON.each { |_, forms| forms.each { |_, builder| builder.build } }
@@ -308,7 +330,6 @@ unless UniLib.lib_loaded(__FILE__)
       pokemon.isbossmon = false
       pokemon.calcStats
       pokemon.permanent_battle_effects.clear if pokemon.permanent_battle_effects
-      pokemon.initAbility if $force_refresh_abilities and is_valid_for_ability_override(pokemon)
     end
     $PokemonStorage.boxes.each do |box|
       box.pokemon.each do |pokemon|
@@ -317,7 +338,6 @@ unless UniLib.lib_loaded(__FILE__)
         pokemon.isbossmon = false
         pokemon.calcStats
         pokemon.permanent_battle_effects.clear if pokemon.permanent_battle_effects
-        pokemon.initAbility if $force_refresh_abilities and is_valid_for_ability_override(pokemon)
       end
     end
     UniLib::MODIFIED_POKEMON.clear

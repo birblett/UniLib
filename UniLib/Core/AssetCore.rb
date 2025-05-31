@@ -12,8 +12,16 @@ module UniLib
 
   ANIMATED_BITMAP_REDIRECT = {}
   AUDIO_FILE_REDIRECT = {}
-  PKMN_ICON_BITMAP_REDIRECT = {}
-  PKMN_BITMAP_REDIRECT = {}
+  PKMN_REDIRECT = {}
+
+  def self.get_redirected_asset(species, form, fem, egg, icon)
+    return nil unless PKMN_REDIRECT[[species, form]]
+    index = icon ? 4 : 0
+    index += 2 if egg
+    index += 1 if fem
+    ret = PKMN_REDIRECT[[species, form]][index]
+    fem && ret.nil? ? PKMN_REDIRECT[[species, form]][index - 1] : ret
+  end
 
 end
 
@@ -105,22 +113,22 @@ UniLib.insert_in_function(:pbGetTrainerBattleBGM, target,
   end")
 
 UniLib.insert_in_function(:pbPokemonBitmap, "bitmapFileName = sprintf(\"Graphics/Battlers/%03d%s\", dexnum, gendermod)",
-  "k = [species, form]
-  if UniLib::PKMN_BITMAP_REDIRECT[k]
-    bitmapFileName = UniLib::PKMN_BITMAP_REDIRECT[k]
+  "ret = UniLib.get_redirected_asset(species, form, gender == \"Female\", false, false)
+  if ret
+    bitmapFileName = ret
     form = 0
   end")
 
 UniLib.insert_in_function(:pbLoadPokemonBitmapSpecies, "x = pokemon.isShiny? ? 192 : 0",
-  "k, k1 = [species, form], nil
-  form = 0 if (k1 = UniLib::PKMN_BITMAP_REDIRECT[k])")
+  "ret = UniLib.get_redirected_asset(species, form, pokemon.gender == 1, pokemon.isEgg?, false)
+  form = 0 if ret")
 
 UniLib.insert_in_function_before(:pbLoadPokemonBitmapSpecies, "spritesheet = RPG::Cache.load_bitmap(bitmapFileName)",
-  "bitmapFileName = k1 if k1")
+  "bitmapFileName = ret if ret")
 
 UniLib.insert_in_function(:pbPokemonIconBitmap, "filename = sprintf(\"Graphics/Icons/icon%03d%s%s\", species, girl, eggtag)",
-  "k = [pokemon.species, form]
-  if UniLib::PKMN_ICON_BITMAP_REDIRECT[k]
-    filename = UniLib::PKMN_ICON_BITMAP_REDIRECT[k] if UniLib::PKMN_ICON_BITMAP_REDIRECT[k]
+  "ret = UniLib.get_redirected_asset(pokemon.species, form, girl, egg, true)
+  if ret
+    filename = ret
     form = 0
   end")

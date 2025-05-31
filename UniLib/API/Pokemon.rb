@@ -64,6 +64,34 @@ class PokeModifier
   end
 
   <<-DOC
+  @param types - type input in the form of a hash, with :Type1/:Type2 as indices (i.e. {:Type1 => PBTypes::FIRE, 
+                 :Type2 => PBTypes::WATER})
+  >> overwrites existing typings
+  DOC
+  def types(types)
+    @types = types
+    self
+  end
+
+  <<-DOC
+  @param type - numerical type id or PBTypes constant (i.e. PBTypes::FIRE)
+  >> sets primary type
+  DOC
+  def type1(type)
+    @types[:Type1] = type
+    self
+  end
+
+  <<-DOC
+  @param type - numerical type id or PBTypes constant (i.e. PBTypes::FIRE)
+  >> sets secondary type
+  DOC
+  def type2(type)
+    @types[:Type2] = type
+    self
+  end
+
+  <<-DOC
   @param hp - hp stat, or a 6-number array
   @param atk - attack stat
   @param defe - defense stat
@@ -107,34 +135,6 @@ class PokeModifier
     i1 = stat1.class == Symbol ? STAT_INDEX[stat1] : stat1
     i2 = stat2.class == Symbol ? STAT_INDEX[stat2] : stat2
     @stats[i1], @stats[i2] = @stats[i2], @stats[i1]
-    self
-  end
-
-  <<-DOC
-  @param types - type input in the form of a hash, with :Type1/:Type2 as indices (i.e. {:Type1 => PBTypes::FIRE, 
-                 :Type2 => PBTypes::WATER})
-  >> overwrites existing typings
-  DOC
-  def types(types)
-    @types = types
-    self
-  end
-
-  <<-DOC
-  @param type - numerical type id or PBTypes constant (i.e. PBTypes::FIRE)
-  >> sets primary type
-  DOC
-  def type1(type)
-    @types[:Type1] = type
-    self
-  end
-
-  <<-DOC
-  @param type - numerical type id or PBTypes constant (i.e. PBTypes::FIRE)
-  >> sets secondary type
-  DOC
-  def type2(type)
-    @types[:Type2] = type
     self
   end
 
@@ -267,6 +267,178 @@ class PokeModifier
     self
   end
 
+  # ========== SIMPLE SETTERS ========== #
+
+  <<-DOC
+  >> array, ev gain
+  DOC
+  def set_ev(val)
+    @ev = val
+    self
+  end
+
+  <<-DOC
+  >> symbol, exp gain rate
+  DOC
+  def set_growth_rate(val)
+    @growth_rate = val
+    self
+  end
+
+  <<-DOC
+  >> symbol, one of several fixed gender ratios
+  DOC
+  def set_gender_ratio(val)
+    @gender_ratio = val
+    self
+  end
+
+  <<-DOC
+  >> int, base exp amount granted on ko
+  DOC
+  def set_base_exp(val)
+    @base_exp = val
+    self
+  end
+
+  <<-DOC
+  >> int, 0-255 catchrate
+  DOC
+  def set_catch_rate(val)
+    @catch_rate = val
+    self
+  end
+
+  <<-DOC
+  >> int, in-battle y-offset (player)
+  DOC
+  def set_happiness(val)
+    @happiness = val
+    self
+  end
+
+  <<-DOC
+  >> int, number of steps before eggs hatch
+  DOC
+  def set_egg_steps(val)
+    @egg_steps = val
+    self
+  end
+
+  <<-DOC
+  >> string, color (mainly for dex purposes)
+  DOC
+  def set_color(val)
+    @color = val
+    self
+  end
+
+  <<-DOC
+  >> string, idk what this is for lol
+  DOC
+  def set_habitat(val)
+    @habitat = val
+    self
+  end
+
+  <<-DOC
+  >> array, overrides existing egg groups
+  DOC
+  def set_egg_groups(val)
+    @egg_groups = val
+    self
+  end
+
+  <<-DOC
+  >> int, height in meters * 10
+  DOC
+  def set_height(val)
+    @height = val
+    self
+  end
+
+  <<-DOC
+  >> double, weight in kg
+  DOC
+  def set_weight(val)
+    @weight = val
+    self
+  end
+
+  <<-DOC
+  >> string, pokemon type i.e. butterfree, the *Butterfly* pokemon
+  DOC
+  def set_kind(val)
+    @kind = val
+    self
+  end
+
+  <<-DOC
+  >> string, dex entry
+  DOC
+  def set_dex_entry(val)
+    @dex_entry = val
+    self
+  end
+
+  <<-DOC
+  >> int, in-battle y-offset (player)
+  DOC
+  def set_battler_player_y(val)
+    @battler_player_y = val
+    self
+  end
+
+  <<-DOC
+  >> int, in-battle y-offset (opponent)
+  DOC
+  def set_battler_enemy_y(val)
+    @battler_enemy_y = val
+    self
+  end
+
+  <<-DOC
+  >> int, battle altitude (opponents only)
+  DOC
+  def set_battler_altitude(val)
+    @battler_altitude = val
+    self
+  end
+
+  <<-DOC
+  >> battler shadow display
+  DOC
+  def set_battler_shadow(val)
+    @battler_shadow = val
+    self
+  end
+
+  <<-DOC
+  >> hash with :species and :form set, overrides existing data
+  DOC
+  def set_preevo(val)
+    @preevo = val
+    self
+  end
+
+  <<-DOC
+  >> hash, refer to montext for format, overrides existing data
+  DOC
+  def set_evolutions(val)
+    @evolutions = val
+    self
+  end
+
+  # ======== END SIMPLE SETTERS ======== #
+
+  <<-DOC
+  >> sets a map encounter form override by map id
+  DOC
+  def encounter_form_override(map_id, form)
+    (@form_overrides ||= {})[map_id] = form
+    self
+  end
+
   <<-DOC
   >> if enabled, the current form will always be set to the specified number at the end of a battle
   DOC
@@ -279,10 +451,10 @@ class PokeModifier
   @param asset - string representing a path relative to the Mods folder
   >> overrides the existing asset with the given one
   DOC
-  def asset_override(icon_asset, battler_asset)
+  def asset_override(asset: nil, asset_f: nil, asset_egg: nil, asset_egg_f: nil, icon: nil, icon_f: nil, icon_egg: nil, icon_egg_f: nil)
     UniLib.include "Asset"
-    Assets.redirect_pkmn_icon(@species, @form, icon_asset) if icon_asset
-    Assets.redirect_pkmn_detailed(@species, @form, battler_asset) if battler_asset
+    Assets.redirect_pkmn_detailed(@species, @form, asset, asset_f, asset_egg, asset_egg_f)
+    Assets.redirect_pkmn_icon(@species, @form, icon, icon_f, icon_egg, icon_egg_f)
     self
   end
 
