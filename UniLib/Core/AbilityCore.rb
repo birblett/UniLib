@@ -109,10 +109,8 @@ class PokeBattle_Battler
   end
 
   def apply_ability_event(event, *args)
-    print "g" if event == :base_stat_mods
     return unless self.ability.is_a? AbilityContainer
     return if self.ability == nil
-    print "b" if event == :base_stat_mods
     self.ability.abilities.each do |ability|
       next unless AbilityModifier.has_event?(ability, event)
       AbilityModifier.get_event(ability, event).each { |e, out = e.(*args)| yield(out) unless out.nil? }
