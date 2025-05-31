@@ -183,22 +183,6 @@ if Reborn
               .asset_override(asset: "UniLib/Assets/Battlers/ampharos-aevian.png", icon: "UniLib/Assets/Icons/ampharos-aevian.png")
               .get_form
 
-  MISDREAVUS_AEVIAN = PokeModifier.add_form(:MISDREAVUS, "Aevian Form")
-              .level_moves_overwrite
-              .egg_moves_overwrite
-              .compatible_moves_overwrite
-              .types({:Type1 => :GRASS, :Type2 => :GHOST})
-              .stats([60, 85, 60, 85, 60, 85])
-              .abilities({0 => :MAGICBOUNCE, 1 => :POISONPOINT, 2 => :TANGLINGHAIR})
-              .set_ev([0, 0, 0, 0, 1, 0])
-              .set_evolutions([[:MISMAGIUS, :Item, :LEAFSTONE]])
-              .level_moves([[1, :GROWL], [1, :VINEWHIP], [5, :POISONPOWDER], [10, :ASTONISH], [14, :CONFUSERAY], [19, :SNAPTRAP], [23, :HEX], [28, :GIGADRAIN], [32, :INGRAIN], [37, :GRUDGE], [41, :SHADOWBALL], [46, :PERISHSONG], [50, :POWERWHIP], [55, :POWERGEM]])
-              .egg_moves([:CURSE, :DESTINYBOND, :GROWTH, :MEFIRST, :MEMENTO, :NASTYPLOT, :CLEARSMOG, :SCREECH, :SHADOWSNEAK, :LIFEDEW, :TOXIC, :SUCKERPUNCH, :WONDERROOM])
-              .compatible_moves([:AERIALACE, :ALLYSWITCH, :BATONPASS, :BIND, :BULLETSEED, :CROSSPOISON, :CUT, :DRAININGKISS, :ECHOEDVOICE, :EMBARGO, :ENERGYBALL, :FUTURESIGHT, :GASTROACID, :GIGADRAIN, :GRASSKNOT, :GRASSYGLIDE, :HEALBELL, :HEX, :HYPERVOICE, :INFESTATION, :LASERFOCUS, :LEAFBLADE, :LEAFSTORM, :LEECHLIFE, :MAGICCOAT, :MAGICROOM, :MAGICALLEAF, :NASTYPLOT, :NATUREPOWER, :PAINSPLIT, :PHANTOMFORCE, :PINMISSILE, :POLTERGEIST, :POWERGEM, :POWERWHIP, :PSYCHUP, :QUASH, :RAINDANCE, :SCARYFACE, :SCREECH, :SEEDBOMB, :SHADOWBALL, :SKILLSWAP, :SNATCH, :SOLARBEAM, :SPIKES, :SPITE, :SUCKERPUNCH, :SUNNYDAY, :SWORDSDANCE, :SYNTHESIS, :TAUNT, :THROATCHOP, :TOXICSPIKES, :TRICK, :UPROAR, :VENOMDRENCH, :VENOSHOCK, :WATERPULSE, :WILLOWISP, :WONDERROOM, :WORKUP, :WORRYSEED, :IRRITATION])
-              .set_dex_entry("It knows the swamp it lives in like no other and blends in perfectly. It's more timid than its regular counterpart, and doesn't like showing itself to bypassers.")
-              .asset_override(asset: "UniLib/Assets/Battlers/misdreavus-aevian.png", asset_egg: "UniLib/Assets/Battlers/misdreavus-aevian_egg.png", icon: "UniLib/Assets/Icons/misdreavus-aevian.png", icon_egg: "UniLib/Assets/Icons/misdreavus-aevian_egg.png")
-              .get_form
-
   SHROOMISH_AEVIAN = PokeModifier.add_form(:SHROOMISH, "Aevian Form")
               .level_moves_overwrite
               .egg_moves_overwrite
@@ -325,22 +309,6 @@ if Reborn
               .compatible_moves([:AERIALACE, :ARENITEWALL, :AURASPHERE, :BEATUP, :BRICKBREAK, :BRUTALSWING, :BULLDOZE, :CHARM, :CLOSECOMBAT, :COACHING, :COVET, :CUT, :DARKPULSE, :DEFOG, :DIG, :DRAINPUNCH, :DUALCHOP, :DYNAMICPUNCH, :EARTHPOWER, :EARTHQUAKE, :ECHOEDVOICE, :ENCORE, :ENDEAVOR, :FIREPUNCH, :FOCUSBLAST, :FOCUSPUNCH, :FOULPLAY, :GIGAIMPACT, :GUNKSHOT, :HYPERBEAM, :KNOCKOFF, :LASERFOCUS, :LASTRESORT, :LOWKICK, :LOWSWEEP, :MEGAPUNCH, :METRONOME, :MUDSHOT, :NATUREPOWER, :PAYBACK, :PINMISSILE, :PLAYROUGH, :POISONJAB, :POISONSWEEP, :POWERGEM, :POWERUPPUNCH, :RETALIATE, :RETURN, :REVERSAL, :ROCKBLAST, :ROCKSMASH, :ROCKTOMB, :ROCKSLIDE, :ROLEPLAY, :SANDTOMB, :SANDSTORM, :SCORCHINGSANDS, :SHADOWBALL, :SLEEPTALK, :SMACKDOWN, :SNARL, :SNATCH, :SPIKES, :STACKINGSHOT, :STEALTHROCK, :STOMPINGTANTRUM, :STONEEDGE, :STOREDPOWER, :STRENGTH, :SUCKERPUNCH, :SUNNYDAY, :SUPERPOWER, :THIEF, :THROATCHOP, :TORMENT, :TOXICSPIKES, :UPROAR, :VACUUMWAVE, :WEATHERBALL, :WORKUP, :ARENITEWALL, :MUDBARRAGE, :POISONSWEEP, :STACKINGSHOT])
               .set_dex_entry("Now predator instead of prey, Roserade hunts for resources during sandstorms, its sand cloak allowing for perfect camouflage. It defends its territory fiercely.")
               .asset_override(asset: "UniLib/Assets/Battlers/roserade-aevian.png", asset_f: "UniLib/Assets/Battlers/roserade-aevian_f.png", icon: "UniLib/Assets/Icons/roserade-aevian.png", icon_f: "UniLib/Assets/Icons/roserade-aevian_f.png")
-              .get_form
-
-  MISMAGIUS_AEVIAN = PokeModifier.add_form(:MISMAGIUS, "Aevian Form")
-              .level_moves_overwrite
-              .egg_moves_overwrite
-              .compatible_moves_overwrite
-              .types({:Type1 => :GRASS, :Type2 => :GHOST})
-              .stats([60, 105, 60, 105, 60, 105])
-              .abilities({0 => :MAGICBOUNCE, 1 => :POISONPOINT, 2 => :TANGLINGHAIR})
-              .set_ev([0, 0, 0, 1, 1, 0])
-              .set_preevo({:species=>:MISDREAVUS, :form=>1})
-              .level_moves([[1, :POISONJAB], [1, :POWERGEM], [1, :PHANTOMFORCE], [1, :LUCKYCHANT], [1, :MAGICALLEAF], [1, :GROWL], [1, :VINEWHIP], [1, :POISONPOWDER], [1, :ASTONISH], [0, :HEXINGSLASH]])
-              .egg_moves([])
-              .compatible_moves([:ACROBATICS, :AERIALACE, :ALLYSWITCH, :BATONPASS, :BIND, :BULLETSEED, :CROSSPOISON, :CUT, :DRAININGKISS, :ECHOEDVOICE, :EMBARGO, :ENERGYBALL, :FUTURESIGHT, :GASTROACID, :GIGADRAIN, :GIGAIMPACT, :GRASSKNOT, :GRASSYGLIDE, :GRASSYTERRAIN, :GUNKSHOT, :HEALBELL, :HEX, :HONECLAWS, :HYPERBEAM, :HYPERVOICE, :INFESTATION, :KNOCKOFF, :LASERFOCUS, :LEAFBLADE, :LEAFSTORM, :LEECHLIFE, :MAGICROOM, :MAGICALLEAF, :MUDDYWATER, :NASTYPLOT, :NATUREPOWER, :PAINSPLIT, :PHANTOMFORCE, :PINMISSILE, :POISONJAB, :POLTERGEIST, :POWERGEM, :POWERWHIP, :PSYCHUP, :QUASH, :RAINDANCE, :ROCKTOMB, :SCARYFACE, :SCREECH, :SEEDBOMB, :SHADOWBALL, :SHADOWCLAW, :SKILLSWAP, :SLUDGEWAVE, :SMACKDOWN, :SNATCH, :SOLARBEAM, :SOLARBLADE, :SPIKES, :SPITE, :STRENGTH, :SUCKERPUNCH, :SUNNYDAY, :SWORDSDANCE, :SYNTHESIS, :TAUNT, :THROATCHOP, :TOXICSPIKES, :TRICK, :UPROAR, :VENOMDRENCH, :VENOSHOCK, :WATERPULSE, :WILLOWISP, :WONDERROOM, :WORKUP, :WORRYSEED, :XSCISSOR, :IRRITATION, :SLASHANDBURN])
-              .set_dex_entry("A gentle but misleadingly strong Pokémon, it helps those who got lost in the wetlands find their way out... At the cost of a little of their life force.")
-              .asset_override(asset: "UniLib/Assets/Battlers/mismagius-aevian.png", icon: "UniLib/Assets/Icons/mismagius-aevian.png")
               .get_form
 
   BRONZOR_AEVIAN = PokeModifier.add_form(:BRONZOR, "Aevian Form")
