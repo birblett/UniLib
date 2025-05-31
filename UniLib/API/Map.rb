@@ -155,3 +155,49 @@ module MapEvent
   end
 
 end
+
+class EncounterMod
+
+  <<-DOC
+  >> encounter mod targets, can also be passed as an array of targets
+  DOC
+  LAND = 0
+  CAVE = 1
+  WATER = 2
+  ROCKSMASH = 3
+  OLDROD = 4
+  GOODROD = 5
+  SUPERROD = 6
+  HEADBUTT = 7
+  LANDMORNING = 8
+  LANDDAY = 9
+  LANDNIGHT = 10
+  BUGCONTEST = 11
+
+  ALL_LAND = [LAND, LANDMORNING, LANDDAY, LANDNIGHT]
+  ALL_TYPES = [LAND, CAVE, WATER, ROCKSMASH, OLDROD, GOODROD, SUPERROD, HEADBUTT, LANDMORNING, LANDDAY, LANDNIGHT, BUGCONTEST]
+
+  <<-DOC
+  >> supported operations:
+  >>   - :ADD - adds to an existing encounter, otherwise creates a new entry. argument must be of [weight, minlevel, maxlevel]
+  >>   - :REPLACE - overwrites existing encounters of the species. argument can either be [weight, minlevel, maxlevel] or array of them
+  >>   - :REMOVE - removes species from target encounter pool. no argument.
+  DOC
+  def self.add_new(map_id, target, species, operation, argument = nil)
+    (m = MODIFIERS[map_id] ||= EncounterMod.new(map_id)).modifiers.push([target, species, operation, argument])
+    m
+  end
+
+  def self.add(map_id)
+    MODIFIERS[map_id] ||= EncounterMod.new(map_id)
+  end
+
+  def add(target, species, operation, argument = nil) = EncounterMod.add(@map_id, target, species, operation, argument)
+
+  def enable_logging
+    @logging = true
+    self
+  end
+
+
+end
