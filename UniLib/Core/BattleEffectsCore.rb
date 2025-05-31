@@ -34,7 +34,7 @@ class BattleEffects < EventProvider
     CUSTOM_BATTLE_EFFECTS[effect].event_hash[id]
   end
 
-end unless UniLib.lib_loaded(__FILE__)
+end
 
 class PokeBattle_Battler
 
@@ -55,7 +55,7 @@ class PokeBattle_Battler
 
   self.add_listeners(2, :effect_event_value, :apply_effect_event)
 
-end unless UniLib.lib_loaded(__FILE__)
+end
 
 # ======================================================================================================================================== #
 # ================================================================ PATCH ================================================================= #

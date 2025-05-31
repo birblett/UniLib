@@ -111,7 +111,7 @@ class PokeBattle_Pokemon
 
   self.add_listeners(1, :item_event_value, :apply_item_event)
 
-end unless UniLib.lib_loaded(__FILE__)
+end
 
 class PokeBattle_Battler
 
@@ -128,7 +128,7 @@ class PokeBattle_Battler
 
   self.add_listeners(1, :item_event_value, :apply_item_event)
 
-end unless UniLib.lib_loaded(__FILE__)
+end
 
 # ======================================================================================================================================== #
 # ================================================================ EVENTS ================================================================ #
@@ -202,11 +202,6 @@ UniLib.add_save_event(:write_invalid_items)
 # ======================================================================================================================================== #
 # ================================================================ PATCH ================================================================= #
 # ======================================================================================================================================== #
-
-def check_type(type, vtypes, map)
-  vtypes.each { |vtype| return map[vtype].include?(type) unless map[vtype].nil? }
-  nil
-end unless UniLib.lib_loaded(__FILE__)
 
 UniLib.insert_in_function(:pbItemIconFile, :HEAD,
   "unless UniLib::CUSTOM_ITEMS[item].nil?
