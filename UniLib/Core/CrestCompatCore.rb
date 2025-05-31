@@ -24,6 +24,7 @@ if Reborn
 
   # buggy stat boost, include Fixes if using
   CrestBuilder.add(:CHERRIM, "Activates Flower Gift.")
+              .add_receiver(:CHERRIM, "Sunshine")
 
   CrestBuilder.add(:CINCCINO, "All moves hit 2-5 times at 0.3x power.")
 
