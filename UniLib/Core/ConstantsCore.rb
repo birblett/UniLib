@@ -28,7 +28,7 @@ module UniLib
                           :QMARKS => [], :FIRE => [:BUG, :FIRE, :GRASS, :ICE], :WATER => [:FIRE, :STEEL, :WATER, :ICE],
                           :GRASS => [:GROUND, :WATER, :GRASS, :ELECTRIC], :ELECTRIC => [:FLYING, :ELECTRIC],
                           :PSYCHIC => [:FIGHTING, :PSYCHIC], :ICE => [:ICE], :DRAGON => [:FIRE, :WATER, :GRASS, :ELECTRIC],
-                          :DARK => [:GHOST, :DARK], :FAIRY => [:FIGHTING, :BUG, :DARK], :GHOST => [:BUG] }
+                          :DARK => [:GHOST, :DARK], :FAIRY => [:FIGHTING, :BUG, :DARK], :GHOST => [:BUG, :POISON] }
 
   FULL_BODY_MOVES = [:AURAWHEEL, :BODYPRESS, :BODYSLAM, :DOUBLEEDGE, :FLAMECHARGE, :FLAMEWHEEL, :FLAREBLITZ, :FLYINGPRESS, :GIGAIMPACT,
                      :GYROBALL, :HEATCRASH, :HEAVYSLAM, :HIGHHORSEPOWER, :LUNGE, :RAGINGFURY, :RAPIDSPIN, :ROCKCLIMB, :ROLLOUT, :SKYDROP,
