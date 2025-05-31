@@ -20,29 +20,75 @@ module UniLib
   SESSION_DEBUG = Time.now.strftime("%Y_%m_%d-%H_%M_%S.log") unless defined? SESSION_DEBUG
   CLEAR_INJECTOR_CACHE = false
 
+  ABILITY = "Ability"
+  ASSET = "Asset"
+  BATTLE = "Battle"
+  BATTLE_EFFECTS = "BattleEffects"
+  CONSTANTS = "Constants"
+  CREST = "Crest"
+  CREST_COMPATIBILITY = "CrestCompat"
+  DISPLAY = "Display"
+  EVENTS = "Events"
+  EXTRA_MOVE_FLAGS = "ExtraMoveFlags"
+  FIXES = "Fixes"
+  FORM_PORTS = "FormPorts"
+  HELPER = "Helper"
+  ITEM = "Item"
+  MAP = "Map"
+  MOVE = "Move"
+  MULTIBILITY = "Multibility"
+  OPTIONS = "Options"
+  POKEMON = "Pokemon"
+  POKEMON_OM = "PokemonOM"
+  SWITCH = "Switch"
+
   MODULES = {
-    (ABILITY = "Ability") => 3,
-    (ASSET = "Asset") => 0,
-    (BATTLE = "Battle") => 0,
-    (BATTLE_EFFECTS = "BattleEffects") => 1,
-    (CONSTANTS = "Constants") => 3,
-    (CREST = "Crest") => 2,
-    (CREST_COMPATIBILITY = "CrestCompat") => 3,
-    (DISPLAY = "Display") => 0,
-    (EVENTS = "Events") => 0,
-    (EXTRA_MOVE_FLAGS = "ExtraMoveFlags") => 1,
-    (FIXES = "Fixes") => 3,
-    (FORM_PORTS = "FormPorts") => 4,
-    (HELPER = "Helper") => 0,
-    (ITEM = "Item") => 1,
-    (MAP = "Map") => 2,
-    (MOVE = "Move") => 0,
-    (MULTIBILITY = "Multibility") => 0,
-    (OPTIONS = "Options") => 0,
-    (POKEMON = "Pokemon") => 0,
-    (POKEMON_OM = "PokemonOM") => 1,
-    (SWITCH = "Switch") => 0,
+    ABILITY => 3,
+    ASSET => 0,
+    BATTLE => 0,
+    BATTLE_EFFECTS => 1,
+    CONSTANTS  => 3,
+    CREST => 2,
+    CREST_COMPATIBILITY => 3,
+    DISPLAY => 0,
+    EVENTS => 0,
+    EXTRA_MOVE_FLAGS => 1,
+    FIXES => 3,
+    FORM_PORTS => 4,
+    HELPER => 0,
+    ITEM => 1,
+    MAP => 2,
+    MOVE => 0,
+    MULTIBILITY => 0,
+    OPTIONS => 0,
+    POKEMON => 0,
+    POKEMON_OM  => 1,
+    SWITCH => 0,
   } unless defined? MODULES
+
+  CACHE_LEVELS = {
+    ABILITY => 3,
+    ASSET => 0,
+    BATTLE => 0,
+    BATTLE_EFFECTS => 1,
+    CONSTANTS  => 3,
+    CREST => 2,
+    CREST_COMPATIBILITY => 3,
+    DISPLAY => 0,
+    EVENTS => 0,
+    EXTRA_MOVE_FLAGS => 1,
+    FIXES => 3,
+    FORM_PORTS => 4,
+    HELPER => 0,
+    ITEM => 1,
+    MAP => 2,
+    MOVE => 0,
+    MULTIBILITY => 0,
+    OPTIONS => 0,
+    POKEMON => 0,
+    POKEMON_OM  => 1,
+    SWITCH => 0,
+  } unless defined? CACHE_LEVELS
 
   <<-DOC
   writes to current debug file, if enabled.
