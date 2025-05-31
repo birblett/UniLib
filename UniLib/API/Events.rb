@@ -177,10 +177,20 @@ class EventProvider
   @param proc - a function returning an array of two type modifiers
   >> adds a conditional type effectiveness setter. accepts 5 arguments, the attacker (PokeBattle_Battler), the target 
      (PokeBattle_Battler), the move (PokeBattle_Move), and the two current type modifiers. if not nil, both values in return array
-     must be numeric. the type modifiers will be set to the two given values.
+     must be numeric. the type modifiers will be set to the two given values.called by the attacker.
   DOC
-  def type_effectiveness_mod(proc=nil, &block)
-    add_or_create_event(:type_effectiveness, proc, block)
+  def attack_type_effectiveness_mod(proc=nil, &block)
+    add_or_create_event(:attack_type_effectiveness, proc, block)
+  end
+
+  <<-DOC
+  @param proc - a function returning an array of two type modifiers
+  >> adds a conditional type effectiveness setter. accepts 5 arguments, the attacker (PokeBattle_Battler), the defender 
+     (PokeBattle_Battler), the move (PokeBattle_Move), and the two current type modifiers. if not nil, both values in return array
+     must be numeric. the type modifiers will be set to the two given values. called by the defender.
+  DOC
+  def defend_type_effectiveness_mod(proc=nil, &block)
+    add_or_create_event(:defend_type_effectiveness, proc, block)
   end
 
   <<-DOC

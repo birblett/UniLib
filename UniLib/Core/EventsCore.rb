@@ -53,6 +53,11 @@ module EventListeners
   VALUE_LISTENERS = []
   EVENT_LISTENERS = []
 
+  def check_type(type, vtypes, map)
+    vtypes.each { |vtype| return map[vtype].include?(type) unless map[vtype].nil? }
+    nil
+  end
+
 end
 
 class PokeBattle_Battler
@@ -119,26 +124,26 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbUpdate, "crestStats if @crested"
 # resistance modifiers and overrides
 target = Reborn ? "if typemod == 0" : "if opponent.crested"
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModMessages, target,
-  "VALUE_LISTENERS.each { |_, method| method.bind(attacker).(:forced_resistance) { |forced| typemod = forced[type] unless forced[type].nil? } }
-  VALUE_LISTENERS.each { |_, method| method.bind(attacker).(:fake_reduce_weakness) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_WEAKNESS_MAP) } }
-  VALUE_LISTENERS.each { |_, method| method.bind(attacker).(:fake_resistance) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_RESISTANCE_MAP) } }
-  VALUE_LISTENERS.each { |_, method| method.bind(attacker).(:fake_immunity) { |arr| typemod *= 0 if check_type(type, arr, UniLib::TYPE_RESISTANCE_MAP) } }
-  EVENT_LISTENERS.each { |_, method| method.bind(attacker).(:type_effectiveness_simple, opponent, type, true) { |m| typemod *= m if m } }
+  "VALUE_LISTENERS.each { |_, method| method.bind(opponent).(:forced_resistance) { |forced| typemod = forced[type] unless forced[type].nil? } }
+  VALUE_LISTENERS.each { |_, method| method.bind(opponent).(:fake_reduce_weakness) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_WEAKNESS_MAP) } }
+  VALUE_LISTENERS.each { |_, method| method.bind(opponent).(:fake_resistance) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_RESISTANCE_MAP) } }
+  EVENT_LISTENERS.each { |_, method| method.bind(opponent).(:type_effectiveness_simple, opponent, type, true) { |m| typemod *= m if m } }
   typemod = 0 if typemod < 0")
 
 # resistance modifiers and overrides (ai)
 target = Reborn ? "if id == :FLYINGPRESS" : "case opponent.crested"
 UniLib.insert_in_method_before(:PokeBattle_AI, :pbTypeModNoMessages, target,
-  "VALUE_LISTENERS.each { |_, method| method.bind(attacker).(:forced_resistance) { |forced| typemod = forced[type] unless forced[type].nil? } }
-  VALUE_LISTENERS.each { |_, method| method.bind(attacker).(:fake_reduce_weakness) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_WEAKNESS_MAP) } }
-  VALUE_LISTENERS.each { |_, method| method.bind(attacker).(:fake_resistance) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_RESISTANCE_MAP) } }
-  EVENT_LISTENERS.each { |_, method| method.bind(attacker).(:type_effectiveness_simple, opponent, type, false) { |m| typemod *= m if m } }
+  "VALUE_LISTENERS.each { |_, method| method.bind(opponent).(:forced_resistance) { |forced| typemod = forced[type] unless forced[type].nil? } }
+  VALUE_LISTENERS.each { |_, method| method.bind(opponent).(:fake_reduce_weakness) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_WEAKNESS_MAP) } }
+  VALUE_LISTENERS.each { |_, method| method.bind(opponent).(:fake_resistance) { |arr| typemod /= 2 if check_type(type, arr, UniLib::TYPE_RESISTANCE_MAP) } }
+  EVENT_LISTENERS.each { |_, method| method.bind(opponent).(:type_effectiveness_simple, opponent, type, false) { |m| typemod *= m if m } }
   typemod = 0 if typemod < 0", Reborn ? 0 : 1)
 
 # move type effectiveness modifier
 target = Reborn ? "return mod1 * mod2" : "return mod1*mod2"
 UniLib.insert_in_method_before(:PokeBattle_Move, :pbTypeModifier, target,
-  "EVENT_LISTENERS.each { |_, method| method.bind(attacker).(:type_effectiveness, attacker, opponent, self, mod1, mod2) { |mod| mod1, mod2 = mod[0], mod[1] } }")
+  "EVENT_LISTENERS.each { |_, method| method.bind(attacker).(:attack_type_effectiveness, attacker, opponent, self, mod1, mod2) { |mod| mod1, mod2 = mod[0], mod[1] } }
+  EVENT_LISTENERS.each { |_, method| method.bind(opponent).(:defend_type_effectiveness, attacker, opponent, self, mod1, mod2) { |mod| mod1, mod2 = mod[0], mod[1] } }")
 
 # move stab override
 UniLib.insert_in_method(:PokeBattle_Move, :pbCalcDamage, "typecrest = false",
