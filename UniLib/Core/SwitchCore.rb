@@ -10,7 +10,7 @@ UniLib.verify_version(0.8, __FILE__)
 
 unless UniLib.lib_loaded(__FILE__)
 
-  def unilib_read_switches(save)
+  def unilib_read_switches(save = {})
     $unilib_switches = save[:UniLibSwitches] ? save[:UniLibSwitches] : {}
   end
 
@@ -22,6 +22,7 @@ end
 
 UniLib.add_load_event(:unilib_read_switches)
 UniLib.add_save_event(:unilib_write_switches)
+UniLib.add_new_file_event(:unilib_read_switches)
 
 # ======================================================================================================================================== #
 # ================================================================ PATCH ================================================================= #
