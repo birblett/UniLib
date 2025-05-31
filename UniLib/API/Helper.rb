@@ -83,10 +83,6 @@ module UniLib
     UniLib.dev_log(s[0]) if start
   end
 
-  def self.print_obj(obj)
-    self.obj_print(obj)
-  end
-
 end
 
 class NumberContainer
