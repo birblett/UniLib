@@ -12,14 +12,16 @@ UniLib.include "Item"
 # ============================================================ INTERNAL/CORE ============================================================= #
 # ======================================================================================================================================== #
 
-ItemBuilder.add(:CATALYZER, "Catalyzer", "May activate the user's hidden potential.")
-           .no_use
-           .no_use_in_battle
-           .unlosable { |pkmn| next (UniLib::POKEBILITIES_POKEMON[key = [pkmn.species, pkmn.form]] == 1 or UniLib::CAMO_POKEMON[key] == 1) }
+unless UniLib.cached(UniLib::ITEM)
+
+  ItemBuilder.add(:CATALYZER, "Catalyzer", "May activate the user's hidden potential.")
+             .no_use
+             .no_use_in_battle
+             .unlosable { |pkmn| next (UniLib::POKEBILITIES_POKEMON[key = [pkmn.species, pkmn.form]] == 1 or UniLib::CAMO_POKEMON[key] == 1) }
+
+end
 
 module UniLib
-
-  CUSTOM_ABILITY_BANS = []
 
   unless lib_loaded(__FILE__)
 
@@ -96,17 +98,22 @@ module UniLib
 
   end
 
-  AAA_POKEMON = {}
-  STAB_POKEMON = {}
-  PLATE_POKEMON = {}
-  CUSTOM_PLATE_MAP = {}
-  ALPHABET_POKEMON = {}
-  CAMO_POKEMON = {}
-  CUSTOM_POKEMON_ABILITIES = []
-  POKEBILITIES_POKEMON = {}
+  unless UniLib.cached(UniLib::POKEMON_OM)
 
-  UniLib::ABILITY_DATA.each do |key, value|
-    CUSTOM_POKEMON_ABILITIES.push([key, value.name]) unless BANNED_ABILITIES.include?(key)
+    AAA_POKEMON = {}
+    STAB_POKEMON = {}
+    PLATE_POKEMON = {}
+    CUSTOM_PLATE_MAP = {}
+    ALPHABET_POKEMON = {}
+    CAMO_POKEMON = {}
+    CUSTOM_POKEMON_ABILITIES = []
+    POKEBILITIES_POKEMON = {}
+    CUSTOM_ABILITY_BANS = []
+
+    UniLib::ABILITY_DATA.each do |key, value|
+      CUSTOM_POKEMON_ABILITIES.push([key, value.name]) unless BANNED_ABILITIES.include?(key)
+    end
+
   end
 
 end
@@ -156,7 +163,6 @@ class PokeModifier
         modifier.egg_moves(UniLib::TYPE_MAPPED_MOVES[type2])
         modifier.compatible_moves(UniLib::TYPE_MAPPED_MOVES[type2])
       end
-
     end
     UniLib::ALPHABET_POKEMON[key] = modifier.alphabet if modifier.alphabet.length > 0
     modifier.set_plates_internal(modifier.plates) unless modifier.plates.empty?
@@ -182,7 +188,7 @@ class PokeModifier
     end
   end
 
-end unless UniLib.lib_loaded(__FILE__)
+end
 
 PokeModifier::EVENT_POKEMODIFIER_INIT.push(PokeModifier::OM_MODIFIER_INIT)
 PokeModifier::EVENT_POKEMODIFIER_POST_BUILD.push(PokeModifier::OM_MODIFIER_BUILD)

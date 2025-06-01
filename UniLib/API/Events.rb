@@ -13,13 +13,6 @@ class EventProvider
   <<-DOC
   >> injects a block of code after the specified target in the target move.
   DOC
-  def self.get_event(ability, id)
-    CUSTOM_ABILITIES[ability].event_hash[id]
-  end
-
-  <<-DOC
-  >> injects a block of code after the specified target in the target move.
-  DOC
   def insert_in_move(id, method, target, proc, index=0, priority=1000)
     return self if UniLib.has_valid_cache
     clazz = ("PokeBattle_Move_" + id.to_s).to_sym
@@ -54,6 +47,7 @@ class EventProvider
      corresponding to hp, atk, def, spa, spd, spe. use the NumberContainers to perform in-place modifications to stats.
   DOC
   def base_stat_mods(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:base_stat_mods, proc, block)
   end
 
@@ -62,9 +56,9 @@ class EventProvider
   >> equivalent to weakness_override + secondary_type, always active
   DOC
   def secondary_no_weakness(type)
+    return self if UniLib.cached(UniLib::EVENTS)
     weakness_fake(type)
     secondary_type(type)
-    self
   end
 
   <<-DOC
@@ -72,6 +66,7 @@ class EventProvider
   >> gives user STAB and resistances of the given type(s)
   DOC
   def type_fake(type)
+    return self if UniLib.cached(UniLib::EVENTS)
     stab_override(type)
     resistance_fake(type)
   end
@@ -81,6 +76,7 @@ class EventProvider
   >> conditional proc to set the user's base primary type. accepts 1 argument, the user (PokeBattle_Pokemon); returns a type symbol.
   DOC
   def primary_type(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:primary_type, proc.is_a?(Symbol) ? Proc.new { proc } : proc, block)
   end
 
@@ -89,6 +85,7 @@ class EventProvider
   >> conditional proc to set the user's base secondary type. accepts 1 argument, the user (PokeBattle_Pokemon); returns a type symbol.
   DOC
   def secondary_type(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:secondary_type, proc.is_a?(Symbol) ? Proc.new { proc } : proc, block)
   end
 
@@ -98,6 +95,7 @@ class EventProvider
      switch-in or not; returns a type symbol.
   DOC
   def type1_battle(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:type1_battle, proc, block)
   end
 
@@ -107,6 +105,7 @@ class EventProvider
      switch-in or not; returns a type symbol.
   DOC
   def type2_battle(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:type2_battle, proc, block)
   end
 
@@ -115,6 +114,7 @@ class EventProvider
   >> allows the user to receive STAB-bonuses from the given type.
   DOC
   def stab_override(type)
+    return self if UniLib.cached(UniLib::EVENTS)
     @event_hash[:stab_type] = [] unless @event_hash[:stab_type]
     @event_hash[:stab_type] += type.is_a?(Array) ? type : [type]
     self
@@ -126,6 +126,7 @@ class EventProvider
      the user (PokeBattle_Battler) and the move (PokeBattle_Move)
   DOC
   def conditional_stab_override(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:conditional_stab_type, proc, block)
   end
 
@@ -135,6 +136,7 @@ class EventProvider
   >> forces the user resist the given type(s).
   DOC
   def force_resistance(type, resistance_level=2)
+    return self if UniLib.cached(UniLib::EVENTS)
     @event_hash[:forced_resistance] = {} unless @event_hash[:forced_resistance]
     if type.is_a? Array
       type.each { |t| @event_hash[:forced_resistance][t] = resistance_level }
@@ -149,6 +151,7 @@ class EventProvider
   >> allows the user to lose the weaknesses of the given type.
   DOC
   def weakness_fake(type)
+    return self if UniLib.cached(UniLib::EVENTS)
     @event_hash[:fake_reduce_weakness] = [] unless @event_hash[:fake_reduce_weakness]
     @event_hash[:fake_reduce_weakness] += type.is_a?(Array) ? type : [type]
     self
@@ -159,6 +162,7 @@ class EventProvider
   >> allows the user to gain the resistances of the given type. 
   DOC
   def resistance_fake(type)
+    return self if UniLib.cached(UniLib::EVENTS)
     @event_hash[:fake_resistance] = [] unless @event_hash[:fake_resistance]
     @event_hash[:fake_resistance] += type.is_a?(Array) ? type : [type]
     self
@@ -170,6 +174,7 @@ class EventProvider
      messages should be sent in the current context (boolean).
   DOC
   def type_effectiveness_mod_simple(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:type_effectiveness_simple, proc, block)
   end
 
@@ -180,6 +185,7 @@ class EventProvider
      must be numeric. the type modifiers will be set to the two given values.called by the attacker.
   DOC
   def attack_type_effectiveness_mod(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:attack_type_effectiveness, proc, block)
   end
 
@@ -190,6 +196,7 @@ class EventProvider
      must be numeric. the type modifiers will be set to the two given values. called by the defender.
   DOC
   def defend_type_effectiveness_mod(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:defend_type_effectiveness, proc, block)
   end
 
@@ -199,6 +206,7 @@ class EventProvider
      corresponding to hp, atk, def, spa, spd, spe. use the NumberContainers to perform in-place modifications to stats.
   DOC
   def battle_stat_mods(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     UniLib.include "NumberContainer"
     add_or_create_event(:battle_stat_calc, proc, block)
   end
@@ -209,6 +217,7 @@ class EventProvider
      current battle conditions.
   DOC
   def battle_speed_mods(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:battle_speed_calc, proc, block)
   end
 
@@ -219,6 +228,7 @@ class EventProvider
      AI damage calcs. should return a single numeric damage multiplier.
   DOC
   def damage_mod(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:damage_mod, proc, block)
   end
 
@@ -229,6 +239,7 @@ class EventProvider
      AI calculation. should return a single numeric damage multiplier.
   DOC
   def damage_taken_mod(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:damage_taken_mod, proc, block)
   end
 
@@ -239,6 +250,7 @@ class EventProvider
      NumberContainers; return any non-falsy value for the move to always hit.
   DOC
   def accuracy_mod(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:accuracy_mod, proc, block)
   end
 
@@ -248,6 +260,7 @@ class EventProvider
      return a single numeric priority modifier.
   DOC
   def priority_mod(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:move_priority, proc, block)
   end
 
@@ -257,6 +270,7 @@ class EventProvider
      (PokeBattle_Move). return a critical hit modifier. final modifier is clamped to [-1, 3].
   DOC
   def crit_mod(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:crit_mod, proc, block)
   end
 
@@ -266,6 +280,7 @@ class EventProvider
      move used (PokeBattle_Move). should return an additive hit number modifier.
   DOC
   def hit_count_mod(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:hit_count_mod, proc, block)
   end
 
@@ -275,6 +290,7 @@ class EventProvider
      should return a type symbol.
   DOC
   def move_type_override(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:move_type_override, proc, block)
   end
 
@@ -284,6 +300,7 @@ class EventProvider
      return a type symbol.
   DOC
   def move_subtype(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:move_subtype, proc, block)
   end
 
@@ -294,6 +311,7 @@ class EventProvider
      (PokeBattle_Move), and returns a stat symbol. invalid symbols will be ignored.
   DOC
   def move_stat_override(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:move_stat_override, proc, block)
   end
 
@@ -303,6 +321,7 @@ class EventProvider
      (PokeBattle_Battle), persistent effects (Hash), and whether the caller is the battle AI or not (boolean).
   DOC
   def on_effects_init(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:effects_init, proc, block)
   end
 
@@ -312,6 +331,7 @@ class EventProvider
      (PokeBattle_Battle), and the index of the pokemon entering.
   DOC
   def on_battle_entry(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:battle_entry, proc, block)
   end
 
@@ -321,6 +341,7 @@ class EventProvider
      (PokeBattle_Move)
   DOC
   def on_move_attempt(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:try_move, proc, block)
   end
 
@@ -330,6 +351,7 @@ class EventProvider
      the hit number, and the move (PokeBattle_Move)
   DOC
   def move_effect(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:move_effect, proc, block)
   end
 
@@ -339,6 +361,7 @@ class EventProvider
      the hit number, and the move (PokeBattle_Move)
   DOC
   def after_move_effect(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:after_move_effect, proc, block)
   end
 
@@ -348,6 +371,7 @@ class EventProvider
      (PokeBattle_Battler), the move used (PokeBattle_Move), and the numeric damage value. this is called even if a move fails. 
   DOC
   def on_damage_dealt(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:damage_dealt, proc, block)
   end
 
@@ -357,6 +381,7 @@ class EventProvider
      (PokeBattle_Battler), and the move used (PokeBattle_Move).
   DOC
   def on_ko(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:on_ko, proc, block)
   end
 
@@ -366,6 +391,7 @@ class EventProvider
      (PokeBattle_Battler), the move used (PokeBattle_Move), and the numeric damage value.
   DOC
   def on_damage_taken(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:damage_taken, proc, block)
   end
 
@@ -374,6 +400,7 @@ class EventProvider
   >> an event hook for when a the current turn ends. accepts a single PokeBattle_Battler argument.
   DOC
   def on_turn_end(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:turn_end, proc, block)
   end
 
@@ -382,6 +409,7 @@ class EventProvider
   >> an event hook called when switching out. accepts 1 argument, the pokemon being switched (PokeBattle_Battler).
   DOC
   def on_switch_out(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:switch_out, proc, block)
   end
 
@@ -391,6 +419,7 @@ class EventProvider
      corresponding to the form.
   DOC
   def form_change(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:form_change, proc, block)
   end
 
@@ -400,6 +429,7 @@ class EventProvider
      return an additive score modifier.
   DOC
   def switch_in_score(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:switch_in_score, proc, block)
   end
 
@@ -409,6 +439,7 @@ class EventProvider
      the defender (PokeBattle_Pokemon), and the move (PokeBattle_Move); returns a move score modifier.
   DOC
   def move_score(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:move_score, proc, block)
   end
 
@@ -418,6 +449,7 @@ class EventProvider
      the attacker (PokeBattle_Pokemon), and the move (PokeBattle_Move); returns a move score modifier. 
   DOC
   def targeted_by_move_score(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:targeted_by_move, proc, block)
   end
 
@@ -427,6 +459,7 @@ class EventProvider
      and the defender (PokeBattle_Pokemon); returns a move score modifier (added).
   DOC
   def should_switch_score(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:should_switch_score, proc, block)
   end
 
@@ -436,6 +469,7 @@ class EventProvider
      a symbol corresponding to a role (i.e. :SWEEPER or :STATUSABSORBER)
   DOC
   def role_provider(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:roles, proc, block)
   end
 

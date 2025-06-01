@@ -12,8 +12,8 @@ UniLib.include "Events"
 
 module UniLib
 
-  CUSTOM_BATTLE_EFFECTS = {}
-  BOSS_NEGATIVE_EFFECTS = {}
+  CUSTOM_BATTLE_EFFECTS = {} unless UniLib.cached(UniLib::BATTLE_EFFECTS)
+  BOSS_NEGATIVE_EFFECTS = {} unless UniLib.cached(UniLib::BATTLE_EFFECTS)
 
 end
 

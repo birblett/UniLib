@@ -11,7 +11,7 @@ UniLib.verify_version(0.8, __FILE__)
 module Assets
 
   def self.redirect(type, base, target=nil, &block)
-    return if target.nil? and block.nil?
+    return if target.nil? and block.nil? or UniLib.cached(UniLib::ASSET)
     case type
     when :BMP then ANIMATED_BITMAP_REDIRECT[base] = block ? [UniLib.path(""), block] : UniLib.path(target)
     when :AUDIO then AUDIO_FILE_REDIRECT[base] = block ? ["../../#{UniLib.path("")}", block] : "../../#{UniLib.path(target)}"
@@ -21,7 +21,7 @@ module Assets
   end
 
   def self.redirect_pkmn_detailed(species, form, asset = nil, asset_f = nil, egg = nil, egg_f = nil)
-    UniLib.path(asset)
+    return if UniLib.cached(UniLib::ASSET)
     arr = (PKMN_REDIRECT[[species, form]] ||= [nil, nil, nil, nil, nil, nil, nil, nil])
     arr[0] = UniLib.path(asset) if asset
     arr[1] = UniLib.path(asset_f) if asset_f
@@ -30,6 +30,7 @@ module Assets
   end
 
   def self.redirect_pkmn_icon(species, form, asset = nil, asset_f = nil, egg = nil, egg_f = nil)
+    return if UniLib.cached(UniLib::ASSET)
     arr = (PKMN_REDIRECT[[species, form]] ||= [nil, nil, nil, nil, nil, nil, nil, nil])
     arr[4] = UniLib.path(asset) if asset
     arr[5] = UniLib.path(asset_f) if asset_f
@@ -46,6 +47,7 @@ module Assets
   end
 
   def self.register_bgm_provider(type, bgms, persistent=false)
+    return if UniLib.cached(UniLib::ASSET)
     id = (persistent and BGM_REGISTRY_OLD[type]) ? BGM_REGISTRY_OLD[type][1] : -1
     BGM_REGISTRY_OLD[type] = BGM_REGISTRY[type] = [bgms, id]
   end

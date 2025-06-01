@@ -10,14 +10,17 @@ UniLib.verify_version(0.8, __FILE__)
 
 module UniLib
 
-  unless UniLib.lib_loaded(__FILE__)
-    TRAINERS = load_data("Data/trainers.dat")
-    BOSSES = load_data("Data/bossdata.dat")
+  TRAINERS = load_data("Data/trainers.dat") unless defined? TRAINERS
+  BOSSES = load_data("Data/bossdata.dat") unless defined? BOSSES
+
+  unless UniLib.cached(UniLib::BATTLE)
+
+    TRAINER_DATA = {}
+    BOSS_DATA = {}
+    TRAINER_CACHE = {}
+    BOSS_CACHE = {}
+
   end
-  TRAINER_DATA = {}
-  BOSS_DATA = {}
-  TRAINER_CACHE = {}
-  BOSS_CACHE = {}
   $trainer_modifier_debug = false
 
 end

@@ -16,7 +16,6 @@ module UniLib
 
     SUB_2 = "../../"
     MOD_DIR = "#{File.dirname(__FILE__)}/#{SUB_2}"
-    CACHE_AGGRESSIVE = [0]
     CODE_INJECTOR_ENTRYPOINT = method(:pbCallTitle)
 
     def self.get_or_create_method_attr(clazz, method, sym, default)
@@ -125,9 +124,7 @@ module UniLib
       true
     end
 
-    def self.cache_aggressive
-      !CACHE_AGGRESSIVE.empty?
-    end
+    def self.cache_aggressive = UniLib.cached(UniLib::CODE_INJECTOR)
 
     def self.has_valid_cache
       self.cache_aggressive and $code_injector_aggressive_cache

@@ -184,15 +184,17 @@ class EncounterMod
   >>   - :REMOVE - removes species from target encounter pool. no argument.
   DOC
   def self.add_new(map_id, target, species, operation, argument = nil)
+    return EncounterMod.new(map_id) if UniLib.cached(UniLib::MAP)
     (m = MODIFIERS[map_id] ||= EncounterMod.new(map_id)).modifiers.push([target, species, operation, argument])
     m
   end
 
   def self.add(map_id)
+    return EncounterMod.new(map_id) if UniLib.cached(UniLib::MAP)
     MODIFIERS[map_id] ||= EncounterMod.new(map_id)
   end
 
-  def add(target, species, operation, argument = nil) = EncounterMod.add(@map_id, target, species, operation, argument)
+  def add(target, species, operation, argument = nil) = EncounterMod.add_new(@map_id, target, species, operation, argument)
 
   def enable_logging
     @logging = true

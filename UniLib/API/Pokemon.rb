@@ -15,13 +15,6 @@ DOC
 class PokeModifier
 
   <<-DOC
-  forcibly refreshes abilities on load. ability capsules will be overridden if replacing an existing ability.
-  DOC
-  def self.force_refresh_abilities
-    $force_refresh_abilities = true
-  end
-
-  <<-DOC
   @param species - pokemon symbolic constant (i.e. :NINETALES)
   @param form - a form, in string or integer representation (i.e. "Alolan", "Mega") - default 0
   @param force - if true, replaces the existing entry if it exists - default false
@@ -59,6 +52,7 @@ class PokeModifier
   @param form_str - a form in string representation only
   DOC
   def add_mega(stone, form_str)
+    return self if UniLib.cached(POKEMON)
     @megas[stone] = form_str
     self
   end
@@ -69,6 +63,7 @@ class PokeModifier
   >> overwrites existing typings
   DOC
   def types(types)
+    return self if UniLib.cached(POKEMON)
     @types = types
     self
   end
@@ -78,6 +73,7 @@ class PokeModifier
   >> sets primary type
   DOC
   def type1(type)
+    return self if UniLib.cached(POKEMON)
     @types[:Type1] = type
     self
   end
@@ -87,6 +83,7 @@ class PokeModifier
   >> sets secondary type
   DOC
   def type2(type)
+    return self if UniLib.cached(POKEMON)
     @types[:Type2] = type
     self
   end
@@ -101,6 +98,7 @@ class PokeModifier
   >> overwrites a pokemon's existing stats with the provided stats
   DOC
   def stats(hp = 0, attack = 0, defense = 0, spa = 0, spd = 0, spe = 0)
+    return self if UniLib.cached(POKEMON)
     @stats = get_base_data(:BaseStats) unless @stats
     stats = hp.is_a?(Array) ? hp : [hp, attack, defense, spa, spd, spe]
     if stats.length != 6
@@ -117,6 +115,7 @@ class PokeModifier
   >> overwrites an existing stat for a pokemon
   DOC
   def stat(index, value)
+    return self if UniLib.cached(POKEMON)
     @stats = get_base_data(:BaseStats) unless @stats
     if index.class == Symbol
       @stats[STAT_INDEX[index]] = value
@@ -131,6 +130,7 @@ class PokeModifier
   >> swaps the values of two stats - respects previously changed stats
   DOC
   def swap(stat1, stat2)
+    return self if UniLib.cached(POKEMON)
     @stats = get_base_data(:BaseStats) unless @stats
     i1 = stat1.class == Symbol ? STAT_INDEX[stat1] : stat1
     i2 = stat2.class == Symbol ? STAT_INDEX[stat2] : stat2
@@ -143,6 +143,7 @@ class PokeModifier
   >> sets a custom primary type based on a condition. proc should return nil if no changes are required.
   DOC
   def type1_provider(proc)
+    return self if UniLib.cached(POKEMON)
     UniLib.add_type1_provider(@species, @form, proc)
   end
 
@@ -151,6 +152,7 @@ class PokeModifier
   >> sets a custom secondary type based on a condition. proc should return nil if no changes are required.
   DOC
   def type2_provider(proc)
+    return self if UniLib.cached(POKEMON)
     UniLib.add_type2_provider(@species, @form, proc)
   end
 
@@ -160,6 +162,7 @@ class PokeModifier
   >> replaces the abilities at the provided indices
   DOC
   def abilities(abilities)
+    return self if UniLib.cached(POKEMON)
     abilities.each { |slot, ability| @abilities[slot] = ability}
     self
   end
@@ -170,6 +173,7 @@ class PokeModifier
   >> replaces the ability at the target index
   DOC
   def ability(slot, ability)
+    return self if UniLib.cached(POKEMON)
     @abilities[slot] = ability
     self
   end
@@ -179,6 +183,7 @@ class PokeModifier
   >> removes moves from the learnset. applies before level-up moves are added.
   DOC
   def remove_level_moves(moves)
+    return self if UniLib.cached(POKEMON)
     if moves.class == Array
       @removed_learnset += moves
     else
@@ -192,6 +197,7 @@ class PokeModifier
   >> adds level-up moves at the given levels
   DOC
   def level_moves(moves, override=true)
+    return self if UniLib.cached(POKEMON)
     if moves[0].class == Array
       @learnset += moves
       moves.each { |move| @compatible_moves.push(move[1]) if override }
@@ -207,6 +213,7 @@ class PokeModifier
   >> removes moves from the egg and compatible movesets. applies before egg moves and compatible moves are added.
   DOC
   def remove_compatible_moves(moves)
+    return self if UniLib.cached(POKEMON)
     if moves.class == Array
       @removed_compatible += moves
     else
@@ -220,6 +227,7 @@ class PokeModifier
   >> adds the given egg moves
   DOC
   def egg_moves(moves, override=true)
+    return self if UniLib.cached(POKEMON)
     if moves.class == Array
       @egg_moves += moves
       @compatible_moves += moves if override
@@ -235,6 +243,7 @@ class PokeModifier
   >> allows the given moves to be learned via tm or tutor
   DOC
   def compatible_moves(moves)
+    return self if UniLib.cached(POKEMON)
     if moves.class == Array
       @compatible_moves += moves
     else
@@ -247,6 +256,7 @@ class PokeModifier
   >> indicates that the learnset should be entirely replaced
   DOC
   def level_moves_overwrite(overwrite=true)
+    return self if UniLib.cached(POKEMON)
     @learnset_overwrite = overwrite
     self
   end
@@ -255,6 +265,7 @@ class PokeModifier
   >> indicates that egg moves should be entirely replaced
   DOC
   def egg_moves_overwrite(overwrite=true)
+    return self if UniLib.cached(POKEMON)
     @eggs_overwrite = overwrite
     self
   end
@@ -263,6 +274,7 @@ class PokeModifier
   >> indicates that compatible moves should be entirely replaced
   DOC
   def compatible_moves_overwrite(overwrite=true)
+    return self if UniLib.cached(POKEMON)
     @moves_overwrite = overwrite
     self
   end
@@ -273,6 +285,7 @@ class PokeModifier
   >> array, ev gain
   DOC
   def set_ev(val)
+    return self if UniLib.cached(POKEMON)
     @ev = val
     self
   end
@@ -281,6 +294,7 @@ class PokeModifier
   >> symbol, exp gain rate
   DOC
   def set_growth_rate(val)
+    return self if UniLib.cached(POKEMON)
     @growth_rate = val
     self
   end
@@ -289,6 +303,7 @@ class PokeModifier
   >> symbol, one of several fixed gender ratios
   DOC
   def set_gender_ratio(val)
+    return self if UniLib.cached(POKEMON)
     @gender_ratio = val
     self
   end
@@ -297,6 +312,7 @@ class PokeModifier
   >> int, base exp amount granted on ko
   DOC
   def set_base_exp(val)
+    return self if UniLib.cached(POKEMON)
     @base_exp = val
     self
   end
@@ -305,6 +321,7 @@ class PokeModifier
   >> int, 0-255 catchrate
   DOC
   def set_catch_rate(val)
+    return self if UniLib.cached(POKEMON)
     @catch_rate = val
     self
   end
@@ -313,6 +330,7 @@ class PokeModifier
   >> int, in-battle y-offset (player)
   DOC
   def set_happiness(val)
+    return self if UniLib.cached(POKEMON)
     @happiness = val
     self
   end
@@ -321,6 +339,7 @@ class PokeModifier
   >> int, number of steps before eggs hatch
   DOC
   def set_egg_steps(val)
+    return self if UniLib.cached(POKEMON)
     @egg_steps = val
     self
   end
@@ -329,6 +348,7 @@ class PokeModifier
   >> string, color (mainly for dex purposes)
   DOC
   def set_color(val)
+    return self if UniLib.cached(POKEMON)
     @color = val
     self
   end
@@ -337,6 +357,7 @@ class PokeModifier
   >> string, idk what this is for lol
   DOC
   def set_habitat(val)
+    return self if UniLib.cached(POKEMON)
     @habitat = val
     self
   end
@@ -345,6 +366,7 @@ class PokeModifier
   >> array, overrides existing egg groups
   DOC
   def set_egg_groups(val)
+    return self if UniLib.cached(POKEMON)
     @egg_groups = val
     self
   end
@@ -353,6 +375,7 @@ class PokeModifier
   >> int, height in meters * 10
   DOC
   def set_height(val)
+    return self if UniLib.cached(POKEMON)
     @height = val
     self
   end
@@ -361,6 +384,7 @@ class PokeModifier
   >> double, weight in kg
   DOC
   def set_weight(val)
+    return self if UniLib.cached(POKEMON)
     @weight = val
     self
   end
@@ -369,6 +393,7 @@ class PokeModifier
   >> string, pokemon type i.e. butterfree, the *Butterfly* pokemon
   DOC
   def set_kind(val)
+    return self if UniLib.cached(POKEMON)
     @kind = val
     self
   end
@@ -377,6 +402,7 @@ class PokeModifier
   >> string, dex entry
   DOC
   def set_dex_entry(val)
+    return self if UniLib.cached(POKEMON)
     @dex_entry = val
     self
   end
@@ -385,6 +411,7 @@ class PokeModifier
   >> int, in-battle y-offset (player)
   DOC
   def set_battler_player_y(val)
+    return self if UniLib.cached(POKEMON)
     @battler_player_y = val
     self
   end
@@ -393,6 +420,7 @@ class PokeModifier
   >> int, in-battle y-offset (opponent)
   DOC
   def set_battler_enemy_y(val)
+    return self if UniLib.cached(POKEMON)
     @battler_enemy_y = val
     self
   end
@@ -401,6 +429,7 @@ class PokeModifier
   >> int, battle altitude (opponents only)
   DOC
   def set_battler_altitude(val)
+    return self if UniLib.cached(POKEMON)
     @battler_altitude = val
     self
   end
@@ -409,6 +438,7 @@ class PokeModifier
   >> battler shadow display
   DOC
   def set_battler_shadow(val)
+    return self if UniLib.cached(POKEMON)
     @battler_shadow = val
     self
   end
@@ -417,6 +447,7 @@ class PokeModifier
   >> hash with :species and :form set, overrides existing data
   DOC
   def set_preevo(val)
+    return self if UniLib.cached(POKEMON)
     @preevo = val
     self
   end
@@ -425,6 +456,7 @@ class PokeModifier
   >> hash, refer to montext for format, overrides existing data
   DOC
   def set_evolutions(val)
+    return self if UniLib.cached(POKEMON)
     @evolutions = val
     self
   end
@@ -435,6 +467,7 @@ class PokeModifier
   >> sets a map encounter form override by map id
   DOC
   def encounter_form_override(map_id, form)
+    return self if UniLib.cached(POKEMON)
     (@form_overrides ||= {})[map_id] = form
     self
   end
@@ -443,6 +476,7 @@ class PokeModifier
   >> if enabled, the current form will always be set to the specified number at the end of a battle
   DOC
   def end_of_battle_reset(form)
+    return self if UniLib.cached(POKEMON)
     @end_of_battle_reset = form
     self
   end

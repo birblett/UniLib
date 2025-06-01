@@ -12,7 +12,7 @@ UniLib.include "Item"
 module UniLib
 
   $map_debug = false
-  MAP_EVENTS = {}
+  MAP_EVENTS = {} unless UniLib.cached(UniLib::MAP)
   CACHED_MAPS = {}
 
 end
@@ -25,7 +25,7 @@ end
 
 class EncounterMod
 
-  MODIFIERS = {} # CACHEABLE
+  MODIFIERS = {} unless UniLib.cached(UniLib::MAP)
 
   attr_reader(:modifiers)
 

@@ -10,9 +10,13 @@ UniLib.verify_version(0.8, __FILE__)
 
 module UniLib
 
-  ANIMATED_BITMAP_REDIRECT = {}
-  AUDIO_FILE_REDIRECT = {}
-  PKMN_REDIRECT = {}
+  unless UniLib.cached(UniLib::ASSET)
+
+    ANIMATED_BITMAP_REDIRECT = {}
+    AUDIO_FILE_REDIRECT = {}
+    PKMN_REDIRECT = {}
+
+  end
 
   def self.get_redirected_asset(species, form, fem, egg, icon)
     return nil unless PKMN_REDIRECT[[species, form]]
@@ -28,10 +32,15 @@ end
 module Assets
 
   include UniLib
-  $unilib_bmp_asset_log = false
-  $unilib_audio_asset_log = false
-  BGM_REGISTRY = {}
-  BGM_REGISTRY_OLD = {} unless defined? BGM_REGISTRY_OLD
+  $unilib_bmp_asset_log = false unless defined? $unilib_bmp_asset_log
+  $unilib_audio_asset_log = false unless defined? $unilib_audio_asset_log
+
+  unless UniLib.cached(UniLib::ASSET)
+
+    BGM_REGISTRY = {}
+    BGM_REGISTRY_OLD = {} unless defined? BGM_REGISTRY_OLD
+
+  end
 
   def self.get_asset(hash, str)
     out = hash[str]

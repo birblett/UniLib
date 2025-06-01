@@ -20,11 +20,16 @@ module UniLib
     INVALID_ITEMS[item] += count
   end unless UniLib.lib_loaded(__FILE__)
 
-  CUSTOM_ITEMS = {}
-  EVENT_ITEMS = {}
-  INVALID_ITEMS = {}
-  CONSUMED_ITEM = []
-  UNLOSABLE_ITEMS = {}
+  unless UniLib.cached(UniLib::ITEM)
+
+    CUSTOM_ITEMS = {}
+    EVENT_ITEMS = {}
+    INVALID_ITEMS = {}
+    CONSUMED_ITEM = []
+    UNLOSABLE_ITEMS = {}
+
+  end
+
   UNLOSABLE_DEFAULT_CONDITION = proc { true }
   $should_consume_item = false
 

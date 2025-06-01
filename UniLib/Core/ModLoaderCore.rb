@@ -38,7 +38,8 @@ module UniLib
   LOADED_MODS = {} unless defined? LOADED_MODS
   MOD_CONFIGS = {} unless defined? MOD_CONFIGS
   LOADED_LIBRARIES = {} unless defined? LOADED_LIBRARIES
-  $unilib_refresh_configs = true unless defined? $refresh_configs
+  $unilib_refresh_configs = true unless defined? $unilib_refresh_configs
+  $unilib_current_cache_level = - 1 unless defined? $unilib_current_cache_level
 
   def self.except(exception)
     return Exception.new("#{exception}")
@@ -144,6 +145,7 @@ module UniLib
     required_modules.sort_by! { |m| UniLib::MODULES[m] }.each { |m| UniLib.include m }
     UniStringOption.new("Autorefresh Configs", "Refresh configs on F12 restart.", %w[Off On], proc { |value| $unilib_refresh_configs = value == 1 }) if MODULES["Options"]
     mods.sort_by! { |m| m.priority }.reverse!.each(&:mod_load)
+    $unilib_current_cache_level = 3 if $unilib_current_cache_level == -1
   end
 
 end

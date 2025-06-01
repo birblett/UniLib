@@ -14,7 +14,7 @@ UniLib.include "Events"
 module UniLib
 
   ABILITY_DATA = load_data("Data/abil.dat") unless defined? ABILITY_DATA
-  CUSTOM_ABILITIES = {}
+  CUSTOM_ABILITIES = {} unless UniLib.cached(UniLib::ABILITY)
 
 end
 

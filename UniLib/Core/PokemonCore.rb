@@ -10,13 +10,11 @@ UniLib.verify_version(0.8, __FILE__)
 
 module UniLib
 
-  HIDDEN_ABILITY_SYM = Reborn ? :HiddenAbility : :HiddenAbilities
-  FORM_PROVIDERS = {}
-
   unless UniLib.lib_loaded(__FILE__)
 
     POKEMON_DATA = load_data("Data/mons.dat") if !defined? POKEMON_DATA or POKEMON_DATA.nil?
     STAT_INDEX = {:HP => 0, :ATK => 1, :DEF => 2, :SPA => 3, :SPD => 4, :SPE => 5}
+    HIDDEN_ABILITY_SYM = Reborn ? :HiddenAbility : :HiddenAbilities
 
     unless defined? FORM_MAP
 
@@ -71,13 +69,15 @@ module UniLib
 
   end
 
-  MODIFIED_POKEMON = {}
-  CUSTOM_TYPE1_PROVIDERS = {}
-  CUSTOM_TYPE2_PROVIDERS = {}
-  LEARN_OVERRIDES = {}
-  LEARN_IGNORE_OVERRIDES = {}
-  END_OF_BATTLE_RESET = {}
-  $force_refresh_abilities = false
+  unless UniLib.cached(UniLib::POKEMON)
+
+    MODIFIED_POKEMON = {}
+    CUSTOM_TYPE1_PROVIDERS = {}
+    CUSTOM_TYPE2_PROVIDERS = {}
+    END_OF_BATTLE_RESET = {}
+    FORM_PROVIDERS = {}
+
+  end
 
 end
 
@@ -108,6 +108,7 @@ class PokeModifier
     attr_accessor(:end_of_battle_reset)
 
     def initialize(species, form, form_str)
+      return self if UniLib.cached(POKEMON)
       @species = species
       @form = form
       @form_str = form_str
@@ -309,7 +310,7 @@ class PokeBattle_Pokemon
     @permanent_battle_effects
   end
 
-end unless UniLib.lib_loaded(__FILE__)
+end
 
 class MonWrapper
 
@@ -340,7 +341,6 @@ unless UniLib.lib_loaded(__FILE__)
         pokemon.permanent_battle_effects.clear if pokemon.permanent_battle_effects
       end
     end
-    UniLib::MODIFIED_POKEMON.clear
   end
 
 end

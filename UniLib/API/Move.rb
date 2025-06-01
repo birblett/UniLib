@@ -29,6 +29,7 @@ module MoveBuilder
   >> creates a new move builder unless it already exists for the specified move; otherwise overwrites existing traits if specified
   DOC
   def self.add(symbol, name, desc, type, category, maxpp, basedamage = 0, accuracy = 0, function = 0, target = :SingleNonUser, priority = 0, flags = {})
+    return MoveModifier.add(symbol) if UniLib.cached(UniLib::MOVE)
     m = MoveModifier.add(symbol).name(name).desc(desc).type(type).category(category).maxpp(maxpp).damage(basedamage).accuracy(accuracy)
           .function(function).target(target).priority(priority)
     flags.each { |f, v| m.flag(f, v) }
@@ -56,6 +57,7 @@ class MoveModifier
   >> sets the move name
   DOC
   def name(name)
+    return self if UniLib.cached(UniLib::MOVE)
     @name = name
     self
   end
@@ -65,6 +67,7 @@ class MoveModifier
   >> sets the move description
   DOC
   def desc(desc)
+    return self if UniLib.cached(UniLib::MOVE)
     @desc = desc
     self
   end
@@ -74,6 +77,7 @@ class MoveModifier
   >> sets the move type
   DOC
   def type(type)
+    return self if UniLib.cached(UniLib::MOVE)
     @type = type
     self
   end
@@ -83,6 +87,7 @@ class MoveModifier
   >> sets the move category
   DOC
   def category(category)
+    return self if UniLib.cached(UniLib::MOVE)
     @category = category if [:physical, :special, :status].include? category
     self
   end
@@ -92,6 +97,7 @@ class MoveModifier
   >> sets the move max pp
   DOC
   def maxpp(max)
+    return self if UniLib.cached(UniLib::MOVE)
     @maxpp = max
     self
   end
@@ -101,6 +107,7 @@ class MoveModifier
   >> sets the move base damage
   DOC
   def damage(damage)
+    return self if UniLib.cached(UniLib::MOVE)
     @basedamage = damage
     self
   end
@@ -110,6 +117,7 @@ class MoveModifier
   >> sets the move accuracy
   DOC
   def accuracy(accuracy)
+    return self if UniLib.cached(UniLib::MOVE)
     @accuracy = accuracy
     self
   end
@@ -119,6 +127,7 @@ class MoveModifier
   >> sets the move targetting style
   DOC
   def target(target)
+    return self if UniLib.cached(UniLib::MOVE)
     @target = target if [:User, :SingleNonUser, :AllNonUsers, :OppositeOpposing, :AllOpposing, :UserSide, :OpposingSide, :DragonDarts].include? target
     self
   end
@@ -128,6 +137,7 @@ class MoveModifier
   >> sets the move function
   DOC
   def function(function)
+    return self if UniLib.cached(UniLib::MOVE)
     @function = function
     self
   end
@@ -137,6 +147,7 @@ class MoveModifier
   >> sets the move priority
   DOC
   def priority(priority)
+    return self if UniLib.cached(UniLib::MOVE)
     @priority = priority
     self
   end
@@ -146,6 +157,7 @@ class MoveModifier
   >> sets a move flag
   DOC
   def flag(flag, value)
+    return self if UniLib.cached(UniLib::MOVE)
     @flags[flag] = value
     self
   end

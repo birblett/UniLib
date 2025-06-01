@@ -10,7 +10,7 @@ UniLib.verify_version(0.8, __FILE__)
 
 module UniLib
 
-  MULTIBILITY_HANDLERS = {}
+  MULTIBILITY_HANDLERS = {} unless UniLib.cached(UniLib::MULTIBILITY)
 
 end
 

@@ -53,6 +53,7 @@ class ItemModifier
   >> sets the name of an item.
   DOC
   def name(name)
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:name] = name
     self
   end
@@ -62,6 +63,7 @@ class ItemModifier
   >> sets the description of an item.
   DOC
   def desc(desc)
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:desc] = desc
     self
   end
@@ -71,6 +73,7 @@ class ItemModifier
   >> sets the shop price of an item.
   DOC
   def price(price)
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:price] = price
     self
   end
@@ -79,6 +82,7 @@ class ItemModifier
   >> makes an item a battle item
   DOC
   def battle_hold
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:battlehold] = true
     self
   end
@@ -87,6 +91,7 @@ class ItemModifier
   >> makes an item a berry
   DOC
   def berry
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:berry] = true
     self
   end
@@ -95,6 +100,7 @@ class ItemModifier
   >> makes an item a consumable held item
   DOC
   def consume_hold
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:consumehold] = true
     self
   end
@@ -103,6 +109,7 @@ class ItemModifier
   >> makes an item a crest
   DOC
   def crest
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:crest] = true
     self
   end
@@ -111,6 +118,7 @@ class ItemModifier
   >> makes an item a crystal
   DOC
   def crystal
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:crystal] = true
     self
   end
@@ -119,6 +127,7 @@ class ItemModifier
   >> makes an item an evo item
   DOC
   def evo_item
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:evoitem] = true
     self
   end
@@ -127,6 +136,7 @@ class ItemModifier
   >> makes an item a fossil
   DOC
   def fossil
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:fossil] = true
     self
   end
@@ -135,6 +145,7 @@ class ItemModifier
   >> makes an item a key item
   DOC
   def key_item
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:keyitem] = true
     self
   end
@@ -143,6 +154,7 @@ class ItemModifier
   >> makes an item a level up item
   DOC
   def level_up
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:levelup] = true
     self
   end
@@ -151,6 +163,7 @@ class ItemModifier
   >> makes an item an overworld item
   DOC
   def overworld
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:overworld] = true
     self
   end
@@ -159,6 +172,7 @@ class ItemModifier
   >> makes an item a medicinal item
   DOC
   def medicine
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:medicine] = true
     self
   end
@@ -167,6 +181,7 @@ class ItemModifier
   >> makes an item have no use in battle
   DOC
   def no_use_in_battle
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:noUseInBattle] = true
     self
   end
@@ -175,6 +190,7 @@ class ItemModifier
   >> makes an item have no use
   DOC
   def no_use
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:noUse] = true
     self
   end
@@ -183,6 +199,7 @@ class ItemModifier
   >> makes an item a resist berry
   DOC
   def resist_berry
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:resistberry] = true
     self
   end
@@ -191,6 +208,7 @@ class ItemModifier
   >> makes an item a status item
   DOC
   def status
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:status] = true
     self
   end
@@ -200,6 +218,7 @@ class ItemModifier
   >> makes an item a tm
   DOC
   def tm(move)
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:tm] = move
     self
   end
@@ -209,6 +228,7 @@ class ItemModifier
   >> makes an item a type boosting item
   DOC
   def type_boost(type_boost)
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:typeBoost] = type_boost
     self
   end
@@ -217,6 +237,7 @@ class ItemModifier
   >> makes an item a z crystal
   DOC
   def z_crystal
+    return self if UniLib.cached(UniLib::ITEM)
     @data[:zcrystal] = true
     self
   end
@@ -225,9 +246,11 @@ class ItemModifier
   >> makes an item unlosable, or optionally makes it conditional. provided blocks take a single PokeBattle_Pokemon argument.
   DOC
   def unlosable(func=nil, &block)
+    return self if UniLib.cached(UniLib::ITEM)
     UNLOSABLE_ITEMS[@symbol] = [] unless UNLOSABLE_ITEMS[@symbol]
     fn = block ? block : func
     UNLOSABLE_ITEMS[@symbol].push(fn ? fn : UNLOSABLE_DEFAULT_CONDITION)
+    self
   end
 
   <<-DOC
@@ -236,6 +259,7 @@ class ItemModifier
   >> allows battle items to be proc'd with this pokemon
   DOC
   def add_receiver(holder, form = 0)
+    return self if UniLib.cached(UniLib::ITEM)
     @species = :ALL if holder == :ALL
     return self if @species == :ALL
     form = UniLib.get_form_number(holder, form)[0]
@@ -249,6 +273,7 @@ class ItemModifier
      return an ability symbol or array of them; 
   DOC
   def ability_provider(proc=nil, &block)
+    return self if UniLib.cached(UniLib::ITEM)
     if proc.nil? and block.nil?
       print "No function or block provided for event ability_provider of #{@symbol}:#{self.class}"
       exit
@@ -264,6 +289,7 @@ class ItemModifier
      returns an item score multiplier corresponding to the item. see PokeBattle_AI$getItemScore
   DOC
   def item_score(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:item_score, proc, block)
   end
 
@@ -273,6 +299,7 @@ class ItemModifier
      the target (PokeBattle_Pokemon); returns an item score adder corresponding to the item. see PokeBattle_AI$getSwitchInScoresParty
   DOC
   def switch_item_score(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:switch_item_score, proc, block)
   end
 

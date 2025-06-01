@@ -10,7 +10,7 @@ UniLib.verify_version(0.8, __FILE__)
 
 module UniLib
 
-  CUSTOM_MOVES = {}
+  CUSTOM_MOVES = {} unless UniLib.cached(UniLib::MOVE)
   MOVE_DATA = load_data("Data/moves.dat") unless defined? MOVE_DATA
   MOVE_MAX_ID = MOVE_DATA.max_by { |_, v| v.flags[:ID].nil? ? 0 : v.flags[:ID] }[1].flags[:ID] unless defined? MOVE_MAX_ID
   $move_current_max = MOVE_MAX_ID
@@ -79,9 +79,7 @@ end unless UniLib.lib_loaded(__FILE__)
 
 unless UniLib.lib_loaded(__FILE__)
 
-  def add_moves(save)
-    UniLib::CUSTOM_MOVES.each { |_, move_builder| move_builder.build }
-  end
+  def add_moves(save) = UniLib::CUSTOM_MOVES.each { |_, move_builder| move_builder.build }
 
 end
 
