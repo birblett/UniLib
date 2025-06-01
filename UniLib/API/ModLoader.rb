@@ -20,4 +20,6 @@ module UniLib
 
   def self.get_config(id, key) = MOD_CONFIGS[id][key] rescue nil
 
+  def self.current_cache_level = $unilib_current_cache_level
+
 end

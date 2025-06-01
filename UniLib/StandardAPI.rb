@@ -20,74 +20,76 @@ module UniLib
   SESSION_DEBUG = Time.now.strftime("%Y_%m_%d-%H_%M_%S.log") unless defined? SESSION_DEBUG
   CLEAR_INJECTOR_CACHE = false
 
-  ABILITY = "Ability"
-  ASSET = "Asset"
-  BATTLE = "Battle"
-  BATTLE_EFFECTS = "BattleEffects"
-  CONSTANTS = "Constants"
-  CREST = "Crest"
-  CREST_COMPATIBILITY = "CrestCompat"
-  DISPLAY = "Display"
-  EVENTS = "Events"
-  EXTRA_MOVE_FLAGS = "ExtraMoveFlags"
-  FIXES = "Fixes"
-  FORM_PORTS = "FormPorts"
-  HELPER = "Helper"
-  ITEM = "Item"
-  MAP = "Map"
-  MOVE = "Move"
-  MULTIBILITY = "Multibility"
-  OPTIONS = "Options"
-  POKEMON = "Pokemon"
-  POKEMON_OM = "PokemonOM"
-  SWITCH = "Switch"
+  UNILIB_ABILITY = "Ability"
+  UNILIB_AEVIAN_PORTS = "AevianPorts"
+  UNILIB_ASSET = "Asset"
+  UNILIB_BATTLE = "Battle"
+  UNILIB_BATTLE_EFFECTS = "BattleEffects"
+  UNILIB_CONSTANTS = "Constants"
+  UNILIB_CREST = "Crest"
+  UNILIB_CREST_COMPATIBILITY = "CrestCompat"
+  UNILIB_DISPLAY = "Display"
+  UNILIB_EVENTS = "Events"
+  UNILIB_EXTRA_MOVE_FLAGS = "ExtraMoveFlags"
+  UNILIB_FIXES = "Fixes"
+  UNILIB_FORM_PORTS = "FormPorts"
+  UNILIB_HELPER = "Helper"
+  UNILIB_ITEM = "Item"
+  UNILIB_MAP = "Map"
+  UNILIB_MOVE = "Move"
+  UNILIB_MULTIBILITY = "Multibility"
+  UNILIB_OPTIONS = "Options"
+  UNILIB_POKEMON = "Pokemon"
+  UNILIB_POKEMON_OM = "PokemonOM"
+  UNILIB_SWITCH = "Switch"
 
   MODULES = {
-    ABILITY => 3,
-    ASSET => 0,
-    BATTLE => 0,
-    BATTLE_EFFECTS => 1,
-    CONSTANTS  => 3,
-    CREST => 2,
-    CREST_COMPATIBILITY => 3,
-    DISPLAY => 0,
-    EVENTS => 0,
-    EXTRA_MOVE_FLAGS => 1,
-    FIXES => 3,
-    FORM_PORTS => 4,
-    HELPER => 0,
-    ITEM => 1,
-    MAP => 2,
-    MOVE => 0,
-    MULTIBILITY => 0,
-    OPTIONS => 0,
-    POKEMON => 0,
-    POKEMON_OM  => 1,
-    SWITCH => 0,
+    UNILIB_ABILITY => 3,
+    UNILIB_AEVIAN_PORTS => 4,
+    UNILIB_ASSET => 0,
+    UNILIB_BATTLE => 0,
+    UNILIB_BATTLE_EFFECTS => 1,
+    UNILIB_CONSTANTS  => 3,
+    UNILIB_CREST => 2,
+    UNILIB_CREST_COMPATIBILITY => 3,
+    UNILIB_DISPLAY => 0,
+    UNILIB_EVENTS => 0,
+    UNILIB_EXTRA_MOVE_FLAGS => 1,
+    UNILIB_FIXES => 3,
+    UNILIB_FORM_PORTS => 4,
+    UNILIB_HELPER => 0,
+    UNILIB_ITEM => 1,
+    UNILIB_MAP => 2,
+    UNILIB_MOVE => 0,
+    UNILIB_MULTIBILITY => 0,
+    UNILIB_OPTIONS => 0,
+    UNILIB_POKEMON => 0,
+    UNILIB_POKEMON_OM  => 1,
+    UNILIB_SWITCH => 0,
   } unless defined? MODULES
 
   CACHE_LEVELS = {
-    ABILITY => 3,
-    ASSET => 0,
-    BATTLE => 0,
-    BATTLE_EFFECTS => 1,
-    CONSTANTS  => 3,
-    CREST => 2,
-    CREST_COMPATIBILITY => 3,
-    DISPLAY => 0,
-    EVENTS => 0,
-    EXTRA_MOVE_FLAGS => 1,
-    FIXES => 3,
-    FORM_PORTS => 4,
-    HELPER => 0,
-    ITEM => 1,
-    MAP => 2,
-    MOVE => 0,
-    MULTIBILITY => 0,
-    OPTIONS => 0,
-    POKEMON => 0,
-    POKEMON_OM  => 1,
-    SWITCH => 0,
+    UNILIB_ABILITY => 5,
+    UNILIB_ASSET => 5,
+    UNILIB_BATTLE => 5,
+    UNILIB_BATTLE_EFFECTS => 5,
+    UNILIB_CONSTANTS  => 5,
+    UNILIB_CREST => 3,
+    UNILIB_CREST_COMPATIBILITY => 3,
+    UNILIB_DISPLAY => 5,
+    UNILIB_EVENTS => 5,
+    UNILIB_EXTRA_MOVE_FLAGS => 5,
+    UNILIB_FIXES => 5,
+    UNILIB_FORM_PORTS => 5,
+    UNILIB_HELPER => 5,
+    UNILIB_ITEM => 5,
+    UNILIB_MAP => 5,
+    UNILIB_MOVE => 5,
+    UNILIB_MULTIBILITY => 5,
+    UNILIB_OPTIONS => 5,
+    UNILIB_POKEMON => 2,
+    UNILIB_POKEMON_OM => 2,
+    UNILIB_SWITCH => 5,
   } unless defined? CACHE_LEVELS
 
   <<-DOC
@@ -152,6 +154,13 @@ module UniLib
   DOC
   def self.lib_loaded(file)
     LOADED_LIBRARIES[File.basename(file).gsub(".rb", "").gsub(/(Lib|API|Core)/,"")]
+  end
+
+  <<-DOC
+  used mainly for internals; check if a module should be considered cached
+  DOC
+  def self.cached(id)
+    $unilib_current_cache_level >= CACHE_LEVELS[id]
   end
 
   <<-DOC
