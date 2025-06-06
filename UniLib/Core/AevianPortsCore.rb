@@ -69,6 +69,48 @@ if Reborn
               .asset_override(asset: "UniLib/Assets/Battlers/parasect-zombie.png", icon: "UniLib/Assets/Icons/parasect-zombie.png")
               .get_form
 
+  AbilityModifier.add(:RESUSCITATION, "Resuscitation", "Enters Zombie Form after being knocked out once.")
+
+  class PokeBattle_Scene
+
+    def pbFakeOutFainted(pkmn)
+      frames = pbCryFrameLength(pkmn.pokemon)
+      pbPlayCry(pkmn.pokemon)
+      frames.times { pbGraphicsUpdate }
+      @sprites["shadow#{pkmn.index}"].visible = false
+      pkmnsprite = @sprites["pokemon#{pkmn.index}"]
+      ycoord = 0
+      if @battle.doublebattle
+        ycoord = PBScene::PLAYERBATTLERD1_Y if pkmn.index==0
+        ycoord = PBScene::FOEBATTLERD1_Y if pkmn.index==1
+        ycoord = PBScene::PLAYERBATTLERD2_Y if pkmn.index==2
+        ycoord = PBScene::FOEBATTLERD2_Y if pkmn.index==3
+      else
+        ycoord = @battle.pbIsOpposing?(pkmn.index) ? PBScene::FOEBATTLER_Y : PBScene::PLAYERBATTLER_Y
+      end
+      pbSEPlay("faint")
+      heightsave = pkmnsprite.src_rect.height
+      loop do
+        pkmnsprite.y += 8
+        pkmnsprite.src_rect.height = ycoord - pkmnsprite.y + pkmnsprite.oy if pkmnsprite.y - pkmnsprite.oy + pkmnsprite.src_rect.height >= ycoord
+        pbGraphicsUpdate
+        break if pkmnsprite.y >= ycoord
+      end
+      pkmnsprite.visible = false
+      pkmn.form = 2
+      pbChangePokemon(pkmn, pkmn.pokemon)
+      loop do
+        pkmnsprite.y -= 4
+        pkmnsprite.src_rect.height = ycoord - pkmnsprite.y + pkmnsprite.oy if pkmnsprite.y + pkmnsprite.oy + pkmnsprite.src_rect.height <= ycoord
+        pbGraphicsUpdate
+        break if pkmnsprite.src_rect.height >= (heightsave - 20)
+      end
+      pbPlayCry(pkmn.pokemon)
+      pkmnsprite.visible = true
+    end
+
+  end
+
   MAGIKARP_AEVIAN = PokeModifier.add_form(:MAGIKARP, "Aevian Form")
               .level_moves_overwrite
               .egg_moves_overwrite
@@ -358,6 +400,23 @@ if Reborn
               .asset_override(asset: "UniLib/Assets/Battlers/bronzong-aevian.png", icon: "UniLib/Assets/Icons/bronzong-aevian.png")
               .get_form
 
+  AbilityBuilder.add(:REFLECTOR, "Reflector", "Gains the opponent's secondary typing on entry.")
+
+  MoveBuilder.add(:MIRRORBEAM, "Mirror Beam", "The user shoots a reflective beam that matches its secondary typing.",
+                  :STEEL, :special, 10, 90, 105, 0x20E)
+
+  class PokeBattle_Move_20E < PokeBattle_Move
+
+    def pbType(attacker, type = @type)
+      !attacker.type2.nil? ? attacker.type1 : attacker.type2
+    end
+
+    def pbShowAnimation(id, attacker, opponent, hitnum = 0, alltargets = nil, showanimation = true)
+      @battle.pbAnimation(:MIRRORSHOT, attacker, opponent, hitnum) if showanimation
+    end
+
+  end
+
   FROSLASS_AEVIAN = PokeModifier.add_form(:FROSLASS, "Aevian Form")
               .level_moves_overwrite
               .egg_moves_overwrite
@@ -546,6 +605,10 @@ if Reborn
               .asset_override(asset: "UniLib/Assets/Battlers/volcarona-aevian.png", icon: "UniLib/Assets/Icons/volcarona-aevian.png")
               .get_form
 
+  MoveBuilder.add(:ETHEREALTEMPEST, "Ethereal Tempest", "The target is hit with unearthly wind. It may paralyze the target.",
+                  :FLYING, :special, 15, 90, 100, 0x007)
+             .flag(:effect, 20)
+
   WIMPOD_AEVIAN = PokeModifier.add_form(:WIMPOD, "Aevian Form")
               .level_moves_overwrite
               .egg_moves_overwrite
@@ -625,6 +688,14 @@ if Reborn
               .set_dex_entry("As the apex predator of their habitat, they've grown in size and become slower-moving, and as a response developed a toxin strong enough to cause fainting. It uses the scent of this toxin to track down prey that escaped an assault.")
               .asset_override(asset: "UniLib/Assets/Battlers/kommoo-aevian.png", icon: "UniLib/Assets/Icons/kommoo-aevian.png")
               .get_form
+
+  AbilityBuilder.add(:INEXORABLE, "Inexorable", "Dragon-type moves are stronger on slower foes...", "Dragon-type moves deal 30% more damage against foes slower than this Pokémon.")
+              .damage_mod { |attacker, target, move, _, ai| 1.3 if move.pbType(attacker) == :DRAGON && ai ? !target.hasMovedThisRound? : ai.pbAIfaster?(move, nil, attacker, target) }
+
+  MoveBuilder.add(:VILEASSAULT, "Vile Assault", "A relentless attack that cuts off a target's escape.",
+                  :POISON, :physical, 15, 90, 100, 0x088)
+             .flag(:contact, true)
+             .flag(:kingrock, true)
 
 =begin
   TOXTRICITY_AEVIAN = PokeModifier.add_form(:TOXTRICITY, "Aevian Form")

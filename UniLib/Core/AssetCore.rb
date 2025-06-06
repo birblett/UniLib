@@ -18,13 +18,17 @@ module UniLib
 
   end
 
-  def self.get_redirected_asset(species, form, fem, egg, icon)
-    return nil unless PKMN_REDIRECT[[species, form]]
-    index = icon ? 4 : 0
-    index += 2 if egg
-    index += 1 if fem
-    ret = PKMN_REDIRECT[[species, form]][index]
-    fem && ret.nil? ? PKMN_REDIRECT[[species, form]][index - 1] : ret
+  def self.get_redirected_asset(species, form, fem, egg, icon, audio = false)
+    return nil unless (hash = PKMN_REDIRECT[[species, form]]) or (hash = PKMN_REDIRECT[species])
+    if audio
+      hash[8]
+    else
+      index = icon ? 4 : 0
+      index += 2 if egg
+      index += 1 if fem and fem != ""
+      ret = hash[index]
+      fem && ret.nil? ? hash[index - 1] : ret
+    end
   end
 
 end
@@ -49,6 +53,14 @@ module Assets
     out = out[0] + (out[1].call) if out.is_a? Array
     out.gsub!("../../", "") if str.start_with? "Audio"
     out
+  end
+
+  def self.bmp_redirect(file)
+    return file unless file.is_a? String
+    f = File.basename(file).gsub(/\.png/,"")
+    file = Assets.get_asset(UniLib::ANIMATED_BITMAP_REDIRECT, f) if UniLib::ANIMATED_BITMAP_REDIRECT[f]
+    file = Assets.get_asset(UniLib::ANIMATED_BITMAP_REDIRECT, file) if UniLib::ANIMATED_BITMAP_REDIRECT[file]
+    file
   end
 
   def self.log(str)
@@ -88,9 +100,9 @@ module Audio
 
 end
 
-UniLib.insert_in_method(:AnimatedBitmap, :initialize, :HEAD, "file = Assets.get_asset(UniLib::ANIMATED_BITMAP_REDIRECT, file) if UniLib::ANIMATED_BITMAP_REDIRECT[file]")
+UniLib.insert_in_method(:AnimatedBitmap, :initialize, :HEAD, "file = Assets.bmp_redirect(file)")
 
-UniLib.insert_in_method(:AnimatedBitmap, :setBitmap, :HEAD, "bitmap = Assets.get_asset(UniLib::ANIMATED_BITMAP_REDIRECT, bitmap) if UniLib::ANIMATED_BITMAP_REDIRECT[bitmap]")
+UniLib.insert_in_method(:AnimatedBitmap, :setBitmap, :HEAD, "bitmap = Assets.bmp_redirect(bitmap)")
 
 UniLib.insert_in_function(:pbStringToAudioFile, :HEAD, "str = Assets.get_asset(UniLib::AUDIO_FILE_REDIRECT, str) if UniLib::AUDIO_FILE_REDIRECT[str]")
 
@@ -141,3 +153,10 @@ UniLib.insert_in_function(:pbPokemonIconBitmap, "filename = sprintf(\"Graphics/I
     filename = ret
     form = 0
   end")
+
+UniLib.insert_in_function(:pbCryFile, :HEAD,
+  "ret = UniLib.get_redirected_asset(pokemon.species, pokemon.form, nil, nil, nil, true)
+  return ret if ret and pbResolveAudioSE(ret)")
+
+UniLib.replace_in_method(:Game_System, :se_play, "se.name = File.basename(se.name, File.extname(se.name))",
+  "se.name.gsub!(/\\.ogg|\\.wav|\\.mp3/, \"\")")

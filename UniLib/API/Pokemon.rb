@@ -8,8 +8,30 @@ UniLib.verify_version(0.8, __FILE__)
 # ============================================================== PUBLIC API ============================================================== #
 # ======================================================================================================================================== #
 
+class PokeBuilder
+
+  include UniLib
+
+  <<-DOC
+  @param species - pokemon symbolic constant (i.e. :NINETALES)
+  @param form - a form, in string or integer representation (i.e. "Alolan", "Mega") - default 0
+  @param force - if true, replaces the existing entry if it exists - default false
+  >> returns an existing pokemodifier entry, or creates one if it doesn't exist
+  DOC
+  def self.add(species, name, target_dex_num, form_str = "Normal Form")
+    MODIFIED_POKEMON[species] ||= {}
+    p = MODIFIED_POKEMON[species][0] = PokeModifier.new(species, 0, form_str)
+    p.set_new(name, target_dex_num)
+    FORM_MAP[species] ||= {}
+    FORM_MAP[species][form_str] = 0
+    FORM_MAP[species][0] = form_str
+    p
+  end
+
+end
+
 <<-DOC
->> builder class for modifying pokemon
+>> class for modifying pokemon
 DOC
 #noinspection RubyTooManyInstanceVariablesInspection
 class PokeModifier
@@ -282,6 +304,15 @@ class PokeModifier
   # ========== SIMPLE SETTERS ========== #
 
   <<-DOC
+  >> string, name
+  DOC
+  def set_name(val)
+    return self if UniLib.cached(POKEMON)
+    @name = val
+    self
+  end
+
+  <<-DOC
   >> array, ev gain
   DOC
   def set_ev(val)
@@ -453,15 +484,39 @@ class PokeModifier
   end
 
   <<-DOC
-  >> hash, refer to montext for format, overrides existing data
+  >> hash, uses reborn 19.5 montext format, overrides existing data
+  DOC
+  def add_evolution(val)
+    return self if UniLib.cached(POKEMON)
+    val = [val[:species], val[:method], val[:parameters]] if Rejuv
+    (@evolutions ||= get_base_data(:evolutions, [])).push(val)
+    self
+  end
+
+  <<-DOC
+  >> array, uses reborn 19.5 montext format, overrides existing data
   DOC
   def set_evolutions(val)
     return self if UniLib.cached(POKEMON)
+    if Rejuv
+      temp = {}
+      val.each { |v| temp.push([v[:species], v[:method], v[:parameters]]) }
+      val = temp
+    end
     @evolutions = val
     self
   end
 
   # ======== END SIMPLE SETTERS ======== #
+
+  <<-DOC
+  >> proc/block, accepts 2 arguments: pokemon (PokeBattle_Pokemon), and item (symbol). returns a form if form should be overridden.
+  DOC
+  def add_evo_override(proc = nil, &block)
+    return self if UniLib.cached(POKEMON)
+    (@evo_overrides ||= []).push(block ? block : proc)
+    self
+  end
 
   <<-DOC
   >> sets a map encounter form override by map id
@@ -485,10 +540,11 @@ class PokeModifier
   @param asset - string representing a path relative to the Mods folder
   >> overrides the existing asset with the given one
   DOC
-  def asset_override(asset: nil, asset_f: nil, asset_egg: nil, asset_egg_f: nil, icon: nil, icon_f: nil, icon_egg: nil, icon_egg_f: nil)
+  def asset_override(asset: nil, asset_f: nil, asset_egg: nil, asset_egg_f: nil, icon: nil, icon_f: nil, icon_egg: nil, icon_egg_f: nil, cry: nil, form: nil)
     UniLib.include "Asset"
-    Assets.redirect_pkmn_detailed(@species, @form, asset, asset_f, asset_egg, asset_egg_f)
-    Assets.redirect_pkmn_icon(@species, @form, icon, icon_f, icon_egg, icon_egg_f)
+    Assets.redirect_pkmn_detailed(@species, form ? form : @form, asset, asset_f, asset_egg, asset_egg_f)
+    Assets.redirect_pkmn_icon(@species, form ? form : @form, icon, icon_f, icon_egg, icon_egg_f)
+    Assets.redirect_pkmn_cry(@species, form ? form : @form, cry) unless cry.nil?
     self
   end
 

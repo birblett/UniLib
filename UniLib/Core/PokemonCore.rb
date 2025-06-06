@@ -16,19 +16,6 @@ module UniLib
     STAT_INDEX = {:HP => 0, :ATK => 1, :DEF => 2, :SPA => 3, :SPD => 4, :SPE => 5}
     HIDDEN_ABILITY_SYM = Reborn ? :HiddenAbility : :HiddenAbilities
 
-    unless defined? FORM_MAP
-
-      FORM_MAP = {}
-      POKEMON_DATA.each do |species, mondata|
-        mondata.forms.each do |index, form|
-          FORM_MAP[species] = {} if FORM_MAP[species].nil?
-          FORM_MAP[species][form] = index
-          FORM_MAP[species][index] = form
-        end
-      end
-
-    end
-
     def self.get_form_number(holder, form)
       return [form, FORM_MAP[holder][form]] if form.is_a? Integer
       form_str = nil
@@ -45,7 +32,12 @@ module UniLib
     end
 
     def self.add_form(species, form_str)
-      return FORM_MAP[species][form_str] if FORM_MAP[species][form_str]
+      if FORM_MAP[species][form_str]
+        p $cache.pkmn[species] if species == :BASCULEGION
+        $cache.pkmn[species].forms[FORM_MAP[species].keys.index(form_str) / 2] = form_str
+        p $cache.pkmn[species] if species == :BASCULEGION
+        return FORM_MAP[species][form_str]
+      end
       form = FORM_MAP[species].keys.max_by { |k| k.is_a?(Numeric) ? k : -1 } + 1
       FORM_MAP[species][form] = form_str
       FORM_MAP[species][form_str] = form
@@ -75,7 +67,16 @@ module UniLib
     CUSTOM_TYPE1_PROVIDERS = {}
     CUSTOM_TYPE2_PROVIDERS = {}
     END_OF_BATTLE_RESET = {}
-    FORM_PROVIDERS = {}
+    EVO_OVERRIDES = {}
+
+    FORM_MAP = {}
+    POKEMON_DATA.each do |species, mondata|
+      mondata.forms.each do |index, form|
+        FORM_MAP[species] = {} if FORM_MAP[species].nil?
+        FORM_MAP[species][form] = index
+        FORM_MAP[species][index] = form
+      end
+    end
 
   end
 
@@ -106,6 +107,7 @@ class PokeModifier
     attr_accessor(:eggs_overwrite)
     attr_accessor(:moves_overwrite)
     attr_accessor(:end_of_battle_reset)
+    attr_accessor(:target_dex_num)
 
     def initialize(species, form, form_str)
       return self if UniLib.cached(POKEMON)
@@ -129,7 +131,25 @@ class PokeModifier
       @moves_overwrite = false
       @base_data = nil
       @end_of_battle_reset = nil
+      @target_dex_num = -1
       EVENT_POKEMODIFIER_INIT.each { |event| event.call(self) }
+    end
+
+    def set_new(name, target_dex_num)
+      @new_flag = true
+      @target_dex_num = target_dex_num
+      @name = name
+      @learnset_overwrite = @eggs_overwrite = @moves_overwrite = true
+      @ev = [0, 0, 0, 0, 0, 0]
+      @gender_ratio = :FemHalf
+      @happiness = 70
+      @egg_steps = 1
+      @egg_groups = [:Undiscovered]
+      $cache.pkmn[@species] = MonWrapper.new(@species, { 0 => {} })
+    end
+
+    def set_form
+      @form_flag = true
     end
 
     def mon_data
@@ -155,13 +175,17 @@ class PokeModifier
       ret.nil? ? default : ret.dup
     end
 
-    def get_data(sym)
-      if @form == 0 || Reborn
-        data = mon_data.instance_variable_get(("@" + sym.to_s).to_sym)
-        data = $cache.pkmn[@species].pokemonData[POKEMON_DATA[@species].forms[0]].instance_variable_get(("@" + sym.to_s).to_sym) if data.nil? and Reborn
-        data
-      else
-        mon_data[sym].nil? ? mon_data.instance_variable_get(("@" + sym.to_s).to_sym) : mon_data[sym]
+    def get_data(sym, default = nil)
+      begin
+        if @form == 0 || Reborn
+          data = mon_data.instance_variable_get(("@" + sym.to_s).to_sym)
+          data = $cache.pkmn[@species].pokemonData[POKEMON_DATA[@species].forms[0]].instance_variable_get(("@" + sym.to_s).to_sym) if data.nil? and Reborn
+          data
+        else
+          mon_data[sym].nil? ? mon_data.instance_variable_get(("@" + sym.to_s).to_sym) : mon_data[sym]
+        end
+      rescue
+        default
       end
     end
 
@@ -178,14 +202,14 @@ class PokeModifier
     end
 
     def set_megas_internal
-      megas = get_data(:MegaEvolutions)
+      megas = get_data(:MegaEvolutions, [])
       megas = megas.nil? ? {} : megas.dup
       @megas.each { |k, v| megas[k] = v }
       set_data(:MegaEvolutions, @megas)
     end
 
     def set_stats_internal
-      base_stats = get_data(:BaseStats).dup
+      base_stats = get_data(:BaseStats, [100, 100, 100, 100, 100, 100]).dup
       @stats.each_with_index { |s, i| base_stats[i] = s if s }
       set_data(:BaseStats, base_stats)
     end
@@ -197,21 +221,21 @@ class PokeModifier
           if index == 2
             set_data(HIDDEN_ABILITY_SYM, ability)
           else
-            (abils = get_data(:Abilities).dup)[index] = ability
+            (abils = get_data(:Abilities, []).dup)[index] = ability
             set_data(:Abilities, abils)
           end
         else
           if index == 2 and @form == 0
-            ha = get_data(:flags)
+            ha = get_data(:flags, {})
             ha[HIDDEN_ABILITY_SYM] = ability
           else
-            data = get_data(:Abilities).dup
+            data = get_data(:Abilities, []).dup
             data[index] = ability
             set_data(:Abilities, data)
           end
         end
       end
-      a = get_data(:Abilities)
+      a = get_data(:Abilities, [])
       a.reject! {|ab| ab.nil? } if a.is_a?(Array)
     end
 
@@ -220,7 +244,7 @@ class PokeModifier
     end
 
     def set_level_moves_internal(sort=false)
-      @base_learnset += get_base_data(:Moveset) unless @learnset_overwrite
+      @base_learnset += get_base_data(:Moveset, []) unless @learnset_overwrite
       @base_learnset.reject! { |a| @removed_learnset.include?(a[1]) }
       @learnset.sort_by!{ |a| a[0] } if sort
       @learnset.each do |move|
@@ -234,7 +258,7 @@ class PokeModifier
     end
 
     def set_egg_moves_internal
-      d = get_base_data(:EggMoves) unless @eggs_overwrite
+      d = get_base_data(:EggMoves, []) unless @eggs_overwrite
       @base_egg_moves += d if d
       @base_egg_moves.reject! { |a| @removed_compatible.include?(a) }
       @egg_moves.each { |move| @base_egg_moves.push(move) unless @base_egg_moves.include?(move) }
@@ -242,7 +266,7 @@ class PokeModifier
     end
 
     def set_compatible_moves_internal
-      @base_compatible_moves += get_base_data(:compatiblemoves) unless @moves_overwrite
+      @base_compatible_moves += get_base_data(:compatiblemoves, []) unless @moves_overwrite
       @compatible_moves.reject! { |a| @removed_compatible.include?(a) }
       @compatible_moves.each { |move| @base_compatible_moves.push(move) unless @base_compatible_moves.include?(move) }
       set_data(:compatiblemoves, @base_compatible_moves)
@@ -260,7 +284,23 @@ class PokeModifier
       get_data(:compatiblemoves).clear rescue nil
     end
 
+    def new_pkmn_error(set) = print("PokeModifier: #{set} must be set for new Pokemon #{@species}")
+
     def build
+      if @new_flag
+        return new_pkmn_error("name") unless @name
+        return new_pkmn_error("dex entry") unless @dex_entry
+        return new_pkmn_error("base stats") if @stats.empty?
+        return new_pkmn_error("types") if @types.empty?
+        return new_pkmn_error("abilities") if @abilities.empty?
+        return new_pkmn_error("growth rate") unless @growth_rate
+        return new_pkmn_error("base EXP") unless @base_exp
+        return new_pkmn_error("catch rate") unless @catch_rate
+        return new_pkmn_error("color") unless @color
+        return new_pkmn_error("height") unless @height
+        return new_pkmn_error("weight") unless @weight
+        return new_pkmn_error("kind") unless @kind
+      end
       EVENT_POKEMODIFIER_PRE_BUILD.each { |event| event.call(self) }
       set_megas_internal unless @megas.empty?
       set_stats_internal unless @stats.empty?
@@ -272,6 +312,8 @@ class PokeModifier
       set_level_moves_internal(true) unless @learnset.empty?
       set_egg_moves_internal unless @egg_moves.empty? and @removed_compatible.empty?
       set_compatible_moves_internal unless @compatible_moves.empty? and @removed_compatible.empty?
+      set_data(:name, @name) if @name
+      set_data(:dexnum, @target_dex_num) if @target_dex_num >= 0
       set_data(:EVs, @ev) if @ev
       set_data(:GrowthRate, @growth_rate) if @growth_rate
       set_data(:GenderRatio, @gender_ratio) if @gender_ratio
@@ -292,6 +334,7 @@ class PokeModifier
       set_data(:BattlerShadow, @battler_shadow) if @battler_shadow
       set_data(:preevo, @preevo) if @preevo
       set_data(:evolutions, @evolutions) if @evolutions
+      EVO_OVERRIDES[[@species, @form]] = @evo_overrides if @evo_overrides
       FORM_PROVIDERS[@species] = @form_overrides if @form_overrides
       END_OF_BATTLE_RESET[[@species, @form]] = @end_of_battle_reset if @end_of_battle_reset
       EVENT_POKEMODIFIER_POST_BUILD.each { |event| event.call(self) }
@@ -301,20 +344,22 @@ class PokeModifier
 
 end
 
+class PokeBattle_Battler
+
+  def unilib_flags = @pokemon.unilib_flags
+
+end
+
 class PokeBattle_Pokemon
 
   attr_accessor(:permanent_battle_effects)
+
+  def unilib_flags = @unilib_flags ||= {}
 
   def permanent_battle_effects
     @permanent_battle_effects = {} unless @permanent_battle_effects
     @permanent_battle_effects
   end
-
-end
-
-class MonWrapper
-
-  def formInit = "proc { $game_map && UniLib::FORM_PROVIDERS[@mon] && (f = UniLib::FORM_PROVIDERS[@mon][$game_map.map_id]) ? f : #{@formInit.is_a?(String) ? "#{@formInit}.call" : 0} }"
 
 end
 
@@ -324,8 +369,12 @@ end
 
 unless UniLib.lib_loaded(__FILE__)
 
-  def register_modified_pokemon
-    UniLib::MODIFIED_POKEMON.each { |_, forms| forms.each { |_, builder| builder.build } }
+  def register_pokemon
+    keys = UniLib::MODIFIED_POKEMON.keys.sort_by!.with_index { |k, idx, m = UniLib::MODIFIED_POKEMON[k]| [m[m.keys[0]].target_dex_num, idx] }
+    keys.each { |k| UniLib::MODIFIED_POKEMON[k].each { |_, builder| builder.build } }
+  end
+
+  def pokemon_datafixer
     $Trainer.party.each do |pokemon|
       pokemon.bossId = nil if Rejuv
       pokemon.isbossmon = false
@@ -345,7 +394,8 @@ unless UniLib.lib_loaded(__FILE__)
 
 end
 
-UniLib.add_play_event(:register_modified_pokemon)
+UniLib.add_init_event(:register_pokemon)
+UniLib.add_play_event(:pokemon_datafixer)
 
 # ======================================================================================================================================== #
 # ================================================================ PATCH ================================================================= #
@@ -365,6 +415,9 @@ UniLib.insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
     next if ret == type1
     return ret unless ret.nil?
   end unless providers.nil?")
+
+UniLib.insert_in_function(:getEvolutionForm, :HEAD,
+  "UniLib::EVO_OVERRIDES[[mon.species, mon.form]].each { |override, m = nil| return m if (m = override.call(mon, item)) } if UniLib::EVO_OVERRIDES[[mon.species, mon.form]]")
 
 target = Reborn ? "if Rejuv" : "i.rampCrestUsed = false"
 index = Reborn ? 2 : 0
