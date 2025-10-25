@@ -4,6 +4,7 @@
 
 UniLib.verify_version(0.8, __FILE__)
 UniLib.include "Item"
+UniLib.include "Asset"
 
 # ======================================================================================================================================== #
 # ============================================================ INTERNAL/CORE ============================================================= #
@@ -12,8 +13,19 @@ UniLib.include "Item"
 module UniLib
 
   $map_debug = false
-  MAP_EVENTS = {} unless UniLib.cached(UniLib::MAP)
+
+  $map_temp = nil
+
+  unless UniLib.cached(UniLib::MAP)
+
+    MAP_EVENTS = {}
+    FORM_PROVIDERS = {}
+
+  end
+
   CACHED_MAPS = {}
+
+  NOT_LOST_CMD = 911
 
 end
 
@@ -25,7 +37,11 @@ end
 
 class EncounterMod
 
+  include UniLib
+
   MODIFIERS = {} unless UniLib.cached(UniLib::MAP)
+  CACHED_ENCOUNTERS = {} unless defined? CACHED_ENCOUNTERS
+  MODIFIED = {}
 
   attr_reader(:modifiers)
 
@@ -56,30 +72,78 @@ class EncounterMod
     UniLib.dev_log(s)
   end
 
-  def apply(encounters)
-    @modifiers.each { |(target, species, operation, argument)|
-      (target.is_a?(Array) ? target : [target]).each { |i|
-        begin
-          next unless encounters[i]
-          case operation
-          when :ADD then (encounters[i][species] ||= []).push(argument)
-          when :REPLACE
-            args = argument[0].is_a?(Array) ? argument : [argument]
-            args.each { |arg| throw Exception.new("") if arg[2] < arg[1] }
-            encounters[i][species] = args
-          when :REMOVE then encounters[i].delete(species)
-          else UniLib.dev_log("EncounterMod: attempted to execute unsupported operation :#{operation}")
+  def apply(enc)
+    CACHED_ENCOUNTERS[@map_id] = Marshal.load(Marshal.dump(enc)) unless CACHED_ENCOUNTERS[@map_id]
+    unless MODIFIED[@map_id]
+      encounters = (MODIFIED[@map_id] = Marshal.load(Marshal.dump(CACHED_ENCOUNTERS[@map_id])))
+      @modifiers.each { |(target, species, operation, argument)|
+        (target.is_a?(Array) ? target : [target]).each { |i|
+          begin
+            next unless encounters[i]
+            case operation
+            when :ADD then (encounters[i][species] ||= []).push(argument)
+            when :REPLACE
+              next unless encounters[i][species]
+              args = argument[0].is_a?(Array) ? argument : [argument]
+              args.each { |arg| throw Exception.new("") if arg[2] < arg[1] }
+              encounters[i][species] = args
+            when :REMOVE then encounters[i].delete(species)
+            when :DECREASE then
+              next unless encounters[i][species]
+              enc = encounters[i][species]
+              proportions = []
+              total = enc.sum { |(weight, _, _)| proportions.push(weight); weight }
+              target_amount = [total - argument, 0].max
+              proportions.map! { |i| i.to_f / total }
+              new_total = enc.each_with_index.sum { |arr, i| arr[0] = (proportions[i] * target_amount).round.to_i }
+              enc[0][0] += target_amount - new_total
+            else UniLib.dev_log("EncounterMod: attempted to execute unsupported operation :#{operation}")
+            end
+          rescue Exception => e
+            UniLib.dev_log("EncounterMod: something went wrong with #{operation} modifier on #{species} #{ argument.nil? ? "" : " with argument #{argument}"} - #{e}")
           end
-        rescue Exception => e
-          UniLib.dev_log("EncounterMod: something went wrong with #{operation} modifier on#{species} #{ argument.nil? ? "" : " with argument #{argument}"} - #{e}")
-        end
+        }
       }
-    }
-    encounters.each { |enc_list|
-
-    }
-    EncounterMod.log_encounters(encounters) if @logging
+      EncounterMod.log_encounters(MODIFIED[@map_id]) if @logging
+    end
+    MODIFIED[@map_id]
   end
+
+end
+
+class Interpreter
+
+  # store current event in map temp variable
+  def command_910
+    $map_temp = $game_map.events[@event_id]
+    return true
+  end
+
+  # battle result test (conditional branch)
+  def command_911
+    dec = $game_variables[Variables[:BattleResult]]
+    result = @parameters.include?(dec)
+    @branch[@list[@index].indent] = result
+    if @branch[@list[@index].indent] == true
+      @branch.delete(@list[@index].indent)
+      return true
+    end
+    command_skip
+  end
+
+  def handle_custom
+    case @list[@index].code
+    when 910 then [command_910]
+    when 911 then [command_911]
+    else nil
+    end
+  end
+
+end
+
+class MonWrapper
+
+  def formInit = "proc { $game_map && UniLib::FORM_PROVIDERS[:#{@mon}] && (f = UniLib::FORM_PROVIDERS[:#{@mon}][$game_map.map_id]) ? f : #{@formInit.is_a?(String) ? "#{@formInit}.call" : 0} }"
 
 end
 
@@ -98,5 +162,9 @@ UniLib.insert_in_method(:Cache_Game, :map_load, "end",
   end")
 
 UniLib.insert_in_method(:PokemonEncounters, :__hr_setup, "]",
-  "EncounterMod::MODIFIERS[mapID].apply(@enctypes) if EncounterMod::MODIFIERS[mapID]
+  "@enctypes = EncounterMod::MODIFIERS[mapID].apply(@enctypes) if EncounterMod::MODIFIERS[mapID]
   @enctypes", 1)
+
+UniLib.insert_in_method_before(:Interpreter, :execute_command, "case @list[@index].code",
+  "rval = handle_custom
+  return rval[0] if rval")

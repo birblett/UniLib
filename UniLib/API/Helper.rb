@@ -80,7 +80,7 @@ module UniLib
     else
       s[0] += "  " * depth + "#{obj.class} #{name}= #{obj}\n"
     end
-    UniLib.dev_log(s[0]) if start
+    start ? UniLib.dev_log(s[0]) : s[0]
   end
 
 end

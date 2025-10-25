@@ -35,6 +35,7 @@ module UniLib
   FIXES = "Fixes"
   FORM_PORTS = "FormPorts"
   HELPER = "Helper"
+  HISUIAN_PORTS = "HisuianPorts"
   ITEM = "Item"
   MAP = "Map"
   MOVE = "Move"
@@ -63,6 +64,7 @@ module UniLib
     FIXES => 4,
     FORM_PORTS => 4,
     HELPER => 0,
+    HISUIAN_PORTS => 4,
     ITEM => 1,
     MAP => 2,
     MOVE => 0,
@@ -89,6 +91,7 @@ module UniLib
     FIXES => 5,
     FORM_PORTS => ADDITIONAL_CACHE_LEVEL,
     HELPER => 5,
+    HISUIAN_PORTS => CORE_CACHE_LEVEL,
     ITEM => 5,
     MAP => 5,
     MOVE => CORE_CACHE_LEVEL,

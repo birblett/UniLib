@@ -397,6 +397,34 @@ class EventProvider
 
   <<-DOC
   @param proc - a void function.
+  >> an event hook for when weather is changed. accepts 2 arguments, the pokemon (PokeBattle_Battler) and previous weather (Symbol).
+  DOC
+  def on_weather_change(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
+    add_or_create_event(:weather_change, proc, block)
+  end
+
+  <<-DOC
+  @param proc - a void function.
+  >> an event hook for when field is set. accepts 2 arguments, the pokemon (PokeBattle_Battler) and the previous field (Symbol).
+  DOC
+  def on_field_set(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
+    add_or_create_event(:field_set, proc, block)
+  end
+
+  <<-DOC
+  @param proc - a void function.
+  >> an event hook for when field is set. accepts 3 arguments, the pokemon (PokeBattle_Battler), the previous field (Symbol), and whether
+     the field was broken or not.
+  DOC
+  def on_field_end(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
+    add_or_create_event(:field_end, proc, block)
+  end
+
+  <<-DOC
+  @param proc - a void function.
   >> an event hook for when a the current turn ends. accepts a single PokeBattle_Battler argument.
   DOC
   def on_turn_end(proc=nil, &block)
@@ -425,7 +453,7 @@ class EventProvider
 
   <<-DOC
   @param proc - a function returning an integer adder.
-  >> a conditional score modifier, accepts 3 arguments, the calling AI instance (PokeBattle_AI) and possible switch (PokeBattle_Pokemon).
+  >> a conditional score modifier, accepts 2 arguments, the calling AI instance (PokeBattle_AI) and possible switch (PokeBattle_Pokemon).
      return an additive score modifier.
   DOC
   def switch_in_score(proc=nil, &block)

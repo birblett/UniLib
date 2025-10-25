@@ -19,7 +19,7 @@ if Reborn
               .compatible_moves_overwrite
               .types({:Type1 => :BUG, :Type2 => :POISON})
               .set_ev([0, 1, 0, 0, 0, 0])
-              .set_evolutions([[:PARASECT, :Item, :XENWASTE]])
+              .set_evolutions([{:species => :PARASECT, :method => :Item, :parameter => :XENWASTE}])
               .level_moves([[1, :SCRATCH], [6, :POISONPOWDER], [6, :STUNSPORE], [11, :POISONSTING], [17, :FURYCUTTER], [22, :TOXIC], [27, :SLASH], [33, :AROMATHERAPY], [37, :CROSSPOISON], [41, :VENOMDRENCH], [45, :SLEEPPOWDER], [51, :XSCISSOR], [54, :GUNKSHOT]])
               .egg_moves([:AGILITY, :BUGBITE, :METALCLAW, :CROSSPOISON, :ENDURE, :LEECHSEED, :FLAIL, :KNOCKOFF, :PURSUIT, :PSYBEAM, :SCREECH, :DISABLE])
               .compatible_moves([:AERIALACE, :BUGBITE, :CROSSPOISON, :CUT, :ELECTROWEB, :ENDEAVOR, :FALSESWIPE, :GASTROACID, :GIGADRAIN, :GUNKSHOT, :ICYWIND, :INFESTATION, :IRRITATION, :KNOCKOFF, :LASERFOCUS, :LEECHLIFE, :MAGICROOM, :MUDSHOT, :PAINSPLIT, :PINMISSILE, :POISONJAB, :POISONSWEEP, :POLLENPUFF, :RAINDANCE, :RECYCLE, :ROCKSMASH, :SCARYFACE, :SCREECH, :SIGNALBEAM, :SKITTERSMACK, :SLUDGEBOMB, :SPITE, :STRUGGLEBUG, :SUCKERPUNCH, :THIEF, :TOXICSPIKES, :VENOMDRENCH, :VENOSHOCK, :WATERPULSE, :WONDERROOM, :XSCISSOR, :IRRITATION, :SLASHANDBURN])
@@ -234,7 +234,7 @@ if Reborn
               .compatible_moves_overwrite
               .types({:Type1 => :GROUND, :Type2 => :FIGHTING})
               .set_ev([0, 0, 0, 2, 0, 0])
-              .set_evolutions([[:ROSERADE, :Item, :SUNSTONE]])
+              .set_evolutions([{:species => :ROSERADE, :method => :Item, :parameter => :SUNSTONE}])
               .set_preevo({:species=>:BUDEW, :form=>1})
               .level_moves([[1, :MUDSLAP], [4, :SANDATTACK], [7, :ROCKSMASH], [10, :CAMOUFLAGE], [13, :ROCKTHROW], [16, :KNOCKOFF], [19, :MUDSHOT], [22, :VACUUMWAVE], [25, :ANCIENTPOWER], [28, :TORMENT], [31, :SANDTOMB], [34, :TAUNT], [37, :LOWSWEEP], [40, :FOULPLAY], [43, :AURASPHERE], [46, :MORNINGSUN], [50, :CLOSECOMBAT]])
               .egg_moves([:EARTHPOWER, :EXTRASENSORY, :FINALGAMBIT, :FOCUSBLAST, :MINDREADER, :MORNINGSUN, :MUDSHOT, :NATURALGIFT, :PINMISSILE, :REVENGE, :ROCKBLAST, :SANDSTORM, :SPIKES, :WEATHERBALL, :YAWN])
@@ -278,7 +278,7 @@ if Reborn
               .compatible_moves_overwrite
               .types({:Type1 => :GRASS, :Type2 => :ROCK})
               .set_ev([1, 0, 0, 0, 0, 0])
-              .set_evolutions([[:GLALIE, :Level, 42], [:FROSLASS, :ItemFemale, :WATERSTONE]])
+              .set_evolutions([{:species => :GLALIE, :method => :Level, :parameter => 42}, {:species => :FROSLASS, :method => :ItemFemale, :parameter => :WATERSTONE}])
               .level_moves([[1, :ABSORB], [1, :LEER], [5, :WORRYSEED], [10, :ROCKTHROW], [14, :RAZORLEAF], [19, :PAYBACK], [23, :LEAFTORNADO], [28, :HEADBUTT], [32, :PROTECT], [37, :CAMOUFLAGE], [41, :ROCKSLIDE], [46, :WOODHAMMER], [50, :GRASSYTERRAIN]])
               .egg_moves([:BIDE, :CHIPAWAY, :DISABLE, :FAKETEARS, :LEECHSEED, :ROLLOUT, :SPIKES, :SWITCHEROO, :WEATHERBALL, :WIDEGUARD])
               .compatible_moves([:AFTERYOU, :ALLYSWITCH, :ASSURANCE, :AVALANCHE, :BODYSLAM, :BULLETSEED, :ENDEAVOR, :ENERGYBALL, :FAKETEARS, :GIGADRAIN, :GRASSKNOT, :GRASSYGLIDE, :GRASSYTERRAIN, :GYROBALL, :IRONHEAD, :LEAFSTORM, :MAGICALLEAF, :MAGNETRISE, :MUDSHOT, :NATUREPOWER, :PAYBACK, :POWERGEM, :RAINDANCE, :ROCKBLAST, :ROCKSLIDE, :ROCKSMASH, :ROCKTOMB, :SANDSTORM, :SEEDBOMB, :SHADOWBALL, :SOLARBEAM, :SPIKES, :STEELROLLER, :SUCKERPUNCH, :SUNNYDAY, :SYNTHESIS, :WEATHERBALL, :WORRYSEED, :ZENHEADBUTT, :IRRITATION, :MUDBARRAGE])
@@ -328,6 +328,62 @@ if Reborn
               .set_dex_entry("Now predator instead of prey, Roserade hunts for resources during sandstorms, its sand cloak allowing for perfect camouflage. It defends its territory fiercely.")
               .asset_override(asset: "UniLib/Assets/Battlers/roserade-aevian.png", asset_f: "UniLib/Assets/Battlers/roserade-aevian_f.png", icon: "UniLib/Assets/Icons/roserade-aevian.png", icon_f: "UniLib/Assets/Icons/roserade-aevian_f.png")
               .get_form
+
+  SHELLOS_WEST_AEVIAN = PokeModifier.add_form(:SHELLOS, "West Aevian Form")
+                             .level_moves_overwrite
+                             .egg_moves_overwrite
+                             .compatible_moves_overwrite
+                             .types({:Type1 => :GROUND, :Type2 => :FAIRY})
+                             .set_ev([1, 0, 0, 0, 0, 0])
+                             .set_evolutions([{:species => :GASTRODON, :method => :Level, :parameter => 30}])
+                             .level_moves([[1, :MUDSLAP], [2, :POISONSTING], [4, :HARDEN], [7, :FAIRYWIND], [11, :MUDBOMB], [16, :HIDDENPOWER], [22, :ACIDARMOR], [29, :BODYSLAM], [37, :STRANGESTEAM], [46, :RECOVER]])
+                             .egg_moves([])
+                             .compatible_moves([:AFTERYOU, :ALLYSWITCH, :AMNESIA, :ARENITEWALL, :BLOCK, :BODYSLAM, :BRINE, :BULLDOZE, :DAZZLINGGLEAM, :DELUGE, :DIG, :DRAININGKISS, :EARTHPOWER, :EARTHQUAKE, :ENDEAVOR, :FAKETEARS, :FLASH, :GASTROACID, :GRAVITY, :HYPERVOICE, :INFESTATION, :LIGHTSCREEN, :MAGICCOAT, :MISTYEXPLOSION, :MISTYTERRAIN, :MUDSHOT, :NATUREPOWER, :PLAYROUGH, :POWERGEM, :RAINDANCE, :RECYCLE, :REFLECT, :ROCKBLAST, :ROCKSLIDE, :ROCKTOMB, :SAFEGUARD, :SANDSTORM, :SANDTOMB, :SCORCHINGSANDS, :SCREECH, :SHADOWBALL, :SHOCKWAVE, :SKILLSWAP, :SUNNYDAY, :TERRAINPULSE, :VENOMDRENCH, :WEATHERBALL, :DELUGE, :IRRITATION, :MUDBARRAGE])
+                             .set_dex_entry("They are often seen wandering on the seafloor, although they occasionally travel closer to the surface. A rather shy species, they prefer to keep to themself and will flee when frightened.")
+                             .asset_override(asset: "UniLib/Assets/Battlers/shellos-west_aevian.png", asset_egg: "UniLib/Assets/Battlers/shellos-west_aevian_egg.png", icon: "UniLib/Assets/Icons/shellos-west_aevian.png", icon_egg: "UniLib/Assets/Icons/shellos-west_aevian_egg.png")
+                             .get_form
+
+  SHELLOS_EAST_AEVIAN = PokeModifier.add_form(:SHELLOS, "East Aevian Form")
+                             .level_moves_overwrite
+                             .egg_moves_overwrite
+                             .compatible_moves_overwrite
+                             .types({:Type1 => :GROUND, :Type2 => :FAIRY})
+                             .set_ev([1, 0, 0, 0, 0, 0])
+                             .set_evolutions([{:species => :GASTRODON, :method => :Level, :parameter => 30}])
+                             .level_moves([[1, :MUDSLAP], [2, :POISONSTING], [4, :HARDEN], [7, :FAIRYWIND], [11, :MUDBOMB], [16, :HIDDENPOWER], [22, :ACIDARMOR], [29, :BODYSLAM], [37, :STRANGESTEAM], [46, :RECOVER]])
+                             .egg_moves([])
+                             .compatible_moves([:AFTERYOU, :ALLYSWITCH, :AMNESIA, :ARENITEWALL, :BLOCK, :BODYSLAM, :BRINE, :BULLDOZE, :DAZZLINGGLEAM, :DELUGE, :DIG, :DRAININGKISS, :EARTHPOWER, :EARTHQUAKE, :ENDEAVOR, :FAKETEARS, :FLASH, :GASTROACID, :GRAVITY, :HYPERVOICE, :INFESTATION, :LIGHTSCREEN, :MAGICCOAT, :MISTYEXPLOSION, :MISTYTERRAIN, :MUDSHOT, :NATUREPOWER, :PLAYROUGH, :POWERGEM, :RAINDANCE, :RECYCLE, :REFLECT, :ROCKBLAST, :ROCKSLIDE, :ROCKTOMB, :SAFEGUARD, :SANDSTORM, :SANDTOMB, :SCORCHINGSANDS, :SCREECH, :SHADOWBALL, :SHOCKWAVE, :SKILLSWAP, :SUNNYDAY, :TERRAINPULSE, :VENOMDRENCH, :WEATHERBALL, :DELUGE, :IRRITATION, :MUDBARRAGE])
+                             .asset_override(asset: "UniLib/Assets/Battlers/shellos-east_aevian.png", asset_egg: "UniLib/Assets/Battlers/shellos-east_aevian_egg.png", icon: "UniLib/Assets/Icons/shellos-east_aevian.png", icon_egg: "UniLib/Assets/Icons/shellos-east_aevian_egg.png")
+                             .get_form
+
+  GASTRODON_WEST_AEVIAN = PokeModifier.add_form(:GASTRODON, "West Aevian Form")
+                               .level_moves_overwrite
+                               .egg_moves_overwrite
+                               .compatible_moves_overwrite
+                               .types({:Type1 => :GROUND, :Type2 => :FAIRY})
+                               .stats([118, 83, 68, 92, 82, 39])
+                               .abilities({0 => :STORMDRAIN, 1 => :LIQUIDOOZE, 2 => :POISONHEAL})
+                               .set_ev([2, 0, 0, 0, 0, 0])
+                               .set_preevo({:species => :SHELLOS, :form => 2})
+                               .level_moves([[1, :MUDSLAP], [1, :POISONSTING], [1, :HARDEN], [1, :FAIRYWIND], [2, :POISONSTING], [4, :HARDEN], [7, :FAIRYWIND], [11, :MUDBOMB], [16, :HIDDENPOWER], [22, :ACIDARMOR], [29, :BODYSLAM], [41, :STRANGESTEAM], [54, :RECOVER]])
+                               .egg_moves([])
+                               .compatible_moves([:AFTERYOU, :ALLYSWITCH, :AMNESIA, :ARENITEWALL, :ASSURANCE, :BLOCK, :BODYPRESS, :BODYSLAM, :BRINE, :BULLDOZE, :DAZZLINGGLEAM, :DELUGE, :DIG, :DRAININGKISS, :EARTHPOWER, :EARTHQUAKE, :ENDEAVOR, :FAKETEARS, :FIREBLAST, :FLAMETHROWER, :FLASH, :GASTROACID, :GIGAIMPACT, :GRAVITY, :GUNKSHOT, :HIGHHORSEPOWER, :HYPERBEAM, :HYPERVOICE, :INFESTATION, :LIGHTSCREEN, :MAGICCOAT, :MISTYEXPLOSION, :MISTYTERRAIN, :MUDSHOT, :MYSTICALFIRE, :NATUREPOWER, :PLAYROUGH, :POWERGEM, :RAINDANCE, :RECYCLE, :REFLECT, :ROCKBLAST, :ROCKCLIMB, :ROCKSLIDE, :ROCKTOMB, :SAFEGUARD, :SANDTOMB, :SANDSTORM, :SCORCHINGSANDS, :SCREECH, :SHADOWBALL, :SHOCKWAVE, :SKILLSWAP, :SLUDGEBOMB, :SLUDGEWAVE, :STRENGTH, :SUNNYDAY, :TERRAINPULSE, :VENOMDRENCH, :VENOSHOCK, :WEATHERBALL, :DELUGE, :IRRITATION, :MUDBARRAGE])
+                               .set_dex_entry("Far less shy and more affectionate than their predecessors, they enjoy the company of both each other and humans. They often come up to humans for attention.")
+                               .asset_override(asset: "UniLib/Assets/Battlers/gastrodon-west_aevian.png", icon: "UniLib/Assets/Icons/gastrodon-west_aevian.png")
+                               .get_form
+
+  GASTRODON_EAST_AEVIAN = PokeModifier.add_form(:GASTRODON, "East Aevian Form")
+                               .level_moves_overwrite
+                               .egg_moves_overwrite
+                               .compatible_moves_overwrite
+                               .types({:Type1 => :GROUND, :Type2 => :FAIRY})
+                               .set_ev([2, 0, 0, 0, 0, 0])
+                               .set_preevo({:species => :SHELLOS, :form => 3})
+                               .level_moves([[1, :MUDSLAP], [1, :POISONSTING], [1, :HARDEN], [1, :FAIRYWIND], [2, :POISONSTING], [4, :HARDEN], [7, :FAIRYWIND], [11, :MUDBOMB], [16, :HIDDENPOWER], [22, :ACIDARMOR], [29, :BODYSLAM], [41, :STRANGESTEAM], [54, :RECOVER]])
+                               .egg_moves([])
+                               .compatible_moves([:AFTERYOU, :ALLYSWITCH, :AMNESIA, :ARENITEWALL, :ASSURANCE, :BLOCK, :BODYPRESS, :BODYSLAM, :BRINE, :BULLDOZE, :DAZZLINGGLEAM, :DELUGE, :DIG, :DRAININGKISS, :EARTHPOWER, :EARTHQUAKE, :ENDEAVOR, :FAKETEARS, :FIREBLAST, :FLAMETHROWER, :FLASH, :GASTROACID, :GIGAIMPACT, :GRAVITY, :GUNKSHOT, :HIGHHORSEPOWER, :HYPERBEAM, :HYPERVOICE, :INFESTATION, :LIGHTSCREEN, :MAGICCOAT, :MISTYEXPLOSION, :MISTYTERRAIN, :MUDSHOT, :MYSTICALFIRE, :NATUREPOWER, :PLAYROUGH, :POWERGEM, :RAINDANCE, :RECYCLE, :REFLECT, :ROCKBLAST, :ROCKCLIMB, :ROCKSLIDE, :ROCKTOMB, :SAFEGUARD, :SANDTOMB, :SANDSTORM, :SCORCHINGSANDS, :SCREECH, :SHADOWBALL, :SHOCKWAVE, :SKILLSWAP, :SLUDGEBOMB, :SLUDGEWAVE, :STRENGTH, :SUNNYDAY, :TERRAINPULSE, :VENOMDRENCH, :VENOSHOCK, :WEATHERBALL, :DELUGE, :IRRITATION, :MUDBARRAGE])
+                               .asset_override(asset: "UniLib/Assets/Battlers/gastrodon-east_aevian.png", icon: "UniLib/Assets/Icons/gastrodon-east_aevian.png")
+                               .get_form
 
   MISMAGIUS_AEVIAN = PokeModifier.add(:MISMAGIUS, "Aevian Form")
               .remove_level_moves(:SHADOWCLAW)
@@ -439,7 +495,7 @@ if Reborn
               .stats([76, 67, 45, 25, 45, 24])
               .abilities({0 => :BADDREAMS, 1 => :SHEDSKIN, 2 => :TOUGHCLAWS})
               .set_ev([1, 0, 0, 0, 0, 0])
-              .set_evolutions([[:MUSHARNA, :Item, :NIGHTMAREFUEL]])
+              .set_evolutions([{:species => :MUSHARNA, :method => :Item, :parameter => :NIGHTMAREFUEL}])
               .level_moves([[1, :DRAININGKISS], [1, :LEER], [5, :SCRATCH], [7, :YAWN], [11, :ASSURANCE], [13, :NIGHTMARE], [17, :MOONLIGHT], [19, :HYPNOSIS], [23, :NIGHTSLASH], [25, :SLASH], [29, :PLAYROUGH], [31, :SHADOWCLAW], [35, :HONECLAWS], [37, :THROATCHOP], [41, :LOVELYKISS], [43, :GLARE]])
               .egg_moves([:ASSIST, :CURSE, :DISABLE, :ENCORE, :MEANLOOK, :MEMENTO, :NIGHTSHADE, :SNORE, :SONICBOOM])
               .compatible_moves([:AERIALACE, :AMNESIA, :ASSURANCE, :AURASPHERE, :BATONPASS, :CHARGEBEAM, :CUT, :DARKPULSE, :DAZZLINGGLEAM, :DRAININGKISS, :DREAMEATER, :ENCORE, :FAKETEARS, :FALSESWIPE, :FLING, :FUTURESIGHT, :GASTROACID, :GIGAIMPACT, :GRAVITY, :GYROBALL, :HAIL, :HONECLAWS, :HYPERBEAM, :KNOCKOFF, :LASERFOCUS, :LASHOUT, :LEECHLIFE, :MAGICCOAT, :MAGICROOM, :PAINSPLIT, :PAYBACK, :PLAYROUGH, :POWERSWAP, :PSYCHIC, :PSYCHUP, :QUASH, :ROCKTOMB, :SANDSTORM, :SCARYFACE, :SCREECH, :SHADOWBALL, :SHADOWCLAW, :SKILLSWAP, :SMACKDOWN, :SNARL, :SNATCH, :SPITE, :SWORDSDANCE, :TAUNT, :THROATCHOP, :TORMENT, :TRICK, :TRICKROOM, :UPROAR, :WATERPULSE, :WONDERROOM, :WORKUP, :WORRYSEED])
@@ -487,7 +543,7 @@ if Reborn
               .stats([55, 73, 85, 50, 75, 42])
               .abilities({0 => :SWARM, 1 => :UNNERVE, 2 => :INTIMIDATE})
               .set_ev([0, 0, 2, 0, 0, 0])
-              .set_evolutions([[:LEAVANNY, :HasMove, :DRAGONCLAW]])
+              .set_evolutions([{:species => :LEAVANNY, :method => :HasMove, :parameter => :DRAGONCLAW}])
               .set_preevo({:species=>:SEWADDLE, :form=>1})
               .level_moves([[1, :PROTECT], [1, :GRASSWHISTLE], [1, :BITE], [1, :STRINGSHOT], [1, :BUGBITE], [1, :TWISTER], [0, :PROTECT], [23, :BREAKINGSWIPE], [27, :CAMOUFLAGE], [32, :DRAGONCLAW]])
               .egg_moves([])
@@ -533,7 +589,7 @@ if Reborn
               .stats([50, 35, 55, 65, 55, 20])
               .abilities({0 => :ILLUMINATE, 1 => :FLASHFIRE, 2 => :INFILTRATOR})
               .set_ev([0, 0, 0, 1, 0, 0])
-              .set_evolutions([[:LAMPENT, :HasMove, :ZAPCANNON]])
+              .set_evolutions([{:species => :LAMPENT, :method => :HasMove, :parameter => :ZAPCANNON}])
               .level_moves([[1, :EMBER], [1, :ASTONISH], [3, :CHARGE], [7, :SMOG], [10, :EMBER], [13, :NIGHTSHADE], [16, :NUZZLE], [20, :FIRESPIN], [24, :EERIEIMPULSE], [28, :HEX], [33, :MEMENTO], [38, :CHARGEBEAM], [40, :ZAPCANNON], [43, :CURSE], [49, :SHADOWBALL], [55, :PAINSPLIT], [60, :DISCHARGE]])
               .egg_moves([:ACID, :ACIDARMOR, :CAPTIVATE, :CLEARSMOG, :ENDURE, :HAZE, :DISCHARGE, :POWERSPLIT])
               .compatible_moves([:ALLYSWITCH, :BURNINGJEALOUSY, :CALMMIND, :DARKPULSE, :DREAMEATER, :EERIEIMPULSE, :ELECTROBALL, :ELECTROWEB, :EMBARGO, :FIRESPIN, :FLAMECHARGE, :FLASH, :FOULPLAY, :FUTURESIGHT, :HEX, :ICYWIND, :IRONDEFENSE, :LASERFOCUS, :MAGICROOM, :MAGNETRISE, :OVERHEAT, :PAINSPLIT, :PAYBACK, :POLTERGEIST, :PSYCHUP, :PSYCHIC, :RECYCLE, :SAFEGUARD, :SHADOWBALL, :SHOCKWAVE, :SIGNALBEAM, :SKILLSWAP, :SPIKES, :SPITE, :STOREDPOWER, :TAUNT, :TERRAINPULSE, :THIEF, :THUNDER, :THUNDERBOLT, :TORMENT, :TRICK, :TRICKROOM, :UPROAR, :WILLOWISP, :WONDERROOM, :ZAPCANNON])
@@ -547,7 +603,7 @@ if Reborn
               .compatible_moves_overwrite
               .types({:Type1 => :GHOST, :Type2 => :ELECTRIC})
               .set_ev([0, 0, 0, 2, 0, 0])
-              .set_evolutions([[:CHANDELURE, :Item, :THUNDERSTONE]])
+              .set_evolutions([{:species => :CHANDELURE, :method => :Item, :parameter => :THUNDERSTONE}])
               .set_preevo({:species=>:LITWICK, :form=>1})
               .level_moves([[1, :EMBER], [1, :ASTONISH], [3, :CHARGE], [7, :SMOG], [10, :EMBER], [13, :NIGHTSHADE], [16, :NUZZLE], [20, :FIRESPIN], [24, :EERIEIMPULSE], [28, :HEX], [33, :MEMENTO], [38, :CHARGEBEAM], [45, :CURSE], [53, :SHADOWBALL], [61, :PAINSPLIT], [69, :DISCHARGE], [75, :OVERHEAT]])
               .egg_moves([])

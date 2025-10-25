@@ -309,7 +309,7 @@ class PokeModifier
       @base_learnset = [] if @learnset_overwrite
       @base_egg_moves = [] if @eggs_overwrite
       @base_compatible_moves = [] if @moves_overwrite
-      set_level_moves_internal(true) unless @learnset.empty?
+      set_level_moves_internal(true) unless @learnset.empty? and @removed_learnset.empty?
       set_egg_moves_internal unless @egg_moves.empty? and @removed_compatible.empty?
       set_compatible_moves_internal unless @compatible_moves.empty? and @removed_compatible.empty?
       set_data(:name, @name) if @name
@@ -367,31 +367,27 @@ end
 # ================================================================ EVENTS ================================================================ #
 # ======================================================================================================================================== #
 
-unless UniLib.lib_loaded(__FILE__)
+def register_pokemon
+  keys = UniLib::MODIFIED_POKEMON.keys.sort_by!.with_index { |k, idx, m = UniLib::MODIFIED_POKEMON[k]| [m[m.keys[0]].target_dex_num, idx] }
+  keys.each { |k| UniLib::MODIFIED_POKEMON[k].each { |_, builder| builder.build } }
+end
 
-  def register_pokemon
-    keys = UniLib::MODIFIED_POKEMON.keys.sort_by!.with_index { |k, idx, m = UniLib::MODIFIED_POKEMON[k]| [m[m.keys[0]].target_dex_num, idx] }
-    keys.each { |k| UniLib::MODIFIED_POKEMON[k].each { |_, builder| builder.build } }
+def pokemon_datafixer
+  $Trainer.party.each do |pokemon|
+    pokemon.bossId = nil if Rejuv
+    pokemon.isbossmon = false
+    pokemon.calcStats
+    pokemon.permanent_battle_effects.clear if pokemon.permanent_battle_effects
   end
-
-  def pokemon_datafixer
-    $Trainer.party.each do |pokemon|
+  $PokemonStorage.boxes.each do |box|
+    box.pokemon.each do |pokemon|
+      next unless pokemon
       pokemon.bossId = nil if Rejuv
       pokemon.isbossmon = false
       pokemon.calcStats
       pokemon.permanent_battle_effects.clear if pokemon.permanent_battle_effects
     end
-    $PokemonStorage.boxes.each do |box|
-      box.pokemon.each do |pokemon|
-        next unless pokemon
-        pokemon.bossId = nil if Rejuv
-        pokemon.isbossmon = false
-        pokemon.calcStats
-        pokemon.permanent_battle_effects.clear if pokemon.permanent_battle_effects
-      end
-    end
   end
-
 end
 
 UniLib.add_init_event(:register_pokemon)

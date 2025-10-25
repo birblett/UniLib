@@ -15,6 +15,7 @@ UniLib.include "Display"
 module UniLib
 
   VALID_CRESTS = {}
+  CREST_MAP = {}
   SHOP_CRESTS = [{}, {}, {}, {}]
   CREST_HOOKS = []
 
@@ -41,7 +42,7 @@ class CrestBuilder < ItemModifier
     super
     holders = []
     @species.each do |arr|
-      species, form = arr
+      CREST_MAP[(species, form = arr)] = true
       form == 0 ? holders.push(species) : holders.push([species, form])
     end
     VALID_CRESTS[@symbol] = self

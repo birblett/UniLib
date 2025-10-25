@@ -30,9 +30,9 @@ class PokeModifier
   <<-DOC
   >> allows the pokemon to choose almost any ability with an ability capsule, with a configurable banlist
   DOC
-  def set_aaa
+  def set_aaa(value = 2)
     return self if UniLib.cached(UniLib::POKEMON_OM)
-    @aaa = true
+    @aaa = value
     self
   end
 

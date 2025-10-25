@@ -75,6 +75,10 @@ class AbilityContainer
     @abilities ? @abilities.length > 1 : @abilities
   end
 
+  def suppressed?
+    (@abilities ? @abilities[0] : @abilities).nil?
+  end
+
   def handle_trace(new)
     if (i = @abilities.index(:TRACE))
       @abilities.delete_at(i)
@@ -232,3 +236,6 @@ UniLib.insert_in_method_before(:PokemonEncounters, :pbGenerateEncounter, target,
 # handle trace
 UniLib.replace_in_method(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "self.changeAbility(battlerability)",
   "self.ability.handle_trace(battlerability)")
+
+UniLib.replace_in_method(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "abilityname = getAbilityName(battlerability)",
+  "abilityname = battlerability.multiple? ? \"abilities\" : getAbilityName(battlerability)")

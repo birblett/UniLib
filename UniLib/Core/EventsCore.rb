@@ -60,6 +60,16 @@ module EventListeners
 
 end
 
+class PokeBattle_Battle
+
+  def weather=(other)
+    old_weather = @weather
+    @weather = other
+    pbPriority.each { |battler| EVENT_LISTENERS.each { |_, method| method.bind(battler).(:weather_change, battler, old_weather) } }
+  end
+
+end
+
 class PokeBattle_Battler
 
   include EventListeners
@@ -330,6 +340,18 @@ else
   UniLib.insert_in_method(:PokeBattle_Battler, :pbCheckForm, "transformed=false",
     "EVENT_LISTENERS.each { |_, method| method.bind(self).(:form_change, self, basemove) { |m| transformed = !(self.form = m).nil? } } unless self.isFainted?")
 end
+
+# field set
+UniLib.insert_in_method(:PokeBattle_Battle, :setField, :TAIL,
+  "pbPriority.each { |battler| EVENT_LISTENERS.each { |_, method| method.bind(battler).(:field_set, battler, oldfield) } }")
+
+# field end (break)
+UniLib.insert_in_method(:PokeBattle_Battle, :breakField, :TAIL,
+  "pbPriority.each { |battler| EVENT_LISTENERS.each { |_, method| method.bind(battler).(:field_end, battler, oldfield, true) } }")
+
+# field end (temp)
+UniLib.insert_in_method(:PokeBattle_Battle, :endTempField, :TAIL,
+  "pbPriority.each { |battler| EVENT_LISTENERS.each { |_, method| method.bind(battler).(:field_end, battler, oldfield, false) } }")
 
 # switch in score
 UniLib.insert_in_method(:PokeBattle_AI, :getSwitchInScoresParty, "monscore += otherscore",

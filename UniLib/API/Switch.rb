@@ -17,8 +17,12 @@ module UniLib
     $unilib_switches[id] = value
   end
 
-  def self.set_switch_condition(id, proc)
-    $unilib_switch_conditions[id] = proc
+  def self.get_switch_or_default(id, default)
+    $unilib_switches[id].nil? ? default : $unilib_switches[id]
+  end
+
+  def self.set_switch_condition(id, proc = nil, &block)
+    $unilib_switch_conditions[id] = block ? block : proc
   end
 
 end

@@ -19,6 +19,22 @@ unless UniLib.cached(UniLib::ITEM)
              .no_use_in_battle
              .unlosable { |pkmn| next (UniLib::POKEBILITIES_POKEMON[key = [pkmn.species, pkmn.form]] == 1 or UniLib::CAMO_POKEMON[key] == 1) }
 
+  ItemBuilder.add(:AAA_CAPSULE, "AAAbility Capsule", "Allows certain Pokemon to use almost any ability.")
+             .price(10000)
+             .no_use_in_battle
+             .medicine
+             .level_up
+
+  ItemHandlers::UseOnPokemon.add(:AAA_CAPSULE, proc { |_, pokemon, scene|
+    if (ret = UniLib.can_activate_aaa(pokemon))
+      scene.pbDisplay(_INTL("{1} can now change their ability to nearly anything!", pokemon.name))
+      pokemon.unilib_flags[:AAA_ACTIVE] = true
+    else
+      scene.pbDisplay(_INTL("It won't have any effect."))
+    end
+    ret
+  })
+
 end
 
 module UniLib
@@ -56,12 +72,16 @@ module UniLib
     BANNED_SETTING_ABILITIES = [:DELTASTREAM, :DESOLATELAND, :DRIZZLE, :DROUGHT, :ELECTRICSURGE, :GRASSYSURGE, :MISTYSURGE,
                                 :PRIMORDIALSEA, :PSYCHICSURGE, :SANDSTREAM, :SNOWWARNING]
     BANNED_USELESS_ABILITIES = [:DISGUISE, :FLOWERGIFT, :GULPMISSILE, :HUNGERSWITCH, :ICEFACE, :MULTITYPE, :RKSSYSTEM, :POWERCONSTRUCT,
-                                :SHIELDSDOWN, :STANCECHANGE, :ZENMODE]
-    BANNED_ILLEGAL_ABILITIES = [:ACCUMULATION, :EXECUTION, :INEXORABLE, :LUNARIDOL, :NEUTRALIZINGGAS, :PRISMPOWER, :REFLECTOR,
-                                :SOLARIDOL, :STOPPN, :TEMPEST, :TEMPORALSHIFT, :TRUESHOT, :WORLDOFNIGHTMARES]
+                                :SHIELDSDOWN, :STANCECHANGE, :ZENMODE, :INFINITY, :RESUSCITATION]
+    BANNED_ILLEGAL_ABILITIES = [:ACCUMULATION, :EXECUTION, :LUNARIDOL, :NEUTRALIZINGGAS, :PRISMPOWER, :REFLECTOR, :SOLARIDOL, :STOPPN,
+                                :TEMPEST, :TEMPORALSHIFT, :TRUESHOT, :WORLDOFNIGHTMARES]
 
     BANNED_ABILITIES = BANNED_OVERPOWERED_ABILITIES + BANNED_UNCOMPETITIVE_ABILITIES + BANNED_SPEED_ABILITIES + BANNED_SETTING_ABILITIES +
       BANNED_USELESS_ABILITIES + BANNED_ILLEGAL_ABILITIES
+
+    def self.aaa_active(pkmn) = UniLib::AAA_POKEMON[key = [pkmn.species, pkmn.form]] == 2 || UniLib::AAA_POKEMON[key] == 1 && pkmn.unilib_flags[:AAA_ACTIVE]
+
+    def self.can_activate_aaa(pkmn) = UniLib::AAA_POKEMON[[pkmn.species, pkmn.form]] == 1 && !pkmn.unilib_flags[:AAA_ACTIVE]
 
     POKEBILITY_PROC = proc { |pkmn, _| pkmn = pkmn.pokemon if pkmn.is_a? PokeBattle_Battler; next pkmn.getAbilityList if pokebilities_active(pkmn) }
 
@@ -77,9 +97,7 @@ module UniLib
       ret >= 0 ? commands[ret][0] : 0
     end
 
-    def self.pokebilities_active(pkmn)
-      UniLib::POKEBILITIES_POKEMON[key = [pkmn.species, pkmn.form]] == 2 or (pkmn.item == :CATALYZER and UniLib::POKEBILITIES_POKEMON[key] == 1)
-    end
+    def self.pokebilities_active(pkmn) = UniLib::POKEBILITIES_POKEMON[key = [pkmn.species, pkmn.form]] == 2 || (pkmn.item == :CATALYZER and UniLib::POKEBILITIES_POKEMON[key] == 1)
 
     PLATE_MAP = {:SILKSCARF => :NORMAL, :FISTPLATE => :FIGHTING, :SKYPLATE => :FLYING, :EARTHPLATE => :GROUND, :TOXICPLATE => :POISON,
                  :STONEPLATE => :ROCK, :INSECTPLATE => :BUG, :SPOOKYPLATE => :GHOST, :IRONPLATE => :STEEL, :FLAMEPLATE => :FIRE,
@@ -87,6 +105,14 @@ module UniLib
                  :DRACOPLATE => :DRAGON, :DREADPLATE => :DARK, :PIXIEPLATE => :FAIRY}
 
     PLATE_MAP.each { |plate, _| ItemModifier.add(plate).unlosable { |pkmn| next true if PLATE_POKEMON[key = [pkmn.pokemon.species, pkmn.pokemon.form]] and PLATE_POKEMON[key].include?(plate) } }
+
+    def self.plate_type(pokemon)
+      return nil if UniLib::PLATE_POKEMON[(key = [pokemon.species, pokemon.form])].nil?
+      return false unless UniLib::PLATE_POKEMON[key].include?(pokemon.item)
+      return UniLib::PLATE_MAP[pokemon.item] if UniLib::PLATE_MAP.include?(pokemon.item)
+      return UniLib::CUSTOM_PLATE_MAP[pokemon.item] if UniLib::CUSTOM_PLATE_MAP.include?(pokemon.item)
+      return false
+    end
 
     CAMO_PROVIDER_TYPE1 = proc do |pokemon|
       next pokemon.moves[0].type if (UniLib::CAMO_POKEMON[key = [pokemon.species, pokemon.form]] == 2 or (UniLib::CAMO_POKEMON[key] == 1 and pokemon.item == :CATALYZER)) unless pokemon.moves[0].nil?
@@ -175,7 +201,7 @@ class PokeModifier
   end
 
   def set_aaa_internal
-    UniLib::AAA_POKEMON[[@species, @form]] = true
+    UniLib::AAA_POKEMON[[@species, @form]] = @aaa
   end
 
   def set_plates_internal(plates)
@@ -198,8 +224,7 @@ PokeModifier::EVENT_POKEMODIFIER_POST_BUILD.push(PokeModifier::OM_MODIFIER_BUILD
 # ======================================================================================================================================== #
 
 UniLib.insert_in_function(ItemHandlers::UseOnPokemon.instance_variable_get(:@hash)[:ABILITYCAPSULE], :HEAD,
- "key = [pokemon.species, pokemon.form]
-  unless UniLib::AAA_POKEMON[key].nil?
+ "if UniLib.aaa_active(pokemon)
     list = UniLib.pokebilities_active(pokemon) ? [] : pokemon.getAbilityList
     i = UniLib.ability_select(1, list)
     if i != 0
@@ -210,13 +235,12 @@ UniLib.insert_in_function(ItemHandlers::UseOnPokemon.instance_variable_get(:@has
   end")
 
 UniLib.insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
- "key = [@species, @form]
-  return UniLib::PLATE_MAP[@item] if !UniLib::PLATE_POKEMON[key].nil? and UniLib::PLATE_POKEMON[key].include?(@item) and UniLib::PLATE_MAP.include?(@item)
-  return UniLib::CUSTOM_PLATE_MAP[@item] if !UniLib::PLATE_POKEMON[key].nil? and UniLib::PLATE_POKEMON[key].include?(@item) and UniLib::CUSTOM_PLATE_MAP.include?(@item)")
+ "plate_type = UniLib.plate_type(self)
+  return plate_type if plate_type")
 
 UniLib.insert_in_method(:PokeBattle_Battle, :pbIsUnlosableItem, :HEAD,
-  "key = [pkmn.species, pkmn.form]
-  return true if !UniLib::PLATE_POKEMON[key].nil? and UniLib::PLATE_POKEMON[key].include?(item)")
+  "plate_type = UniLib.plate_type(pkmn)
+  return true if plate_type")
 
 target = Reborn ? "return moves | []" : "return moves|[]"
 UniLib.insert_in_function_before(:pbGetRelearnableMoves, target,

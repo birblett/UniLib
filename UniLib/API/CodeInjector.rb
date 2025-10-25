@@ -94,7 +94,16 @@ module UniLib
   <<-DOC
   @param load_event - a symbolic function reference (i.e. :function)
   @param priority - a numeric priority
-  >> these events are called as the save is being loaded, so interacting with cache is not safe.. useful for deserializing data. numerically 
+  >> useful for deserializing data. 
+  DOC
+  def self.add_init_event(load_event, priority=$injector_global_priority)
+    EVENT_ON_INIT.push([load_event, priority]) unless EVENT_ON_LOAD.include?([load_event, priority])
+  end
+
+  <<-DOC
+  @param load_event - a symbolic function reference (i.e. :function)
+  @param priority - a numeric priority
+  >> these events are called as the save is being loaded, so interacting with cache is not safe. useful for deserializing data. numerically 
      higher priorities go first.
   DOC
   def self.add_load_event(load_event, priority=$injector_global_priority)

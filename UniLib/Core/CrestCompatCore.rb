@@ -213,10 +213,13 @@ if Reborn
   CrestBuilder.add(:SHIINOTIC, "Drains 1/16th hp from statused pokemon. 1.3x drain effect recovery.")
 
   CrestBuilder.add(:SIMIPOUR, "Grass STAB and resistances, Normal moves become Grass, offenses boosted by 1.2x.")
+              .battle_stat_mods { |_, bs| (bs[1].mul(1.2); bs[3].mul(1.2)) if Reborn }
 
   CrestBuilder.add(:SIMISAGE, "Fire STAB and resistances, Normal moves become Fire, offenses boosted by 1.2x.")
+              .battle_stat_mods { |_, bs| (bs[1].mul(1.2); bs[3].mul(1.2)) if Reborn }
 
   CrestBuilder.add(:SIMISEAR, "Water STAB and resistances, Normal moves become Water, offenses boosted by 1.2x.")
+              .battle_stat_mods { |_, bs| (bs[1].mul(1.2); bs[3].mul(1.2)) if Reborn }
 
   CrestBuilder.add(:SILVALLY, "Memories grant abilities and boost their respective type.")
   CrestBuilder.add_hook { |pkmn, battle|
@@ -231,6 +234,7 @@ if Reborn
               .role_provider { :ACE }
 
   CrestBuilder.add(:STANTLER, "1.5x Attack and Accuracy.")
+              .add_receiver(:WYRDEER)
               .battle_stat_mods { |_, bs| bs[1].mul(1.5) }
               .accuracy_mod { |_, _, acc, _, _| acc.mul(1.5); next nil }
 

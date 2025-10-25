@@ -262,7 +262,7 @@ class ItemModifier
     return self if UniLib.cached(UniLib::ITEM)
     @species = :ALL if holder == :ALL
     return self if @species == :ALL
-    form = UniLib.get_form_number(holder, form)[0]
+    form = UniLib.get_form_number(holder, form)[0] unless form.is_a?(Integer)
     @species.push([holder, form]) unless @species.include? [holder, form]
     self
   end

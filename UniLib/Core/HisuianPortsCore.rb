@@ -406,7 +406,7 @@ if Reborn
 
   PokeModifier.add(:BERGMITE)
               .add_evolution({ :species => :AVALUGG, :method => :Item, :parameter => :FIRESTONE })
-              .add_evo_override { |_, item| AVALUGG_HISUIAN if item == :FIRESTONE || SLIGGOO_HISUIAN_EVO_LOCS.include?($game_map.map_id) }
+              .add_evo_override { |_, item| AVALUGG_HISUIAN if item == :FIRESTONE || AVALUGG_HISUIAN_EVO_LOCS.include?($game_map.map_id) }
 
   AVALUGG_HISUIAN = PokeModifier.add_form(:AVALUGG, "Hisuian Form")
               .level_moves_overwrite
