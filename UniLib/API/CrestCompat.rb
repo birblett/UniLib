@@ -8,7 +8,7 @@ UniLib.verify_version(0.8, __FILE__)
 # ============================================================== PUBLIC API ============================================================== #
 # ======================================================================================================================================== #
 
-# AMPHAROS_CREST = Reborn ? :AMPHAROSCREST : :AEAMPHCREST
+AMPHAROS_CREST = Reborn ? :AMPHAROSCREST : :AEAMPHCREST
 
 ARIADOS_CREST = Reborn ? :ARIADOSCREST : :ARIACREST
 

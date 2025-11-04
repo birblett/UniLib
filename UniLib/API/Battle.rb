@@ -122,7 +122,7 @@ class BossModifier
     @pkmn[:level] = level
     @pkmn[:ability] = ability
     $defaults[:boss].each { |k, v| @pkmn[k] = v } if $defaults[:boss]
-    kwargs.each { |k, v| @pkmn[k] = v }
+    kwargs.each { |k, v| k == :unilib_flags ? v.each { |k2, v2| (@pkmn[:unilib_flags] |= {})[k2] = v2 } : @pkmn[k] = v }
     self
   end
 

@@ -305,7 +305,7 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbProcessMoveAgainstTarget, target
 # switch out events
 target = Reborn ? "pbInitPokemon(pkmn, index)" : "pbInitPokemon(pkmn,index)"
 UniLib.insert_in_method_before(:PokeBattle_Battler, :pbInitialize, target,
-  "EVENT_LISTENERS.each { |_, method| method.bind(self).(:switch_out, self) {} }")
+  "EVENT_LISTENERS.each { |_, method| method.bind(self).(:switch_out, self) {} } unless self.isFainted?")
 
 # damage taken/dealt events
 UniLib.insert_in_method(:PokeBattle_Battler, :pbEffectsOnDealingDamage, "return if target.nil?",

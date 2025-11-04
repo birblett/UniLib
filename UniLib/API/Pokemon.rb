@@ -183,9 +183,10 @@ class PokeModifier
                      always replace the hidden ability.)
   >> replaces the abilities at the provided indices
   DOC
-  def abilities(abilities)
+  def abilities(abilities, override = false)
     return self if UniLib.cached(POKEMON)
     abilities.each { |slot, ability| @abilities[slot] = ability}
+    @ability_override = override || @ability_override
     self
   end
 

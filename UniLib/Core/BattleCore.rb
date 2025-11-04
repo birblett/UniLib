@@ -293,7 +293,7 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbInitBoss, "boss = bossdata[pkmn.
 UniLib.insert_in_function(:pbLoadTrainer, :HEAD, proc do |type, name, id, trainerid, trainername, partyid|
   type, name, id = trainerid, trainername, partyid if Rejuv
   if (s = UniLib::TRAINER_CACHE[[type, name, id]])
-    $game_variables[:Forced_Field_Effect]= s[0] if s[0]
+    $game_variables[:Forced_Field_Effect] = s[0] if s[0]
   else
     UniLib.dev_log("TrainerModifier.add(:#{type}, \"#{name}\", #{id})")
     $cache.trainers[type][name].each do |i|
@@ -306,7 +306,12 @@ UniLib.insert_in_function(:pbLoadTrainer, :HEAD, proc do |type, name, id, traine
   end
 end)
 
+UniLib.insert_in_method(:PokeBattle_Battle, :pbEndOfBattle, :HEAD, "$game_variables[:Forced_Field_Effect] = 0")
+
 UniLib.insert_in_function(:pbLoadTrainer, "opponent = PokeBattle_Trainer.new(name, type)", "opponent.num_id = id")
+
+UniLib.insert_in_function_before(:pbLoadTrainer, "party.push(pokemon)",
+  "poke[:unilib_flags].each { |k, v| pokemon.unilib_flags[k] = v } if poke[:unilib_flags]")
 
 UniLib.insert_in_method(:PokeBattle_Trainer, :trainerTypeName, :HEAD,
   "return UniLib::TRAINER_CACHE[[@trainertype, @name, @num_id]][1] if UniLib::TRAINER_CACHE[[@trainertype, @name, @num_id]] and UniLib::TRAINER_CACHE[[@trainertype, @name, @num_id]][1]")

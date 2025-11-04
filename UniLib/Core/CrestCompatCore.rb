@@ -21,6 +21,8 @@ if Reborn
   # no boltund (gen 8)
 
   CrestBuilder.add(:CASTFORM, "Castform uses weather moves in its first slot. Grants additional stats.")
+              .on_battle_entry { |pkmn, battle, _| pkmn.pbUseMoveSimple(pkmn.moves[0].move, 0) if [:RAINDANCE, :SANDSTORM, :SUNNYDAY, :HAIL].include?(pkmn.moves[0].move) && pkmn.moves[0].move != battle.pbWeather }
+              .role_provider { |_, pkmn| :WEATHERSETTER if [:RAINDANCE, :SANDSTORM, :SUNNYDAY, :HAIL].include?(pkmn.moves[0].move) } if Reborn
 
   # buggy stat boost, include Fixes if using
   CrestBuilder.add(:CHERRIM, "Activates Flower Gift.")
@@ -262,15 +264,19 @@ if Reborn
               }
 
   CrestBuilder.add(:ZOROARK, "Gains ability and STAB of the copied Pokemon.")
-              .on_battle_entry { |pkmn, _, _| UniLib.zoroark_crest_handler(pkmn) }
-              .conditional_stab_override { |pkmn, move| UniLib.zoroark_crest_handler(pkmn)[1].include?(move) }
+              .on_battle_entry { |pkmn, _, _|
+                m = nil
+                pkmn.battle.pbParty(pkmn.index).each { |member| m = member if member }
+                return if m.nil? or m == pkmn
+                pkmn.set_permanent_effect(:ZOROARK_CREST, m.ability) unless pkmn.permanent_effect(:ZOROARK_CREST)
+                pkmn.ability = pkmn.ability + pkmn.permanent_effect(:ZOROARK_CREST)
+              }
 
   def UniLib.zoroark_crest_handler(pkmn, m = nil)
     pkmn.battle.pbParty(pkmn.index).each { |member| m = member if member }
     return [nil, []] if m.nil? or m == pkmn
-    pkmn.set_permanent_effect(:ZOROARK_CREST, [m.ability, m.type2 ? [m.type1, m.type2] : [m.type1]]) unless pkmn.permanent_effect(:ZOROARK_CREST)
-    pkmn.ability = pkmn.ability + pkmn.permanent_effect(:ZOROARK_CREST)[0]
-    pkmn.permanent_effect(:ZOROARK_CREST)
+    pkmn.set_permanent_effect(:ZOROARK_CREST, m.ability) unless pkmn.permanent_effect(:ZOROARK_CREST)
+    pkmn.ability = pkmn.ability + pkmn.permanent_effect(:ZOROARK_CREST)
   end
 
 end

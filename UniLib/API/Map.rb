@@ -175,6 +175,7 @@ class EncounterMod
   LANDDAY = 9
   LANDNIGHT = 10
   BUGCONTEST = 11
+  DENSITY = :DENSITY
 
   ALL_LAND = [LAND, LANDMORNING, LANDDAY, LANDNIGHT]
   ALL_TYPES = [LAND, CAVE, WATER, ROCKSMASH, OLDROD, GOODROD, SUPERROD, HEADBUTT, LANDMORNING, LANDDAY, LANDNIGHT, BUGCONTEST]
@@ -298,6 +299,7 @@ class EventBuilder
     @page.direction_fix = direction_fix
     @page.through = through
     @page.always_on_top = always_on_top
+    #@page.move_route.list.insert(0, RPG::MoveCommand.new(25))
     self
   end
 
@@ -441,10 +443,10 @@ class EventBuilder
     self
   end
 
-  def event_wild_battle(species, lvl, form = 0)
+  def event_wild_battle(species, lvl, form = 0, item = nil)
     return self unless @page
     @page.list.push(RPG::EventCommand.new(122, @current_indent, [545, 545, 0, 0, 102]))
-    @page.list.push(RPG::EventCommand.new(355, @current_indent, ["m = pbGenerateWildPokemon(:#{species}, #{lvl}, #{form}); pbWildBattleObject(m)"]))
+    @page.list.push(RPG::EventCommand.new(355, @current_indent, ["m = pbGenerateWildPokemon(:#{species}, #{lvl}, #{form});#{item.nil? ? "" : " m.item = :#{item};"} pbWildBattleObject(m)"]))
     @page.list.push(RPG::EventCommand.new(122, @current_indent, [545, 545, 0, 0, 0]))
     self
   end

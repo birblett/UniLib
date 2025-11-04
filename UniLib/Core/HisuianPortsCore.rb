@@ -33,7 +33,7 @@ if Reborn
               .stats([60, 75, 45, 65, 50, 55])
               .abilities({0 => :INTIMIDATE, 1 => :FLASHFIRE, 2 => :ROCKHEAD})
               .set_ev([0, 1, 0, 0, 0, 0])
-              .set_evolutions([{:species => :ARCANINE, :method => :Item, :parameter => :FIRESTONE}])
+              .set_evolutions(proc { [{:species => :ARCANINE, :method => :Item, :parameter => :FIRESTONE, :form => ARCANINE_HISUIAN}] })
               .level_moves([[1, :EMBER], [1, :LEER], [4, :HOWL], [8, :BITE], [12, :FLAMEWHEEL], [16, :HELPINGHAND], [24, :FIREFANG], [28, :RETALIATE], [32, :CRUNCH], [36, :TAKEDOWN], [40, :FLAMETHROWER], [44, :ROAR], [48, :ROCKSLIDE], [52, :REVERSAL], [56, :FLAREBLITZ]])
               .egg_moves([:BODYSLAM, :BURNUP, :CLOSECOMBAT, :COVET, :CRUNCH, :DOUBLEKICK, :DOUBLEEDGE, :FIRESPIN, :FLAREBLITZ, :HEATWAVE, :HOWL, :IRONTAIL, :MORNINGSUN, :THRASH])
               .compatible_moves([:AERIALACE, :AGILITY, :BODYSLAM, :CLOSECOMBAT, :COVET, :CRUNCH, :DIG, :DOUBLEEDGE, :FIREBLAST, :FIREFANG, :FIRESPIN, :FLAMECHARGE, :FLAMETHROWER, :FLAREBLITZ, :HEATWAVE, :HELPINGHAND, :IRONTAIL, :OUTRAGE, :OVERHEAT, :PLAYROUGH, :POWERGEM, :PSYCHICFANGS, :RETALIATE, :REVERSAL, :ROAR, :ROCKBLAST, :ROCKSLIDE, :ROCKSMASH, :ROCKTOMB, :SANDSTORM, :SCARYFACE, :SMARTSTRIKE, :SNARL, :STEALTHROCK, :STONEEDGE, :SUNNYDAY, :TAKEDOWN, :THUNDERFANG, :WILDCHARGE, :WILLOWISP, :ARENITEWALL, :MAGMADRIFT, :SLASHANDBURN])
@@ -51,7 +51,7 @@ if Reborn
               .stats([95, 115, 80, 95, 80, 90])
               .abilities({0 => :INTIMIDATE, 1 => :FLASHFIRE, 2 => :ROCKHEAD})
               .set_ev([0, 2, 0, 0, 0, 0])
-              .set_preevo({:species => :GROWLITHE, :form => 1})
+              .set_preevo(proc { {:species => :GROWLITHE, :form => GROWLITHE_HISUIAN} })
               .level_moves([[0, :EXTREMESPEED], [1, :FLAMEWHEEL], [1, :HELPINGHAND], [1, :AGILITY], [1, :FIREFANG], [1, :RETALIATE], [1, :CRUNCH], [1, :TAKEDOWN], [1, :ROAR], [1, :ROCKSLIDE], [1, :REVERSAL], [1, :FLAREBLITZ], [1, :ROCKTOMB], [1, :EMBER], [1, :LEER], [1, :HOWL], [1, :BITE], [5, :FLAMETHROWER], [64, :RAGINGFURY]])
               .egg_moves([])
               .compatible_moves([:AERIALACE, :AGILITY, :BODYSLAM, :BULLDOZE, :CLOSECOMBAT, :COVET, :CRUNCH, :DIG, :DOUBLEEDGE, :DRAGONPULSE, :FIREBLAST, :FIREFANG, :FIRESPIN, :FLAMECHARGE, :FLAMETHROWER, :FLAREBLITZ, :GIGAIMPACT, :HEATWAVE, :HELPINGHAND, :HYPERBEAM, :HYPERVOICE, :IRONHEAD, :IRONTAIL, :OUTRAGE, :OVERHEAT, :PLAYROUGH, :POWERGEM, :PSYCHICFANGS, :RETALIATE, :REVERSAL, :ROAR, :ROCKBLAST, :ROCKSLIDE, :ROCKSMASH, :ROCKTOMB, :SANDSTORM, :SCARYFACE, :SMARTSTRIKE, :SNARL, :SOLARBEAM, :STEALTHROCK, :STONEEDGE, :SUNNYDAY, :TAKEDOWN, :THIEF, :THUNDERFANG, :WILDCHARGE, :WILLOWISP, :ARENITEWALL, :MAGMADRIFT, :SLASHANDBURN])
@@ -66,7 +66,7 @@ if Reborn
               .egg_moves_overwrite
               .compatible_moves_overwrite
               .types({:Type1 => :ELECTRIC, :Type2 => :GRASS})
-              .set_evolutions([{:species => :ELECTRODE, :method => :Item, :parameter => :LEAFSTONE}])
+              .set_evolutions(proc { [{:species => :ELECTRODE, :method => :Item, :parameter => :LEAFSTONE, :form => ELECTRODE_HISUIAN}] })
               .level_moves([[1, :CHARGE], [1, :TACKLE], [4, :THUNDERSHOCK], [6, :STUNSPORE], [9, :BULLETSEED], [11, :ROLLOUT], [13, :SCREECH], [16, :CHARGEBEAM], [20, :SWIFT], [22, :ELECTROBALL], [26, :SELFDESTRUCT], [29, :ENERGYBALL], [34, :SEEDBOMB], [34, :DISCHARGE], [41, :EXPLOSION], [46, :GYROBALL], [50, :GRASSYTERRAIN]])
               .egg_moves([])
               .compatible_moves([:AGILITY, :BULLETSEED, :CHARGEBEAM, :ELECTRICTERRAIN, :ELECTROBALL, :ENERGYBALL, :EXPLOSION, :FOULPLAY, :GIGADRAIN, :GRASSKNOT, :GRASSYTERRAIN, :GYROBALL, :ICEBALL, :LEAFSTORM, :MAGICALLEAF, :RAINDANCE, :RECYCLE, :REFLECT, :ROLLOUT, :SCREECH, :SEEDBOMB, :SELFDESTRUCT, :SOLARBEAM, :SWIFT, :TAKEDOWN, :TAUNT, :THIEF, :THUNDER, :THUNDERBOLT, :THUNDERWAVE, :VOLTSWITCH, :WILDCHARGE, :WORRYSEED])
@@ -80,7 +80,7 @@ if Reborn
               .egg_moves_overwrite
               .compatible_moves_overwrite
               .types({:Type1 => :ELECTRIC, :Type2 => :GRASS})
-              .set_preevo({:species => :VOLTORB, :form => 1})
+              .set_preevo(proc { {:species => :VOLTORB, :form => VOLTORB_HISUIAN} })
               .level_moves([[0, :CHLOROBLAST], [1, :CHARGE], [1, :TACKLE], [4, :THUNDERSHOCK], [6, :STUNSPORE], [9, :BULLETSEED], [11, :ROLLOUT], [13, :SCREECH], [16, :CHARGEBEAM], [20, :SWIFT], [22, :ELECTROBALL], [26, :SELFDESTRUCT], [29, :ENERGYBALL], [34, :SEEDBOMB], [34, :DISCHARGE], [41, :EXPLOSION], [46, :GYROBALL], [50, :GRASSYTERRAIN]])
               .egg_moves([])
               .compatible_moves([:AGILITY, :BULLETSEED, :CHARGEBEAM, :ELECTRICTERRAIN, :ELECTROBALL, :ENERGYBALL, :EXPLOSION, :FOULPLAY, :GIGADRAIN, :GIGAIMPACT, :GRASSKNOT, :GRASSYTERRAIN, :GYROBALL, :HYPERBEAM, :ICEBALL, :LEAFSTORM, :MAGICALLEAF, :RAINDANCE, :RECYCLE, :REFLECT, :ROLLOUT, :SCARYFACE, :SCREECH, :SEEDBOMB, :SELFDESTRUCT, :SOLARBEAM, :SWIFT, :TAKEDOWN, :TAUNT, :THIEF, :THUNDER, :THUNDERBOLT, :THUNDERWAVE, :VOLTSWITCH, :WILDCHARGE, :WORRYSEED])
@@ -188,6 +188,7 @@ if Reborn
               .egg_moves_overwrite
               .compatible_moves_overwrite
               .types({:Type1 => :FIGHTING, :Type2 => :POISON})
+              .abilities({0 => :INNERFOCUS, 1 => :KEENEYE, 2 => :PICKPOCKET})
               .set_ev([0, 0, 0, 0, 0, 1])
               .set_evolutions([{:species => :SNEASLER, :method => :DayHoldItem, :parameter => :RAZORCLAW}])
               .add_evo_override { 0 }
@@ -280,6 +281,14 @@ if Reborn
 
   end
 
+  MoveBuilder.add(:AXEKICK, "Axe Kick",
+                  "The user attacks by kicking up into the air and slamming its heel down upon the target. This may also confuse the target. If it misses, the user takes damage instead.",
+                  :FIGHTING, :physical, 10, 120, 90, 0x506)
+             .flag(:effect, 30)
+             .flag(:contact, true)
+             .flag(:kingrock, true)
+             .flag(:gravityblocked, true)
+
   BASCULIN_WHITE_STRIPED = PokeModifier.add_form(:BASCULIN, "White-Striped")
               .level_moves_overwrite
               .egg_moves_overwrite
@@ -297,7 +306,7 @@ if Reborn
               .egg_moves_overwrite
               .compatible_moves_overwrite
               .types({:Type1 => :NORMAL, :Type2 => :GHOST})
-              .set_evolutions([{:species => :ZOROARK, :method => :Level, :parameter => 30}])
+              .set_evolutions(proc { [{:species => :ZOROARK, :method => :Level, :parameter => 30, :form => ZOROARK_HISUIAN}] })
               .level_moves([[1, :SCRATCH], [1, :LEER], [4, :TORMENT], [8, :HONECLAWS], [12, :SHADOWSNEAK], [16, :CURSE], [20, :TAUNT], [24, :KNOCKOFF], [28, :SPITE], [32, :AGILITY], [36, :SHADOWBALL], [40, :BITTERMALICE], [44, :NASTYPLOT], [48, :FOULPLAY]])
               .egg_moves([:CAPTIVATE, :COMEUPPANCE, :COPYCAT, :COUNTER, :DARKPULSE, :DETECT, :EXTRASENSORY, :MEMENTO, :SNATCH, :SUCKERPUNCH])
               .compatible_moves([:AERIALACE, :AGILITY, :CALMMIND, :CURSE, :DARKPULSE, :DIG, :FAKETEARS, :FLING, :FOULPLAY, :GIGAIMPACT, :HEX, :HONECLAWS, :HYPERBEAM, :ICYWIND, :IMPRISON, :KNOCKOFF, :NASTYPLOT, :NIGHTSHADE, :PHANTOMFORCE, :RAINDANCE, :SHADOWBALL, :SHADOWCLAW, :SLUDGEBOMB, :SNARL, :SPITE, :SWIFT, :TAKEDOWN, :TAUNT, :THIEF, :TORMENT, :TRICK, :UTURN, :WILLOWISP, :IRRITATION])
@@ -311,8 +320,7 @@ if Reborn
               .compatible_moves_overwrite
               .types({:Type1 => :NORMAL, :Type2 => :GHOST})
               .stats([55, 100, 60, 125, 60, 110])
-              .abilities({0 => :ILLUSION, 1 => nil, 2 => :ILLUSION})
-              .set_preevo({:species => :ZORUA, :form => 1})
+              .set_preevo(proc { {:species => :ZORUA, :form => ZORUA_HISUIAN} })
               .level_moves([[1, :SHADOWCLAW], [1, :UTURN], [1, :SCRATCH], [1, :LEER], [1, :TORMENT], [1, :HONECLAWS], [12, :SHADOWSNEAK], [16, :CURSE], [20, :TAUNT], [24, :KNOCKOFF], [28, :SPITE], [34, :AGILITY], [40, :SHADOWBALL], [46, :BITTERMALICE], [52, :NASTYPLOT], [58, :FOULPLAY]])
               .egg_moves([])
               .compatible_moves([:AERIALACE, :AGILITY, :BODYSLAM, :BRICKBREAK, :CALMMIND, :CURSE, :CRUNCH, :DARKPULSE, :DIG, :FAKETEARS, :FLAMETHROWER, :FLING, :FOCUSBLAST, :FOULPLAY, :GIGAIMPACT, :GRASSKNOT, :HELPINGHAND, :HEX, :HONECLAWS, :HYPERBEAM, :HYPERVOICE, :ICYWIND, :IMPRISON, :KNOCKOFF, :LOWKICK, :LOWSWEEP, :NASTYPLOT, :NIGHTSHADE, :OMINOUSWIND, :PHANTOMFORCE, :PSYCHIC, :RAINDANCE, :ROCKSMASH, :SCARYFACE, :SHADOWBALL, :SHADOWCLAW, :SLUDGEBOMB, :SNARL, :SPITE, :SWIFT, :SWORDSDANCE, :TAKEDOWN, :TAUNT, :THIEF, :TORMENT, :TRICK, :UTURN, :WILLOWISP, :IRRITATION, :SLASHANDBURN])
@@ -368,7 +376,7 @@ if Reborn
               .stats([58, 75, 83, 83, 113, 40])
               .abilities({0 => :SAPSIPPER, 1 => :SHELLARMOR, 2 => :GOOEY})
               .set_ev([0, 0, 0, 0, 2, 0])
-              .set_evolutions([{:species => :GOODRA, :method => :LevelRain, :parameter => 50}])
+              .set_evolutions(proc { [{:species => :GOODRA, :method => :LevelRain, :parameter => 50, :form => GOODRA_HISUIAN}] })
               .level_moves([[0, :SHELTER], [1, :ACIDARMOR], [1, :ABSORB], [1, :TACKLE], [1, :WATERGUN], [1, :DRAGONBREATH], [15, :PROTECT], [20, :FLAIL], [25, :WATERPULSE], [30, :RAINDANCE], [35, :DRAGONPULSE], [43, :CURSE], [49, :IRONHEAD], [56, :MUDDYWATER]])
               .egg_moves([])
               .compatible_moves([:BIDE, :BLIZZARD, :BODYSLAM, :CHARM, :COUNTER, :CURSE, :DRACOMETEOR, :DRAGONBREATH, :DRAGONPULSE, :FLASHCANNON, :HEAVYSLAM, :HYDROPUMP, :ICEBEAM, :INFESTATION, :IRONHEAD, :IRONTAIL, :MUDDYWATER, :MUDSHOT, :OUTRAGE, :RAINDANCE, :ROCKSLIDE, :ROCKTOMB, :SANDSTORM, :SHOCKWAVE, :SKITTERSMACK, :SLUDGEBOMB, :SLUDGEWAVE, :STEELBEAM, :SUNNYDAY, :TAKEDOWN, :THUNDER, :THUNDERBOLT, :WATERGUN, :WATERPULSE, :DELUGE, :IRRITATION, :MAGMADRIFT, :MUDBARRAGE, :QUICKSILVERSPEAR])
@@ -386,7 +394,7 @@ if Reborn
               .stats([80, 100, 100, 110, 150, 60])
               .abilities({0 => :SAPSIPPER, 1 => :SHELLARMOR, 2 => :GOOEY})
               .set_ev([0, 0, 0, 0, 3, 0])
-              .set_preevo({:species => :SLIGGOO, :form => 1})
+              .set_preevo(proc { {:species => :SLIGGOO, :form => SLIGGOO_HISUIAN} })
               .level_moves([[0, :IRONTAIL], [1, :SHELTER], [1, :ACIDSPRAY], [1, :TEARFULLOOK], [1, :FEINT], [1, :ABSORB], [1, :TACKLE], [1, :WATERGUN], [1, :DRAGONBREATH], [15, :PROTECT], [20, :FLAIL], [25, :WATERPULSE], [30, :RAINDANCE], [35, :DRAGONPULSE], [43, :CURSE], [49, :IRONHEAD], [49, :BODYSLAM], [58, :MUDDYWATER], [67, :HEAVYSLAM]])
               .egg_moves([])
               .compatible_moves([:BIDE, :BLIZZARD, :BODYPRESS, :BODYSLAM, :BULLDOZE, :CHARM, :COUNTER, :CURSE, :DRACOMETEOR, :DRAGONBREATH, :DRAGONCLAW, :DRAGONPULSE, :DRAGONTAIL, :EARTHQUAKE, :FIREBLAST, :FIREPUNCH, :FLAMETHROWER, :FLASHCANNON, :GIGAIMPACT, :HEAVYSLAM, :HYDROPUMP, :HYPERBEAM, :ICEBEAM, :INFESTATION, :IRONHEAD, :IRONTAIL, :MUDDYWATER, :MUDSHOT, :OUTRAGE, :RAINDANCE, :ROCKSLIDE, :ROCKSMASH, :ROCKTOMB, :SANDSTORM, :SCARYFACE, :SHOCKWAVE, :SKITTERSMACK, :SLUDGEBOMB, :SLUDGEWAVE, :STEELBEAM, :STOMPINGTANTRUM, :SUNNYDAY, :SURF, :TAKEDOWN, :THUNDER, :THUNDERBOLT, :THUNDERPUNCH, :WATERGUN, :WATERPULSE, :DELUGE, :IRRITATION, :MAGMADRIFT, :MUDBARRAGE, :QUICKSILVERSPEAR])
@@ -598,7 +606,7 @@ if Reborn
               .compatible_moves_overwrite
               .types({:Type1 => :WATER, :Type2 => :GHOST})
               .stats([120, 112, 65, 80, 75, 78])
-              .abilities({0 => :SWIFTSWIM, 1 => :ADAPTABILITY, 2 => :SWIFTSWIM})
+              .abilities({0 => :SWIFTSWIM, 1 => :ADAPTABILITY, 2 => :MOLDBREAKER})
               .set_ev([0, 0, 0, 0, 0, 2])
               .set_growth_rate(:MediumFast)
               .set_gender_ratio(:FemHalf)
@@ -607,7 +615,7 @@ if Reborn
               .set_happiness(70)
               .set_egg_steps(10240)
               .set_preevo({:species => :BASCULIN, :form => 2})
-              .level_moves([[1, :SHADOWBALL], [1, :PHANTOMFORCE], [1, :WATERGUN], [1, :TAILWHIP], [4, :TACKLE], [8, :FLAIL], [12, :AQUAJET], [16, :BITE], [20, :SCARYFACE], [24, :HEADBUTT], [28, :SOAK], [32, :CRUNCH], [36, :TAKEDOWN], [40, :UPROAR], [44, :WAVECRASH], [48, :THRASH], [52, :DOUBLEEDGE], [56, :HEADSMASH]])
+              .level_moves([[1, :SHADOWBALL], [1, :PHANTOMFORCE], [1, :WATERGUN], [1, :TAILWHIP], [4, :TACKLE], [8, :FLAIL], [12, :AQUAJET], [16, :BITE], [20, :SCARYFACE], [24, :HEADBUTT], [28, :SOAK], [32, :CRUNCH], [36, :TAKEDOWN], [40, :UPROAR], [44, :WAVECRASH], [48, :THRASH], [52, :DOUBLEEDGE], [56, :HEADSMASH], [100, :LASTRESPECTS]])
               .egg_moves([])
               .compatible_moves([:AGILITY, :AQUATAIL, :BLIZZARD, :CALMMIND, :CRUNCH, :DOUBLEEDGE, :ENDEAVOR, :GIGAIMPACT, :HEADBUTT, :HEX, :HYDROPUMP, :HYPERBEAM, :ICEBEAM, :ICEFANG, :ICYWIND, :LIQUIDATION, :MUDSHOT, :NIGHTSHADE, :OMINOUSWIND, :OUTRAGE, :PHANTOMFORCE, :PSYCHIC, :PSYCHICFANGS, :RAINDANCE, :SCARYFACE, :SHADOWBALL, :SURF, :SWIFT, :TAKEDOWN, :UPROAR, :WATERFALL, :WATERPULSE, :ZENHEADBUTT, :DELUGE])
               .set_color("Green")
@@ -630,6 +638,19 @@ if Reborn
              .flag(:contact, true)
              .flag(:kingrock, true)
              .flag(:recoil, 0.33)
+
+  MoveBuilder.add(:LASTRESPECTS, "Last Respects",
+                  "The user attacks to avenge its allies. The more defeated allies there are in the user's party, the greater the move's power.",
+                  :GHOST, :physical, 10, 50, 100, 0xFCF)
+             .flag(:kingrock, true)
+
+  class PokeBattle_Move_FCF < PokeBattle_Move
+
+    def pbBaseDamage(basedmg, attacker, opponent)
+      50 + 50 * attacker.battle.pbParty(attacker.index).reduce(0) { |mul, member| !member.nil? and member.fainted ? mul + 0.5 : mul}
+    end
+
+  end
 
   PokeBuilder.add(:SNEASLER, "Sneasler", 903)
               .level_moves_overwrite

@@ -35,8 +35,12 @@ class AbilityContainer
 
   def initialize(pkmn, ability, added_abilities=[], ignore=false)
     @pokemon = pkmn.is_a?(PokeBattle_Battler) ? pkmn.pokemon : pkmn
-    @abilities = (ability.is_a?(Array) ? ability : [ability]) | added_abilities
-    @added_abilities = added_abilities
+    if ability.is_a?(AbilityContainer)
+      @abilities, @added_abilities = ability.abilities | ability.added_abilities, ability.added_abilities
+    else
+      @abilities = (ability.is_a?(Array) ? ability : [ability]) | added_abilities
+      @added_abilities = added_abilities
+    end
     @ctx = ability
     key = [pkmn.species, pkmn.form]
     UniLib::MULTIBILITY_HANDLERS[key].each do |handler, condition|
@@ -96,6 +100,10 @@ class AbilityContainer
     target = "#{case_statement.sub("case ", "")}"
     real_ending = ending + " if #{target}.is_a? AbilityContainer and !#{target}.nil?"
     ending == "}" ? UniLib.insert_in_method_before(clazz, method, tail, real_ending, idx2) : UniLib.insert_in_method(clazz, method, tail, real_ending, idx2)
+  end
+
+  def to_s
+    "#{@abilities} + #{@added_abilities} / last checked: #{@ctx.nil? ? "none" : (@ctx.is_a?(AbilityContainer) ?  @ctx.abilities : @ctx)}"
   end
 
 end unless UniLib.lib_loaded(__FILE__)
@@ -158,8 +166,7 @@ UniLib.replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, target, "
 
 if Reborn
   UniLib.insert_in_method_before(:PokeBattle_Battler, :changeAbility, "@effects[:GorillaLock] = nil",
-    "@ability = AbilityContainer.new(@pokemon, @pokemon.ability) if @ability.is_a?(Symbol) or @ability.is_a?(Array)
-    @ability = AbilityContainer.new(@pokemon, @pokemon.ability, @ability.added_abilities) if !@ability.nil?")
+    "@ability = AbilityContainer.new(@pokemon, @ability) unless @ability.nil?")
 else
   UniLib.replace_in_method(:PokeBattle_Battler, :pbUpdate, "@ability = @pokemon.ability if !@ability.nil? && !((@crested == :SILVALLY || @crested == :ZOROARK))",
     "@ability = AbilityContainer.new(@pokemon, @pokemon.ability, @ability.added_abilities) if !@ability.nil? && !((@crested == :SILVALLY || @crested == :ZOROARK))")
@@ -232,10 +239,6 @@ UniLib.replace_in_method(:PokemonEncounters, :pbGenerateEncounter, "case $Traine
 
 target = Reborn ? "return nil if rand(250 * 16) >= encount" : "return nil if rand(250*16)>=encount"
 UniLib.insert_in_method_before(:PokemonEncounters, :pbGenerateEncounter, target, "end")
-
-# handle trace
-UniLib.replace_in_method(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "self.changeAbility(battlerability)",
-  "self.ability.handle_trace(battlerability)")
 
 UniLib.replace_in_method(:PokeBattle_Battler, :pbAbilitiesOnSwitchIn, "abilityname = getAbilityName(battlerability)",
   "abilityname = battlerability.multiple? ? \"abilities\" : getAbilityName(battlerability)")

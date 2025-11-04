@@ -72,41 +72,45 @@ class EncounterMod
     UniLib.dev_log(s)
   end
 
-  def apply(enc)
+  def apply(enc, density)
     CACHED_ENCOUNTERS[@map_id] = Marshal.load(Marshal.dump(enc)) unless CACHED_ENCOUNTERS[@map_id]
     unless MODIFIED[@map_id]
       encounters = (MODIFIED[@map_id] = Marshal.load(Marshal.dump(CACHED_ENCOUNTERS[@map_id])))
-      @modifiers.each { |(target, species, operation, argument)|
+      @modifiers.each { |(target, arg2, arg3, arg4)|
         (target.is_a?(Array) ? target : [target]).each { |i|
           begin
-            next unless encounters[i]
-            case operation
-            when :ADD then (encounters[i][species] ||= []).push(argument)
-            when :REPLACE
-              next unless encounters[i][species]
-              args = argument[0].is_a?(Array) ? argument : [argument]
-              args.each { |arg| throw Exception.new("") if arg[2] < arg[1] }
-              encounters[i][species] = args
-            when :REMOVE then encounters[i].delete(species)
-            when :DECREASE then
-              next unless encounters[i][species]
-              enc = encounters[i][species]
-              proportions = []
-              total = enc.sum { |(weight, _, _)| proportions.push(weight); weight }
-              target_amount = [total - argument, 0].max
-              proportions.map! { |i| i.to_f / total }
-              new_total = enc.each_with_index.sum { |arr, i| arr[0] = (proportions[i] * target_amount).round.to_i }
-              enc[0][0] += target_amount - new_total
-            else UniLib.dev_log("EncounterMod: attempted to execute unsupported operation :#{operation}")
+            if i == :DENSITY
+              density[arg2] = arg3
+            else
+              encounters[i] ||= {}
+              case arg3
+              when :ADD then (encounters[i][arg2] ||= []).push(arg4)
+              when :REPLACE
+                next unless encounters[i][arg2]
+                args = arg4[0].is_a?(Array) ? arg4 : [arg4]
+                args.each { |arg| throw Exception.new("") if arg[2] < arg[1] }
+                encounters[i][arg2] = args
+              when :REMOVE then encounters[i].delete(arg2)
+              when :DECREASE then
+                next unless encounters[i][arg2]
+                enc = encounters[i][arg2]
+                proportions = []
+                total = enc.sum { |(weight, _, _)| proportions.push(weight); weight }
+                target_amount = [total - arg4, 0].max
+                proportions.map! { |i| i.to_f / total }
+                new_total = enc.each_with_index.sum { |arr, i| arr[0] = (proportions[i] * target_amount).round.to_i }
+                enc[0][0] += target_amount - new_total
+              else UniLib.dev_log("EncounterMod: attempted to execute unsupported operation :#{arg3}")
+              end
             end
           rescue Exception => e
-            UniLib.dev_log("EncounterMod: something went wrong with #{operation} modifier on #{species} #{ argument.nil? ? "" : " with argument #{argument}"} - #{e}")
+            UniLib.dev_log("EncounterMod: something went wrong with #{arg3} modifier on #{arg2} #{ arg4.nil? ? "" : " with argument #{arg4}"} - #{e}")
           end
         }
       }
       EncounterMod.log_encounters(MODIFIED[@map_id]) if @logging
     end
-    MODIFIED[@map_id]
+    [MODIFIED[@map_id], density]
   end
 
 end
@@ -162,7 +166,7 @@ UniLib.insert_in_method(:Cache_Game, :map_load, "end",
   end")
 
 UniLib.insert_in_method(:PokemonEncounters, :__hr_setup, "]",
-  "@enctypes = EncounterMod::MODIFIERS[mapID].apply(@enctypes) if EncounterMod::MODIFIERS[mapID]
+  "@enctypes, @density = EncounterMod::MODIFIERS[mapID].apply(@enctypes, @density) if EncounterMod::MODIFIERS[mapID]
   @enctypes", 1)
 
 UniLib.insert_in_method_before(:Interpreter, :execute_command, "case @list[@index].code",

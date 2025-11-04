@@ -117,6 +117,7 @@ class PokeModifier
       @stats = []
       @types = {}
       @abilities = {}
+      @ability_override = false
       @removed_learnset = []
       @base_learnset = []
       @learnset = []
@@ -215,28 +216,36 @@ class PokeModifier
     end
 
     def set_abilities_internal
-      @abilities.each do |index, ability|
-        next if index > 2 or index < 0
-        if Reborn
-          if index == 2
-            set_data(HIDDEN_ABILITY_SYM, ability)
+      if @ability_override
+        abilities = []
+        abilities[0] = @abilities[0]
+        abilities[1] = @abilities[1]
+        set_data(:Abilities, abilities)
+        set_data(HIDDEN_ABILITY_SYM, @abilities[2])
+      else
+        @abilities.each do |index, ability|
+          next if index > 2 or index < 0
+          if Reborn
+            if index == 2
+              set_data(HIDDEN_ABILITY_SYM, ability)
+            else
+              (abils = get_data(:Abilities, []).dup)[index] = ability
+              set_data(:Abilities, abils)
+            end
           else
-            (abils = get_data(:Abilities, []).dup)[index] = ability
-            set_data(:Abilities, abils)
-          end
-        else
-          if index == 2 and @form == 0
-            ha = get_data(:flags, {})
-            ha[HIDDEN_ABILITY_SYM] = ability
-          else
-            data = get_data(:Abilities, []).dup
-            data[index] = ability
-            set_data(:Abilities, data)
+            if index == 2 and @form == 0
+              ha = get_data(:flags, {})
+              ha[HIDDEN_ABILITY_SYM] = ability
+            else
+              data = get_data(:Abilities, []).dup
+              data[index] = ability
+              set_data(:Abilities, data)
+            end
           end
         end
+        a = get_data(:Abilities, [])
+        a.reject! {|ab| ab.nil? } if a.is_a?(Array)
       end
-      a = get_data(:Abilities, [])
-      a.reject! {|ab| ab.nil? } if a.is_a?(Array)
     end
 
     def set_types_internal
@@ -252,7 +261,6 @@ class PokeModifier
         @base_learnset.each { |learned| add = false if (move <=> learned) == 0 }
         @base_learnset.push(move) if add
       end
-      @learnset.clear
       @base_learnset.sort_by! { |a| a[0] } if sort
       set_data(:Moveset, @base_learnset)
     end
@@ -309,9 +317,9 @@ class PokeModifier
       @base_learnset = [] if @learnset_overwrite
       @base_egg_moves = [] if @eggs_overwrite
       @base_compatible_moves = [] if @moves_overwrite
-      set_level_moves_internal(true) unless @learnset.empty? and @removed_learnset.empty?
-      set_egg_moves_internal unless @egg_moves.empty? and @removed_compatible.empty?
-      set_compatible_moves_internal unless @compatible_moves.empty? and @removed_compatible.empty?
+      set_level_moves_internal(true) if !@learnset.empty? or !@removed_learnset.empty? or @learnset_overwrite
+      set_egg_moves_internal if !@egg_moves.empty? or !@removed_compatible.empty? or @eggs_overwrite
+      set_compatible_moves_internal if !@compatible_moves.empty? or !@removed_compatible.empty? or @moves_overwrite
       set_data(:name, @name) if @name
       set_data(:dexnum, @target_dex_num) if @target_dex_num >= 0
       set_data(:EVs, @ev) if @ev
@@ -332,8 +340,14 @@ class PokeModifier
       set_data(:BattlerEnemyY, @battler_enemy_y) if @battler_enemy_y
       set_data(:BattlerAltitude, @battler_altitude) if @battler_altitude
       set_data(:BattlerShadow, @battler_shadow) if @battler_shadow
-      set_data(:preevo, @preevo) if @preevo
-      set_data(:evolutions, @evolutions) if @evolutions
+      if @preevo
+        @preevo = @preevo.call if @preevo.is_a? Proc
+        set_data(:preevo, @preevo) if @preevo
+      end
+      if @evolutions
+        @evolutions = @evolutions.call if @evolutions.is_a? Proc
+        set_data(:evolutions, @evolutions) if @evolutions
+      end
       EVO_OVERRIDES[[@species, @form]] = @evo_overrides if @evo_overrides
       FORM_PROVIDERS[@species] = @form_overrides if @form_overrides
       END_OF_BATTLE_RESET[[@species, @form]] = @end_of_battle_reset if @end_of_battle_reset
@@ -410,7 +424,8 @@ UniLib.insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
     ret = provider.call(self)
     next if ret == type1
     return ret unless ret.nil?
-  end unless providers.nil?")
+  end unless providers.nil?
+  return nil if $cache.pkmn[@species, @form].Type2 == type1")
 
 UniLib.insert_in_function(:getEvolutionForm, :HEAD,
   "UniLib::EVO_OVERRIDES[[mon.species, mon.form]].each { |override, m = nil| return m if (m = override.call(mon, item)) } if UniLib::EVO_OVERRIDES[[mon.species, mon.form]]")

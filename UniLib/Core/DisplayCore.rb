@@ -10,6 +10,8 @@ UniLib.verify_version(0.8, __FILE__)
 
 module UniLib
 
+  DISPLAY_OVERWRITE = {}
+
   def self.crest? = UniLib.lib_loaded("Crest")
 
   def self.aaa? = UniLib.lib_loaded("Ability")
@@ -53,6 +55,9 @@ module UniLib
   end
 
   def self.display_battle(bitmap, battler)
+    doubles = battler.battle.doublebattle
+    opp = battler.index & 1 == 1
+    DISPLAY_OVERWRITE.each { |_, v| return if v.call(battler, bitmap, doubles, opp) }
     return unless UniLib.crest? or UniLib.aaa? or UniLib.om?
     mon = battler.effects[:Illusion] ? battler.effects[:Illusion] : battler
     type_change = false
@@ -66,7 +71,7 @@ module UniLib
       poke = UniLib.om? && UniLib.pokebilities_active(mon)
       aaa_active = (UniLib.aaa_active(mon.pokemon) || UniLib::AAA_POKEMON[key] == 1) && !mon.pokemon.getAbilityList.include?(mon.ability.abilities[0])
     end
-    UniLib.draw_battle_icons(bitmap, battler.index & 1 == 1, battler.battle.doublebattle, type_change, crest, poke, aaa_active) if type_change || crest || poke || aaa_active
+    UniLib.draw_battle_icons(bitmap, opp, doubles, type_change, crest, poke, aaa_active) if type_change || crest || poke || aaa_active
   end
 
   def self.display_summary(mon, imagepos)
