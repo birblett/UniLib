@@ -362,6 +362,14 @@ class PokeBattle_Battler
 
   def unilib_flags = @pokemon.unilib_flags
 
+  def base_type1
+    @pokemon.base_type1
+  end
+
+  def base_type2
+    @pokemon.base_type2
+  end
+
 end
 
 class PokeBattle_Pokemon
@@ -373,6 +381,14 @@ class PokeBattle_Pokemon
   def permanent_battle_effects
     @permanent_battle_effects = {} unless @permanent_battle_effects
     @permanent_battle_effects
+  end
+
+  def base_type1
+    $cache.pkmn[@species, @form].Type1
+  end
+
+  def base_type2
+    $cache.pkmn[@species, @form].Type2
   end
 
 end

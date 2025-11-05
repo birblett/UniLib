@@ -46,9 +46,9 @@ class PokeModifier
   <<-DOC
   >> allows the pokemon to choose almost any stab move when learning, with a configurable banlist
   DOC
-  def set_stab
+  def set_stab(value = 2)
     return self if UniLib.cached(UniLib::POKEMON_OM)
-    @stab = true
+    @stab = value
     self
   end
 

@@ -202,20 +202,6 @@ class PokeModifier
   end
 
   <<-DOC
-  @param moves - move id, or array of them.
-  >> removes moves from the learnset. applies before level-up moves are added.
-  DOC
-  def remove_level_moves(moves)
-    return self if UniLib.cached(POKEMON)
-    if moves.class == Array
-      @removed_learnset += moves
-    else
-      @removed_learnset.push(moves)
-    end
-    self
-  end
-
-  <<-DOC
   @param moves - tuple with a level and move id (or array of them) (i.e. [[50, :SUNSTEELSTRIKE], [60, :MOONGEISTBEAM])
   >> adds level-up moves at the given levels
   DOC
@@ -232,20 +218,6 @@ class PokeModifier
   end
 
   <<-DOC
-  @param moves - move id, or array of them.
-  >> removes moves from the egg and compatible movesets. applies before egg moves and compatible moves are added.
-  DOC
-  def remove_compatible_moves(moves)
-    return self if UniLib.cached(POKEMON)
-    if moves.class == Array
-      @removed_compatible += moves
-    else
-      @removed_compatible.push(moves)
-    end
-    self
-  end
-
-  <<-DOC
   @param moves - move constant (or array of them) (i.e. [:SUNSTEELSTRIKE, :MOONGEISTBEAM])
   >> adds the given egg moves
   DOC
@@ -257,6 +229,34 @@ class PokeModifier
     else
       @egg_moves.push(moves)
       @compatible_moves.push(moves) if override
+    end
+    self
+  end
+
+  <<-DOC
+  @param moves - move id, or array of them.
+  >> removes moves from the learnset. applies before level-up moves are added.
+  DOC
+  def remove_level_moves(moves)
+    return self if UniLib.cached(POKEMON)
+    if moves.class == Array
+      @removed_learnset += moves
+    else
+      @removed_learnset.push(moves)
+    end
+    self
+  end
+
+  <<-DOC
+  @param moves - move id, or array of them.
+  >> removes moves from the egg and compatible movesets. applies before egg moves and compatible moves are added.
+  DOC
+  def remove_compat_egg_moves(moves)
+    return self if UniLib.cached(POKEMON)
+    if moves.class == Array
+      @removed_compatible += moves
+    else
+      @removed_compatible.push(moves)
     end
     self
   end

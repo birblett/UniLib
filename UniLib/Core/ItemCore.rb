@@ -24,6 +24,7 @@ module UniLib
 
     CUSTOM_ITEMS = {}
     EVENT_ITEMS = {}
+    ABLE_TO_USE_HANDLER_ITEMS = {}
     INVALID_ITEMS = {}
     CONSUMED_ITEM = []
     UNLOSABLE_ITEMS = {}
@@ -99,6 +100,10 @@ class ItemModifier < EventProvider
     EVENT_ITEMS[pkmn.item].event_hash[id]
   end
 
+  def self.able_to_use(sym)
+    ABLE_TO_USE_HANDLER_ITEMS[sym]
+  end
+
 end unless UniLib.lib_loaded(__FILE__)
 
 class PokeBattle_Pokemon
@@ -132,6 +137,16 @@ class PokeBattle_Battler
   end
 
   self.add_listeners(1, :item_event_value, :apply_item_event)
+
+end
+
+class PokemonScreen_Scene
+
+  def update_annotations(annotations)
+    for i in 0...6
+      @sprites["pokemon#{i}"].text = annotations[i]
+    end
+  end
 
 end
 
@@ -226,6 +241,33 @@ UniLib.insert_in_method(:PokeBattle_Battler, :pbDisposeItem, :HEAD, "b = !@item.
 
 # item update
 UniLib.insert_in_method(:PokeBattle_Battler, :pbDisposeItem, :TAIL, "self.pbUpdate(false) if b")
+
+# item check if can be used
+UniLib.replace_in_function(:pbUseItem, "if pbIsEvolutionStone?(item)",
+  "if (fn = ItemModifier.able_to_use(item))
+    annot = []
+    for pkmn in $Trainer.party
+      annot.push(fn.call(pkmn) ? _INTL(\"ABLE\") : _INTL(\"NOT ABLE\"))
+    end
+  elsif pbIsEvolutionStone?(item)")
+
+UniLib.insert_in_function(:pbUseItem, "bag.pbDeleteItem(item, amount_consumed)",
+  "if (fn = ItemModifier.able_to_use(item))
+    annot = []
+    for pkmn in $Trainer.party
+      annot.push(fn.call(pkmn) ? _INTL(\"ABLE\") : _INTL(\"NOT ABLE\"))
+    end
+    scene.update_annotations(annot)
+  end")
+
+UniLib.insert_in_function(:pbUseItem, "bag.pbDeleteItem(item)",
+  "if (fn = ItemModifier.able_to_use(item))
+    annot = []
+    for pkmn in $Trainer.party
+      annot.push(fn.call(pkmn) ? _INTL(\"ABLE\") : _INTL(\"NOT ABLE\"))
+    end
+    scene.update_annotations(annot)
+  end")
 
 # item score
 target = Reborn ? "itemscore -= 100" : "itemscore-=100"

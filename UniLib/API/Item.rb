@@ -304,6 +304,17 @@ class ItemModifier
   end
 
   <<-DOC
+  @param proc - a function returning a boolean
+  >> a conditional function, determining whether ABLE or NOT ABLE is displayed when in the item use screen., accepts 1 argument, the 
+     potential use candidate (PokeBattle_Pokemon).
+  DOC
+  def able_to_use(proc=nil, &block)
+    return self if UniLib.cached(UniLib::ITEM)
+    ABLE_TO_USE_HANDLER_ITEMS[@symbol] = block ? block : proc
+    self
+  end
+
+  <<-DOC
   >> returns the item symbol
   DOC
   def sym

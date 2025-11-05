@@ -14,21 +14,24 @@ UniLib.include "Item"
 
 unless UniLib.cached(UniLib::ITEM)
 
-  ItemBuilder.add(:CATALYZER, "Catalyzer", "May activate the user's hidden potential.")
+  CATALYZER = ItemBuilder.add(:CATALYZER, "Catalyzer", "May activate the user's hidden potential.")
              .no_use
              .no_use_in_battle
              .unlosable { |pkmn| next (UniLib::POKEBILITIES_POKEMON[key = [pkmn.species, pkmn.form]] == 1 or UniLib::CAMO_POKEMON[key] == 1) }
+             .sym
 
-  ItemBuilder.add(:AAA_CAPSULE, "AAAbility Capsule", "Allows certain Pokemon to use almost any ability.")
+  ACTUATION_PILL = ItemBuilder.add(:ACTUATION_PILL, "Actuation Pill", "Permanently reveals the hidden potential of certain pokemon.")
              .price(10000)
              .no_use_in_battle
              .medicine
              .level_up
+             .able_to_use { UniLib.can_activate_traits _1 }
+             .sym
 
-  ItemHandlers::UseOnPokemon.add(:AAA_CAPSULE, proc { |_, pokemon, scene|
-    if (ret = UniLib.can_activate_aaa(pokemon))
-      scene.pbDisplay(_INTL("{1} can now change their ability to nearly anything!", pokemon.name))
-      pokemon.unilib_flags[:AAA_ACTIVE] = true
+  ItemHandlers::UseOnPokemon.add(ACTUATION_PILL, proc { |_, pokemon, scene|
+    if (ret = UniLib.can_activate_traits(pokemon))
+      scene.pbDisplay(_INTL("{1}'s potential has been unleashed!", pokemon.name))
+      pokemon.unilib_flags[:ACTUATED] = true
     else
       scene.pbDisplay(_INTL("It won't have any effect."))
     end
@@ -79,9 +82,14 @@ module UniLib
     BANNED_ABILITIES = BANNED_OVERPOWERED_ABILITIES + BANNED_UNCOMPETITIVE_ABILITIES + BANNED_SPEED_ABILITIES + BANNED_SETTING_ABILITIES +
       BANNED_USELESS_ABILITIES + BANNED_ILLEGAL_ABILITIES
 
-    def self.aaa_active(pkmn) = UniLib::AAA_POKEMON[key = [pkmn.species, pkmn.form]] == 2 || UniLib::AAA_POKEMON[key] == 1 && pkmn.unilib_flags[:AAA_ACTIVE]
+    def self.aaa_active(pkmn) = UniLib::AAA_POKEMON[key = [pkmn.species, pkmn.form]] == 2 || UniLib::AAA_POKEMON[key] == 1 && pkmn.unilib_flags[:ACTUATED]
 
-    def self.can_activate_aaa(pkmn) = UniLib::AAA_POKEMON[[pkmn.species, pkmn.form]] == 1 && !pkmn.unilib_flags[:AAA_ACTIVE]
+    def self.stab_active(pkmn) = (pk = UniLib::STAB_POKEMON[[pkmn.species, pkmn.form]]) && (pk[0] == 2 || pk[0] == 1 && pkmn.unilib_flags[:ACTUATED])
+
+    def self.can_activate_traits(pkmn)
+      (UniLib::AAA_POKEMON[[pkmn.species, pkmn.form]] == 1 || UniLib::STAB_POKEMON[[pkmn.species, pkmn.form]] == 1 ||
+        UniLib::ALPHABET_POKEMON[[pkmn.species, pkmn.form]] == 1) && !pkmn.unilib_flags[:ACTUATED]
+    end
 
     POKEBILITY_PROC = proc { |pkmn, _| pkmn = pkmn.pokemon if pkmn.is_a? PokeBattle_Battler; next pkmn.getAbilityList if pokebilities_active(pkmn) }
 
@@ -169,26 +177,11 @@ class PokeModifier
     modifier.set_aaa_internal if modifier.aaa
     key = [modifier.species, modifier.form]
     if modifier.stab
-      UniLib::STAB_POKEMON[key] = []
+      UniLib::STAB_POKEMON[key] = [modifier.stab, []]
       type1 = modifier.get_data(:Type1)
       type2 = modifier.get_data(:Type2)
-      unless type1.nil?
-        UniLib::STAB_POKEMON[key].push(type1)
-        modifier.egg_moves(UniLib::TYPE_MAPPED_MOVES[type1])
-        modifier.compatible_moves(UniLib::TYPE_MAPPED_MOVES[type1])
-        modifier.stab_types -= [type1]
-      end
-      unless type2.nil?
-        UniLib::STAB_POKEMON[key].push(type2)
-        modifier.egg_moves(UniLib::TYPE_MAPPED_MOVES[type2])
-        modifier.compatible_moves(UniLib::TYPE_MAPPED_MOVES[type2])
-        modifier.stab_types -= [type2]
-      end
-      modifier.stab_types.each do |type|
-        UniLib::STAB_POKEMON[key].push(type)
-        modifier.egg_moves(UniLib::TYPE_MAPPED_MOVES[type2])
-        modifier.compatible_moves(UniLib::TYPE_MAPPED_MOVES[type2])
-      end
+      UniLib::STAB_POKEMON[key][1].push(type1) unless type1.nil?
+      UniLib::STAB_POKEMON[key][1].push(type2) unless type2.nil?
     end
     UniLib::ALPHABET_POKEMON[key] = modifier.alphabet if modifier.alphabet.length > 0
     modifier.set_plates_internal(modifier.plates) unless modifier.plates.empty?
@@ -245,7 +238,7 @@ UniLib.insert_in_method(:PokeBattle_Battle, :pbIsUnlosableItem, :HEAD,
 target = Reborn ? "return moves | []" : "return moves|[]"
 UniLib.insert_in_function_before(:pbGetRelearnableMoves, target,
   "key = [pokemon.species, pokemon.form]
-  UniLib::STAB_POKEMON[key].each { |type| moves |= UniLib::TYPE_MAPPED_MOVES[type] unless UniLib::TYPE_MAPPED_MOVES[type].nil? } unless UniLib::STAB_POKEMON[key].nil?
+  UniLib::STAB_POKEMON[key][1].each { |type| moves |= UniLib::TYPE_MAPPED_MOVES[type] unless UniLib::TYPE_MAPPED_MOVES[type].nil? } if UniLib.stab_active(pokemon)
   UniLib::ALPHABET_POKEMON[key].each { |letter| moves |= UniLib::ALPHABET_MOVES[letter] unless UniLib::ALPHABET_MOVES[letter].nil? } unless UniLib::ALPHABET_POKEMON[key].nil?")
 
 target = Reborn ? "memo += _INTL(\"<c3=F8F8F8,686868>Ability:<c3=404040,B0B0B0>\\n\")" : "memo+=_INTL(\"<c3=F8F8F8,686868>Ability:<c3=404040,B0B0B0>\n\")"
