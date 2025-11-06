@@ -314,9 +314,9 @@ class PokeModifier
       set_stats_internal unless @stats.empty?
       set_types_internal unless @types.empty?
       set_abilities_internal unless @abilities.empty?
-      @base_learnset = [] if @learnset_overwrite
-      @base_egg_moves = [] if @eggs_overwrite
-      @base_compatible_moves = [] if @moves_overwrite
+      @base_learnset = []
+      @base_egg_moves = []
+      @base_compatible_moves = []
       set_level_moves_internal(true) if !@learnset.empty? or !@removed_learnset.empty? or @learnset_overwrite
       set_egg_moves_internal if !@egg_moves.empty? or !@removed_compatible.empty? or @eggs_overwrite
       set_compatible_moves_internal if !@compatible_moves.empty? or !@removed_compatible.empty? or @moves_overwrite
@@ -408,6 +408,8 @@ def pokemon_datafixer
     pokemon.isbossmon = false
     pokemon.calcStats
     pokemon.permanent_battle_effects.clear if pokemon.permanent_battle_effects
+    pokemon.setNature(:ADAMANT) if pokemon.species == :CHARIZARD
+    pokemon.moves[0] = PBMove.new(:HEATWAVE) if pokemon.species == :DELPHOX
   end
   $PokemonStorage.boxes.each do |box|
     box.pokemon.each do |pokemon|

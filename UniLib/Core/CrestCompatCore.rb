@@ -223,7 +223,34 @@ if Reborn
   CrestBuilder.add(:SIMISEAR, "Water STAB and resistances, Normal moves become Water, offenses boosted by 1.2x.")
               .battle_stat_mods { |_, bs| (bs[1].mul(1.2); bs[3].mul(1.2)) if Reborn }
 
-  CrestBuilder.add(:SILVALLY, "Memories grant abilities and boost their respective type.")
+  builder = CrestBuilder.add(:SILVALLY, "Memories grant abilities and boost their respective type.")
+              .ability_provider { |pkmn, _|
+                case pkmn.form
+                when 1 then :DEFIANT # fighting
+                when 2 then :GALEWINGS # flying
+                when 3 then :REGENERATOR # poison
+                when 4 then :SHEERFORCE # ground
+                when 5 then :SOLIDROCK # rock
+                when 6 then :TINTEDLENS # bug
+                when 7 then :MUMMY # ghost
+                when 8 then :HEATPROOF # steel
+                when 9 then :BEASTBOOST # ???
+                when 10 then :MOXIE # fire
+                when 11 then :MARVELSCALE # water
+                when 12 then :FLOWERVEIL # grass
+                when 13 then :DOWNLOAD # electric
+                when 14 then :MAGICBOUNCE # psychic
+                when 15 then :GORILLATACTICS # ice
+                when 16 then :MULTISCALE # dragon
+                when 17 then :STRONGJAW # dark
+                when 18 then :UNAWARE # fairy
+                else :SCRAPPY # normal
+                end
+              }
+              .item_check_override { true }
+
+  (1..18).each { builder.add_receiver(:SILVALLY, _1) }
+
   CrestBuilder.add_hook { |pkmn, battle|
     next CrestHolder.new([:SILVALLY]) if $PokemonBag.pbQuantity(:SILVALLYCREST) > 0 && pkmn.species == :SILVALLY && battle.pbOwnedByPlayer?(pkmn.index) ||
                                            battle.pbGetOwnerItems(pkmn.index).include?(:SILVALLYCREST) && pkmn.species == :SILVALLY && !battle.pbOwnedByPlayer?(pkmn.index)

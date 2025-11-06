@@ -76,15 +76,15 @@ class ItemModifier < EventProvider
     @data = hash
     @species = []
     @ability_providers = []
+    @item_check = proc { |pkmn| pkmn.item == @symbol }
     super()
   end
 
   def build
     EVENT_ITEMS[@symbol] = self if @event_hash.size > 0
-    item_check = proc { |pkmn| pkmn.item == @symbol }
     @species.each do |arr|
       species, form = arr
-      @ability_providers.each { |provider| AbilityContainer.add_handler(species, provider, form, item_check) }
+      @ability_providers.each { |provider| AbilityContainer.add_handler(species, provider, form, @item_check) }
     end unless @species == :ALL
     $cache.items[@symbol].nil? ? $cache.items[@symbol] = ItemData.new(@symbol, @data) : $cache.items[@symbol].override(@data)
   end

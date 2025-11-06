@@ -254,6 +254,16 @@ class ItemModifier
   end
 
   <<-DOC
+  @param proc - item functionality check. accepts 1 argument, the holder (PokeBattle_Battler).
+  >> overrides the default check for item checks with this item.
+  DOC
+  def item_check_override(proc = nil, &block)
+    return self if UniLib.cached(UniLib::ITEM)
+    @item_check = block ? block : proc
+    self
+  end
+
+  <<-DOC
   @param holder - pokemon id
   @param form - form string or number
   >> allows battle items to be proc'd with this pokemon
