@@ -460,7 +460,7 @@ if Reborn
 
   MoveBuilder.add(:TRIPLEARROWS, "Triple Arrows",
                   "The user kicks, then fires three arrows. This move has a heightened critical hit ratio and may also lower the target's Defense stat or make it flinch.",
-                  :PSYCHIC, :physical, 10, 90, 100, 0x503)
+                  :FIGHTING, :physical, 10, 90, 100, 0x503)
              .flag(:effect, 50)
              .flag(:moreeffect, 30)
              .flag(:highcrit, true)
@@ -647,7 +647,7 @@ if Reborn
   class PokeBattle_Move_FCF < PokeBattle_Move
 
     def pbBaseDamage(basedmg, attacker, opponent)
-      50 + 50 * attacker.battle.pbParty(attacker.index).reduce(0) { |mul, member| !member.nil? and member.fainted ? mul + 0.5 : mul}
+      50 + 50 * attacker.battle.pbParty(attacker.index).reduce(0) { |mul, member| (!member.nil? and member.isFainted?) ? mul + 0.5 : mul}
     end
 
   end

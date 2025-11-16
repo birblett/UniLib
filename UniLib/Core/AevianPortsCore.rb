@@ -188,7 +188,7 @@ if Reborn
               .abilities({0 => :FILTER, 1 => :COTTONDOWN, 2 => :FILTER})
               .set_ev([0, 0, 0, 2, 0, 0])
               .set_preevo(proc { {:species => :MAREEP, :form => MAREEP_AEVIAN} })
-              .set_evolutions(proc { {:species => :AMPHAROS, :method => :Level, :parameter => 30, :form => AMPHAROS_AEVIAN} })
+              .set_evolutions(proc { [:species => :AMPHAROS, :method => :Level, :parameter => 30, :form => AMPHAROS_AEVIAN] })
               .level_moves([[1, :TACKLE], [1, :HAIL], [1, :THUNDERWAVE], [1, :THUNDERSHOCK], [4, :THUNDERWAVE], [8, :THUNDERSHOCK], [11, :COTTONSPORE], [16, :ICYWIND], [20, :TAKEDOWN], [25, :ICEBALL], [29, :CONFUSERAY], [34, :POWERGEM], [38, :DISCHARGE], [43, :COTTONGUARD], [47, :REST], [52, :REFLECT], [56, :THUNDER]])
               .egg_moves([])
               .compatible_moves([:AFTERYOU, :AGILITY, :AURORAVEIL, :AVALANCHE, :BEATUP, :BLIZZARD, :BREAKINGSWIPE, :CHARGEBEAM, :DRAGONPULSE, :DYNAMICPUNCH, :ECHOEDVOICE, :EERIEIMPULSE, :ELECTRICTERRAIN, :ELECTROBALL, :ELECTROWEB, :ENDEAVOR, :FAKETEARS, :FLASH, :FLASHCANNON, :FLING, :FROSTBREATH, :GUARDSWAP, :HAIL, :HEALBELL, :ICEBEAM, :ICEPUNCH, :ICICLESPEAR, :ICYWIND, :IRONTAIL, :LASERFOCUS, :MAGICCOAT, :MAGNETRISE, :MEGAKICK, :MEGAPUNCH, :METRONOME, :OUTRAGE, :PAYBACK, :PAYDAY, :POWERGEM, :RAINDANCE, :RECYCLE, :REFLECT, :RISINGVOLTAGE, :ROCKSMASH, :ROLEPLAY, :SAFEGUARD, :SHOCKWAVE, :SIGNALBEAM, :SKILLSWAP, :SNATCH, :STRENGTH, :THUNDER, :THUNDERPUNCH, :THUNDERWAVE, :THUNDERBOLT, :VOLTSWITCH, :WATERPULSE, :WEATHERBALL, :WILDCHARGE, :ZAPCANNON, :DELUGE, :STACKINGSHOT])
@@ -890,11 +890,12 @@ if Reborn
               .get_form
 =end
 
-  MoveBuilder.add(:GILDEDARROW, "Gilded Arrow", "The user fires a golden ball of energy at the target.",
+  MoveBuilder.add(:GILDEDARROW, "Gilded Arrow", "The user fires a golden arrow of energy at the target. Critical hits land more easily.",
                   :NORMAL, :special, 15, 80, 100, 0x20C)
              .flag(:kingrock, true)
+             .flag(:highcrit, true)
 
-  MoveBuilder.add(:GILDEDHELIX, "Gilded Helix", "The user fires a golden arrow of energy at the target. Critical hits land more easily.",
+  MoveBuilder.add(:GILDEDHELIX, "Gilded Helix", "Two golden arrows matching the user's type are fired. Critical hits land more easily.",
                   :NORMAL, :special, 15, 50, 100, 0x20C)
              .flag(:kingrock, true)
              .flag(:highcrit, true)

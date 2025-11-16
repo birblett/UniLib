@@ -408,8 +408,6 @@ def pokemon_datafixer
     pokemon.isbossmon = false
     pokemon.calcStats
     pokemon.permanent_battle_effects.clear if pokemon.permanent_battle_effects
-    pokemon.setNature(:ADAMANT) if pokemon.species == :CHARIZARD
-    pokemon.moves[0] = PBMove.new(:HEATWAVE) if pokemon.species == :DELPHOX
   end
   $PokemonStorage.boxes.each do |box|
     box.pokemon.each do |pokemon|

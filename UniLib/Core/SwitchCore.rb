@@ -8,16 +8,6 @@ UniLib.verify_version(0.8, __FILE__)
 # ============================================================ INTERNAL/CORE ============================================================= #
 # ======================================================================================================================================== #
 
-module UniLib
-
-  def self.is_switch_on(id)
-    ret = $unilib_switches[id]
-    ret = $unilib_switch_conditions[id] ? $unilib_switch_conditions[id].call : false unless ret
-    ret
-  end
-
-end
-
 # ======================================================================================================================================== #
 # ================================================================ EVENTS ================================================================ #
 # ======================================================================================================================================== #
@@ -43,15 +33,17 @@ UniLib.add_new_file_event(:unilib_read_switches)
 # ======================================================================================================================================== #
 
 UniLib.insert_in_method(:Game_Event, :switchIsOn?, :HEAD,
-  "return UniLib.is_switch_on(id) if id.is_a? Symbol")
+  "return UniLib.switch_on?(id) if id.is_a? Symbol")
 
 UniLib.insert_in_method(:Game_CommonEvent, :switchIsOn?, :HEAD,
-  "return UniLib.is_switch_on(id) if id.is_a? Symbol")
+  "return UniLib.switch_on(id) if id.is_a? Symbol")
 
-UniLib.insert_in_method(:Interpreter, :command_111, "result = false",
-  "if @parameters[1].is_a? Symbol
-    result = UniLib.is_switch_on(@parameters[1]) == (@parameters[2] == 0)
-  else", 1)
+UniLib.insert_in_method(:Game_Switches, :[], :HEAD, "tmp = switch_id")
 
-UniLib.insert_in_method(:Interpreter, :command_111, "result = ($game_switches[@parameters[1]] == (@parameters[2] == 0))",
-  "end")
+UniLib.insert_in_method(:Game_Switches, :[], "switch_id = Switches[switch_id] if switch_id.is_a?(Symbol)",
+  "return UniLib.switch_on?(tmp) if switch_id.nil? && $unilib_switches.key?(tmp)")
+
+UniLib.insert_in_method(:Game_Switches, :[]=, :HEAD, "tmp = switch_id")
+
+UniLib.insert_in_method(:Game_Switches, :[]=, "switch_id = Switches[switch_id] if switch_id.is_a?(Symbol)",
+  "return ($unilib_switches[tmp] = value) if switch_id.nil? && tmp.is_a?(Symbol)")
