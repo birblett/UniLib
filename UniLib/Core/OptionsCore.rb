@@ -333,8 +333,7 @@ end
 # ======================================================================================================================================== #
 
 def read_option_data
-  options = UniLib.restore_data("options", [])
-  options.each do |option|
+  UniLib.restore_data("options", []).each do |option|
     if option == UniLib::SEPARATE_UNILIB_OPTIONS
       UniLib::SEPARATE_UNILIB_OPTIONS.value = option.value
       UniLib::SEPARATE_UNILIB_OPTIONS.update
@@ -351,8 +350,7 @@ def read_option_data
   end
 end unless UniLib.lib_loaded(__FILE__)
 
-UniLib.add_play_event(:read_option_data)
-UniLib.add_new_file_event(:read_option_data)
+UniLib.add_load_screen_event(:read_option_data)
 
 # ======================================================================================================================================== #
 # ================================================================ PATCH ================================================================= #

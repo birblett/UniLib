@@ -50,7 +50,12 @@ module Assets
     out = hash[str]
     out = hash[str + ".mp3"] if out.nil?
     out = hash[str + ".ogg"] if out.nil?
-    out = out[0] + (out[1].call) if out.is_a? Array
+    if out.is_a? Array
+      res = out[1].call
+      return false unless res
+      out = out[0] + res
+    end
+    return false if out.nil?
     out.gsub!("../../", "") if str.start_with? "Audio"
     out
   end
@@ -58,9 +63,8 @@ module Assets
   def self.bmp_redirect(file)
     return file unless file.is_a? String
     f = File.basename(file).gsub(/\.png/,"")
-    file = Assets.get_asset(UniLib::ANIMATED_BITMAP_REDIRECT, f) if UniLib::ANIMATED_BITMAP_REDIRECT[f]
-    file = Assets.get_asset(UniLib::ANIMATED_BITMAP_REDIRECT, file) if UniLib::ANIMATED_BITMAP_REDIRECT[file]
-    file
+    f2 = Assets.get_asset(UniLib::ANIMATED_BITMAP_REDIRECT, f) if UniLib::ANIMATED_BITMAP_REDIRECT[f]
+    f2 ? f2 : file
   end
 
   def self.log(str)

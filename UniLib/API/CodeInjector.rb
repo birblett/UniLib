@@ -101,6 +101,15 @@ module UniLib
   end
 
   <<-DOC
+  @param load_screen_event - a symbolic function reference (i.e. :function)
+  @param priority - a numeric priority
+  >> these events are called as the load screen is being entered.
+  DOC
+  def self.add_load_screen_event(load_screen_event, priority=$injector_global_priority)
+    EVENT_ON_LOAD_SCREEN.push([load_screen_event, priority]) unless EVENT_ON_LOAD.include?([load_screen_event, priority])
+  end
+
+  <<-DOC
   @param load_event - a symbolic function reference (i.e. :function)
   @param priority - a numeric priority
   >> these events are called as the save is being loaded, so interacting with cache is not safe. useful for deserializing data. numerically 

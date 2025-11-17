@@ -12,7 +12,7 @@ module UniLib
 
   $unilib_switches = {}
   $unilib_switches_inverted = {}
-  $unilib_switch_conditions = {}
+  $unilib_switch_compound = {}
 
   def self.set_switch(id, value=true)
     $unilib_switches[id] = value
@@ -31,13 +31,13 @@ module UniLib
     $unilib_switches[id].nil? ? default : $unilib_switches[id]
   end
 
-  def self.set_switch_condition(id, proc = nil, &block)
-    $unilib_switch_conditions[id] = block ? block : proc
+  def self.set_switch_compound(id, proc = nil, &block)
+    $unilib_switch_compound[id] = block ? block : proc
   end
 
   def self.switch_on?(id)
     ret = $unilib_switches[id]
-    ret = $unilib_switch_conditions[id] ? $unilib_switch_conditions[id].call : false unless ret
+    ret = $unilib_switch_compound[id] ? $unilib_switch_compound[id].call : false unless ret
     ret = !ret if $unilib_switches_inverted[id]
     ret
   end

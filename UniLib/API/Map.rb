@@ -261,7 +261,7 @@ class EventBuilder
       page.list.each { |command|
         command.parameters.each_with_index { |param, idx|
           command.parameters[idx] = parameter_mappings[param] ? parameter_mappings[param] : param
-        }
+        } if command.parameters.is_a? Array
       }
     } if parameter_mappings.is_a? Hash
     ev.set_name(name)
