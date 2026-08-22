@@ -18,7 +18,7 @@ if Reborn
 
   CrestBuilder.add(:BEHEEYEM, "Faster foes deal 0.67x damage and are disabled if possible.")
 
-  # no boltund (gen 8)
+  CrestBuilder.add(:BOLTUND, "1.5x boost to biting moves if Boltund moves before target.")
 
   CrestBuilder.add(:CASTFORM, "Castform uses weather moves in its first slot. Grants additional stats.")
               .on_battle_entry { |pkmn, battle, _| pkmn.pbUseMoveSimple(pkmn.moves[0].move, 0) if [:RAINDANCE, :SANDSTORM, :SUNNYDAY, :HAIL].include?(pkmn.moves[0].move) && pkmn.moves[0].move != battle.pbWeather }
@@ -46,17 +46,6 @@ if Reborn
               }
 
   CrestBuilder.add(:DARMANITAN, "Forces user into Zen Mode.")
-
-  # fix zenmode reset at end of turn with crest
-  if Reborn
-
-    UniLib.replace_in_method(:PokeBattle_Battler, :pbCheckFormRoundEnd, "if self.crested == :DARMANITAN && self.form == 0",
-                             "if self.crested == :DARMANITAN")
-
-    UniLib.replace_in_method(:PokeBattle_Battler, :pbCheckFormRoundEnd, "zenModeTransform",
-                             "zenModeTransform if self.form == 0")
-
-  end
 
   CrestBuilder.add(:DEDENNE, "Physical attacks use the Speed stat.")
 
@@ -101,13 +90,13 @@ if Reborn
 
   CrestBuilder.add(:FERALIGATR, "First moves gains priority if damaging. 1.5x damage on biting moves.")
 
-  CrestBuilder.add(:GLACEON, "Grants resistances to Rock and Fighting.")
+  CrestBuilder.add(:GLACEON, "Grants resistances to Rock and Fighting. Weather-based abilities always apply.")
 
-  CrestBuilder.add(:GOTHITELLE, "Dark and Psychic moves change Gothitelle's type. Recovers HP.")
+  CrestBuilder.add(:GOTHITELLE, "Swaps types when using Dark/Psychic moves. Recovers HP. Sp. Attack buffed by 1.25x.")
 
   CrestBuilder.add(:HYPNO, "1.5x Sp. Attack and accuracy.")
               .battle_stat_mods { |_, bs| bs[3].mul(1.5) }
-              .accuracy_mod { |_, _, acc, _, _| acc.mul(1.5); next nil }
+              .accuracy_mod { |_, _, _| 1.5 }
 
   CrestBuilder.add(:INFERNAPE, "Swaps attacking and defensive stats. Recovers HP.")
               .battle_stat_mods { |_, bs|
@@ -118,7 +107,7 @@ if Reborn
                 bs[4].set(s)
               }
 
-  CrestBuilder.add(:LEAFEON, "Grants resistances to Fire and Flying.")
+  CrestBuilder.add(:LEAFEON, "Grants resistances to Fire and Flying. Weather-based abilities always apply.")
 
   CrestBuilder.add(:LEDIAN, "Punching moves hit 2-4 times.")
 
@@ -126,12 +115,12 @@ if Reborn
 
   CrestBuilder.add(:LUXRAY, "Dark STAB and resistances. 1.2x damage and Electric conversion for Normal moves.")
 
-  CrestBuilder.add(:MAGCARGO, "Swap Defense and Speed. 1.1x Sp. Attack.")
+  CrestBuilder.add(:MAGCARGO, "Magcargo's Defense and Speed are swapped. 1.2x Sp. Attack.")
               .battle_stat_mods { |_, bs|
                 d = bs[1]
                 bs[1].set(bs[5])
                 bs[5].set(d)
-                bs[4].mul(1.1)
+                bs[4].mul(1.2)
               }
 
   CrestBuilder.add(:MEGANIUM, "User and allies take 0.8x damage and heal every turn.")
@@ -264,16 +253,14 @@ if Reborn
 
   CrestBuilder.add(:STANTLER, "1.5x Attack and Accuracy.")
               .add_receiver(:WYRDEER)
-              .battle_stat_mods { |_, bs| bs[1].mul(1.5) }
-              .accuracy_mod { |_, _, acc, _, _| acc.mul(1.5); next nil }
 
   CrestBuilder.add(:SWALOT, "Stockpile after every move. Belch is always usable and followed by Spit Up.")
 
-  # no thievul (gen 8)
+  CrestBuilder.add(:THIEVUL, "Decreases opponent's Sp.Atk by one stage, increasing Thievul's by one stage on switch.")
+              .on_battle_entry { |pkmn, battle, index|
+              }
 
   CrestBuilder.add(:TORTERRA, "Resistances and weaknesses are swapped, retaining immunities. Attacks restore HP.")
-  UniLib.replace_in_method(:PokeBattle_Move, :pbTypeModifierNonBattler, "if opponent.species == :TORTERRA && opponent.item == :TORCREST",
-                           "if opponent.species == :TORTERRA && opponent.item == :TORTERRACREST")
 
   CrestBuilder.add(:TYPHLOSION, "Attack equals Sp. Attack and contact moves hit twice.")
               .battle_stat_mods { |_, bs| bs[1].set(bs[3].value) }

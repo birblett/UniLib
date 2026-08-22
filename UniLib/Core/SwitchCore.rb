@@ -38,6 +38,12 @@ UniLib.insert_in_method(:Game_Event, :switchIsOn?, :HEAD,
 UniLib.insert_in_method(:Game_CommonEvent, :switchIsOn?, :HEAD,
   "return UniLib.switch_on(id) if id.is_a? Symbol")
 
+UniLib.replace_in_method(:Interpreter, :command_111, "switchname = $cache.RXsystem.switches[@parameters[1]]",
+  "switchname = $cache.RXsystem.switches[@parameters[1]] unless @parameters[1].is_a? Symbol")
+
+UniLib.replace_in_method(:Interpreter, :command_111, "varname = $cache.RXsystem.variables[@parameters[1]]",
+                         "varname = $cache.RXsystem.variables[@parameters[1]] unless @parameters[1].is_a? Symbol")
+
 UniLib.insert_in_method(:Game_Switches, :[], :HEAD, "tmp = switch_id")
 
 UniLib.insert_in_method(:Game_Switches, :[], "switch_id = Switches[switch_id] if switch_id.is_a?(Symbol)",

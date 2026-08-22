@@ -6,3 +6,6 @@
 !UniLibModLoader.rb
 !ExampleMod/
 !ExampleMod/**
+UniLib/Tools/credentials/**
+UniLib/Tools/data/**
+UniLib/Tools/out/**

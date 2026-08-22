@@ -235,34 +235,30 @@ UniLib.insert_in_method(:PokeBattle_Battle, :pbIsUnlosableItem, :HEAD,
   "plate_type = UniLib.plate_type(pkmn)
   return true if plate_type")
 
-target = Reborn ? "return moves | []" : "return moves|[]"
-UniLib.insert_in_function_before(:pbGetRelearnableMoves, target,
-  "key = [pokemon.species, pokemon.form]
-  UniLib::STAB_POKEMON[key][1].each { |type| moves |= UniLib::TYPE_MAPPED_MOVES[type] unless UniLib::TYPE_MAPPED_MOVES[type].nil? } if UniLib.stab_active(pokemon)
-  UniLib::ALPHABET_POKEMON[key].each { |letter| moves |= UniLib::ALPHABET_MOVES[letter] unless UniLib::ALPHABET_MOVES[letter].nil? } unless UniLib::ALPHABET_POKEMON[key].nil?")
+UniLib.insert_in_method(:PokeBattle_Pokemon, :pbGetNaturalMovesMenu, "firstmoves = self.firstmoves || []",
+  "key = [self.species, self.form]
+  UniLib::STAB_POKEMON[key][1].each { |type| firstmoves |= UniLib::TYPE_MAPPED_MOVES[type] unless UniLib::TYPE_MAPPED_MOVES[type].nil? } if UniLib.stab_active(self)
+  UniLib::ALPHABET_POKEMON[key].each { |letter| firstmoves |= UniLib::ALPHABET_MOVES[letter] unless UniLib::ALPHABET_MOVES[letter].nil? } unless UniLib::ALPHABET_POKEMON[key].nil?")
 
-target = Reborn ? "memo += _INTL(\"<c3=F8F8F8,686868>Ability:<c3=404040,B0B0B0>\\n\")" : "memo+=_INTL(\"<c3=F8F8F8,686868>Ability:<c3=404040,B0B0B0>\n\")"
-UniLib.insert_in_method(:PokemonSummaryScene, :drawAbilPage, target, "abilname = \"Pokebilities\" if UniLib.pokebilities_active(@pokemon)")
+target = Rejuv ? "abildesc = abil.nil? ? (@pokemon.ability.nil? ? NoAbilDesc : NotRealAbil) : abil.desc.nil? ? MissingAbilDesc : getAbilityDesc(@pokemon.ability, false)" : "abildesc = abil.nil? ? (pokemon.ability.nil? ? NoAbilDesc : NotRealAbil) : abil.desc.nil? ? MissingAbilDesc : getAbilityDesc(pokemon.ability)"
+UniLib.insert_in_method_before(:PokemonSummaryScene, :drawAbilPage, target,
+  "abilname = \"Pokebilities\" if UniLib.pokebilities_active(@pokemon)
+  abildesc = @pokemon.getAbilityList.map { |abil| getAbilityName(abil, true) }.join('+') + '.'")
 
-UniLib.insert_in_method(:PokemonSummaryScene, :drawPageThree, "abilitydesc = abil.nil? ? (@pokemon.ability.nil? ? NoAbilDesc : NotRealAbil) : abil.desc.nil? ? MissingAbilDesc : abil.desc",
-   "if UniLib.pokebilities_active(@pokemon)
-    abilityname = \"Pokebilities\"
-    list = @pokemon.getAbilityList
-    list.push(pokemon.ability) unless list.include?(pokemon.ability)
-    abilitydesc = \"\"
-    list.each { |abil| abilitydesc += getAbilityName(abil, true) + (abil != list.last ? \" + \" : \".\") }
-  end")
+target = Rejuv ? "abilityname = abil.nil? ? (pokemon.ability.nil? ? NoAbilName : pokemon.ability.to_s) : abil.name.nil? ? MissingAbilName : getAbilityName(pokemon.ability, true)" : "basestats = $cache.pkmn[pokemon.species, pokemon.form].BaseStats"
+UniLib.insert_in_method(:PokemonSummaryScene, :drawPageThree, target,
+   "abilityname = \"Pokebilities\" if UniLib.pokebilities_active(@pokemon)")
 
-UniLib.insert_in_method(:PokemonSummaryScene, :drawPageFour, "abilitydesc = abil.nil? ? (pokemon.ability.nil? ? NoAbilDesc : NotRealAbil) : abil.desc.nil? ? MissingAbilDesc : abil.desc",
+target = Reborn ? "abilitydesc = abil.nil? ? (pokemon.ability.nil? ? NoAbilDesc : NotRealAbil) : abil.desc.nil? ? MissingAbilDesc : abil.desc" : "abildesc = abil.nil? ? (@pokemon.ability.nil? ? NoAbilDesc : NotRealAbil) : abil.desc.nil? ? MissingAbilDesc : getAbilityDesc(@pokemon.ability, false)"
+UniLib.insert_in_method(:PokemonSummaryScene, Reborn ? :__followingpkmn__drawPageFour : :drawPageFour, target,
   "if UniLib.pokebilities_active(@pokemon)
     abilityname = \"Pokebilities\"
     list = pokemon.getAbilityList
     list.push(pokemon.ability) unless list.include?(pokemon.ability)
     abilitydesc = \"\"
     list.each { |abil| abilitydesc += getAbilityName(abil, true) + (abil != list.last ? \" + \" : \".\")}
-  end")
+  end") if false
 
-target = Reborn ? "abilityname = getAbilityName(pokemon.ability)" : "abilityname=getAbilityName(pokemon.ability)"
-UniLib.insert_in_method(:PokemonStorageScene, :pbUpdateOverlay, target, "abilityname = \"Pokebilities\" if UniLib.pokebilities_active(pokemon)")
+UniLib.insert_in_method(:PokemonStorageScene, :pbUpdateOverlay, "abilityname = getAbilityName(pokemon.ability)", "abilityname = \"Pokebilities\" if UniLib.pokebilities_active(pokemon)")
 
 UniLib.insert_in_method(:PokeBattle_Pokemon, :initAbility, :TAIL, "@ability = abillist[0] if UniLib.pokebilities_active(self)")

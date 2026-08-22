@@ -27,13 +27,13 @@ class UniStringOption < OptionBase
   @param options - a string array specifying the available options. defaults to the first option.
   >> string options. when compared like OPTION == value, compares the integer index of the option selected.
   DOC
-  def initialize(name, desc, options, on_update_proc=nil, default=0)
-    super(name, desc, on_update_proc)
-    @options = []
+  def initialize(name, desc, options, on_update_proc=nil, default=0, category: "Misc.")
+    super(name, desc, on_update_proc, category)
+    @values = []
     @value = default
-    options.each { |option| @options.push(_INTL(option)) }
+    options.each { |option| @values.push(_INTL(option)) }
     inst = self
-    @option = EnumOption.new(_INTL(@name) ,@options, proc { inst.value }, proc do |value|
+    @option = EnumOption.new(_INTL(@name) ,@values, proc { inst.value }, proc do |value|
       inst.value = value
       inst.update
     end, @desc)
@@ -43,7 +43,7 @@ class UniStringOption < OptionBase
   >> returns the current selected option as a string
   DOC
   def get_as_string
-    @options[@value]
+    @values[@value]
   end
 
 end
@@ -60,14 +60,14 @@ class UniNumberOption < OptionBase
   @param default - the default value of the option, set to max normally
   >> string options. when compared like OPTION == value, compares the integer index of the option selected.
   DOC
-  def initialize(name, desc, min, max, shift_increment=1, default=min, on_update_proc=nil)
-    super(name, desc, on_update_proc)
+  def initialize(name, desc, min, max, shift_increment=1, default=min, on_update_proc=nil, category: "Misc.")
+    super(name, desc, on_update_proc, category)
     @min = min
     @max = max
     @value = default - min
     @increment = shift_increment
     inst = self
-    @option = IncrementNumberOption.new(_INTL(@name), _INTL("Type %d"), @min, @max, proc { inst.value }, proc do |value|
+    @option = IncrementNumberOption.new(_INTL(@name), proc { |value| _ISPRINTF("{1:d}", value) }, @min, @max, proc { inst.value }, proc do |value|
       inst.value = value
       inst.update
     end, @increment, @desc)
@@ -89,16 +89,16 @@ module UniLib
   @param executes @param predicate - takes the scene context as an argument
   adds a command to the pause menu below the Options command, or below the UniLib command if enabled
   DOC
-  def self.add_pause_command(id, text, executes, predicate=nil)
-    UNILIB_PAUSE_COMMANDS[id] = [text, executes, predicate]
+  def self.add_pause_command(id, text, executes, predicate=nil, order=91)
+    MenuHandlers.add(:pause_menu, id, name: proc { _INTL(text) }, order: order, effect: executes, condition: predicate)
   end
 
   <<-DOC
   @param executes @param predicate - takes the selected pokemon as an argument
   adds a command to the menu when selecting a pokemon in the party. appears at the bottom, above the cancel command.
   DOC
-  def self.add_party_command(id, text, executes, predicate=nil)
-    UNILIB_PARTY_COMMANDS[id] = [text, executes, predicate]
+  def self.add_party_command(id, text, executes, predicate=nil, order=91)
+    MenuHandlers.add(:party_menu, id, name: proc { _INTL(text) }, order: order, effect: executes, condition: predicate)
   end
 
   <<-DOC
@@ -107,6 +107,10 @@ module UniLib
   DOC
   def self.add_box_command(id, text, executes, predicate=nil)
     UNILIB_BOX_COMMANDS[id] = [text, executes, predicate]
+  end
+
+  def self.add_option_category(category, sort)
+    OptionBase.add_category(category, sort)
   end
 
 end

@@ -10,6 +10,12 @@ UniLib.verify_version(0.8, __FILE__)
 # ======================================================================================================================================== #
 
 class UniLibMod
+  def self.dev_log(*args)
+    Dir.mkdir(LOG_PATH) unless Dir.exist?(LOG_PATH)
+    str_final = ""
+    args.each {|msg| str_final += msg.to_s + (msg == args[-1] ? "" : " ") }
+    File.open(LOG_PATH + "dev.out", "a+") { |f| f.write("#{str_final}\n") }
+  end
 
   attr_accessor(:version)
   attr_accessor(:unilib_version)
@@ -75,7 +81,6 @@ module UniLib
                  HTTPLite::JSON.parse(File.read(CONFIG_PATH))["disabled"].map { |k| [k, true] }.to_h
                rescue Exception => e
                  UniLib.dev_log("failed to parse UniLibConfig/disabled.json: #{e}")
-                 {}
                end
     Dir.entries(UniLib.path("")).each { |f|
       if File.directory?(d = UniLib.path(f)) and File.file?(p = UniLib.path("#{f}/unilib_mod.json")) and !UniLib::LOADED_FILES[p]
@@ -143,7 +148,8 @@ module UniLib
       end
     }
     required_modules.sort_by! { |m| UniLib::MODULES[m] }.each { |m| UniLib.include m }
-    UniStringOption.new("Autorefresh Configs", "Refresh configs on F12 restart.", %w[Off On], proc { |value| $unilib_refresh_configs = value == 1 }) if MODULES["Options"]
+    UniStringOption.new("Autorefresh Configs", "Refresh configs on F12 restart.", %w[Off On], proc { |value| $unilib_refresh_configs = value == 1 }, category: "Debug") if required_modules.include?("Options")
+    UniLib.add_option_category("Debug", 1000)
     mods.sort_by! { |m| m.priority }.reverse!.each(&:mod_load)
     $unilib_current_cache_level = 3 if $unilib_current_cache_level == -1
   end

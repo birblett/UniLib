@@ -14,6 +14,7 @@ DOC
 class BattleEffects
 
   attr_accessor(:display)
+  attr_accessor(:default)
 
   def self.add(symbol)
     CUSTOM_BATTLE_EFFECTS[symbol] = BattleEffects.new(symbol) unless CUSTOM_BATTLE_EFFECTS[symbol]

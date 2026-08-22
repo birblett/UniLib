@@ -69,6 +69,7 @@ if Reborn
               .compatible_moves_overwrite
               .types({:Type1 => :GHOST, :Type2 => :POISON})
               .stats([40, 130, 40, 50, 40, 105])
+              .set_preevo({})
               .abilities({0 => :RESUSCITATION, 1 => nil, 2 => :RESUSCITATION})
               .level_moves([[0, :SHADOWCLAW], [1, :PHANTOMFORCE], [1, :SHADOWSNEAK], [1, :SCRATCH], [6, :POISONPOWDER], [6, :STUNSPORE], [11, :POISONSTING], [17, :FURYCUTTER], [22, :TOXIC], [29, :SLASH], [37, :AROMATHERAPY], [41, :CROSSPOISON], [45, :VENOMDRENCH], [49, :SLEEPPOWDER], [52, :XSCISSOR], [56, :GUNKSHOT]])
               .egg_moves([])
@@ -873,7 +874,6 @@ if Reborn
              .flag(:contact, true)
              .flag(:kingrock, true)
 
-=begin
   TOXTRICITY_AEVIAN = PokeModifier.add_form(:TOXTRICITY, "Aevian Form")
               .level_moves_overwrite
               .egg_moves_overwrite
@@ -888,7 +888,6 @@ if Reborn
               .set_dex_entry("This form of Toxtricity is newly discovered as Toxel only started appearing in Aevium in the last ten years. It burns the poison in its body and spews out the toxic fumes to attack.")
               .asset_override(asset: "UniLib/Assets/Battlers/toxtricity-aevian.png", icon: "UniLib/Assets/Icons/toxtricity-aevian.png")
               .get_form
-=end
 
   MoveBuilder.add(:GILDEDARROW, "Gilded Arrow", "The user fires a golden arrow of energy at the target. Critical hits land more easily.",
                   :NORMAL, :special, 15, 80, 100, 0x20C)

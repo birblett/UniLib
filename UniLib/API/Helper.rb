@@ -47,40 +47,47 @@ module UniLib
   end
 
   def self.display_if_visible(battle, text)
-    battle.pbDisplay(text) if battle.scene and battle.scene.sprites["messagebox"]
+    battle.pbDisplay(text) if text and battle.scene and battle.scene.sprites["messagebox"]
   end
 
-  def self.obj_print(obj, depth=0, label=nil, start=true, s=[""])
-    name = label ? "#{label} " : ""
-    if obj.instance_of? Array
-      if obj.length > 0
-        s[0] += "  " * depth + "#{obj.class} #{name}= [\n"
-        obj.each_with_index{ |v, i| obj_print(v, depth + 1, "#{i}", false, s) }
-        s[0] += "  " * depth + "]\n"
-      else
-        s[0] += "  " * depth + "#{obj.class} #{name}= []\n"
-      end
-    elsif obj.instance_of? Hash
-      if obj.length > 0
-        s[0] += "  " * depth + "#{obj.class} #{name}= {\n"
+  def self.with_ability_box(pkmn, item: nil, attrname: nil, crest: nil, &block)
+    pkmn.battle.pbShowAbilityBox(pkmn, item: item, attrname: attrname, crest: crest)
+    block.call
+    pkmn.battle.pbHideAbilityBox(pkmn)
+  end
 
-        obj.each{ |k, v| obj_print(v, depth + 1, "#{k.is_a?(Symbol) ? ":" : ""}#{k}", false, s) }
-        s[0] += "  " * depth + "}\n"
+  def self.obj_print(obj, depth=0, label=nil, tree=[])
+    UniLib.dev_file_open if depth == 0
+    return if tree.include? obj
+    name = label ? "#{label} " : ""
+    if obj.is_a? Array
+      if obj.length > 0
+        UniLib.dev_log("  " * depth + "#{obj.class} #{name}= [")
+        obj.each_with_index{ |v, i| obj_print(v, depth + 1, "#{i}", tree + [obj]) }
+        UniLib.dev_log("  " * depth + "]")
       else
-        s[0] += "  " * depth + "#{obj.class} #{name}{}\n"
+        UniLib.dev_log("  " * depth + "#{obj.class} #{name}= []")
+      end
+    elsif obj.is_a? Hash
+      if obj.length > 0
+        UniLib.dev_log("  " * depth + "#{obj.class} #{name}= {")
+        obj.each{ |k, v| obj_print(v, depth + 1, "#{k.is_a?(Symbol) ? ":" : ""}#{k}", tree + [obj]) }
+        UniLib.dev_log("  " * depth + "}")
+      else
+        UniLib.dev_log("  " * depth + "#{obj.class} #{name}{}")
       end
     elsif (vars = obj.instance_variables).length > 0
-      s[0] += "  " * depth + "#{obj.class} #{name}= (\n"
-      vars.each { |var| obj_print(obj.instance_variable_get(var), depth + 1, var, false, s) }
-      s[0] += "  " * depth + ")\n"
+      UniLib.dev_log("  " * depth + "#{obj.class} #{name}= (")
+      vars.each { |var| obj_print(obj.instance_variable_get(var), depth + 1, var, tree + [obj]) }
+      UniLib.dev_log("  " * depth + ")")
     elsif obj.is_a? String
-      s[0] += "  " * depth + "#{obj.class} #{name}= \"#{obj}\"\n"
+      UniLib.dev_log("  " * depth + "#{obj.class} #{name}= \"#{obj}\"")
     elsif obj.is_a? Symbol
-      s[0] += "  " * depth + "#{obj.class} #{name}= :#{obj}\n"
+      UniLib.dev_log("  " * depth + "#{obj.class} #{name}= :#{obj}")
     else
-      s[0] += "  " * depth + "#{obj.class} #{name}= #{obj}\n"
+      UniLib.dev_log("  " * depth + "#{obj.class} #{name}= #{obj}")
     end
-    start ? UniLib.dev_log(s[0]) : s[0]
+    UniLib.dev_file_close if depth == 0
   end
 
 end

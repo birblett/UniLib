@@ -90,9 +90,9 @@ class ItemModifier
   <<-DOC
   >> makes an item a berry
   DOC
-  def berry
+  def berry(value = {})
     return self if UniLib.cached(UniLib::ITEM)
-    @data[:berry] = true
+    @data[:berry] = value
     self
   end
 
@@ -171,9 +171,9 @@ class ItemModifier
   <<-DOC
   >> makes an item a medicinal item
   DOC
-  def medicine
+  def medicine(value = {})
     return self if UniLib.cached(UniLib::ITEM)
-    @data[:medicine] = true
+    @data[:medicine] = value
     self
   end
 

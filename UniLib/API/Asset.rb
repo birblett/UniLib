@@ -65,3 +65,31 @@ module Assets
   end
 
 end
+
+class LazyBitmap
+
+  def initialize(path)
+    @path = path
+  end
+
+  def get
+    @bmp = AnimatedBitmap.new(@path) unless defined? @bmp
+    @bmp = AnimatedBitmap.new(@path) if @bmp.disposed?
+    @bmp
+  end
+
+  def bmp
+    @bmp = AnimatedBitmap.new(@path) unless defined? @bmp
+    @bmp = AnimatedBitmap.new(@path) if @bmp.disposed?
+    @bmp.bitmap
+  end
+
+  def dispose
+    @bmp.dispose if @bmp
+  end
+
+  def bitmap
+    bmp
+  end
+
+end

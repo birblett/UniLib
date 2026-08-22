@@ -31,8 +31,9 @@ module UniLib
     $unilib_switches[id].nil? ? default : $unilib_switches[id]
   end
 
-  def self.set_switch_compound(id, proc = nil, &block)
+  def self.switch_compound(id, proc = nil, &block)
     $unilib_switch_compound[id] = block ? block : proc
+    id
   end
 
   def self.switch_on?(id)

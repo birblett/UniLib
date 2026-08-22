@@ -18,9 +18,9 @@ class PokeBuilder
   @param force - if true, replaces the existing entry if it exists - default false
   >> returns an existing pokemodifier entry, or creates one if it doesn't exist
   DOC
-  def self.add(species, name, target_dex_num, form_str = "Normal Form")
+  def self.add(species, name, target_dex_num, form_str = "Normal Form", gender: nil)
     MODIFIED_POKEMON[species] ||= {}
-    p = MODIFIED_POKEMON[species][0] = PokeModifier.new(species, 0, form_str)
+    p = MODIFIED_POKEMON[species][0] = PokeModifier.new(species, 0, form_str, gender: gender)
     p.set_new(name, target_dex_num)
     FORM_MAP[species] ||= {}
     FORM_MAP[species][form_str] = 0
@@ -42,7 +42,7 @@ class PokeModifier
   @param force - if true, replaces the existing entry if it exists - default false
   >> returns an existing pokemodifier entry, or creates one if it doesn't exist
   DOC
-  def self.add(species, form=0, force=false)
+  def self.add(species, form=0, force=false, gender: nil)
     initial_form = form
     if POKEMON_DATA[species].nil?
       Kernel.pbMessage("Failed to register PokeModifer for species #{species}#{initial_form != 0 ? " with form #{initial_form}." : ""}")
@@ -54,7 +54,7 @@ class PokeModifier
       exit
     end
     MODIFIED_POKEMON[species] = {} if MODIFIED_POKEMON[species].nil?
-    MODIFIED_POKEMON[species][form] = PokeModifier.new(species, form, form_str) if MODIFIED_POKEMON[species][form].nil? or force
+    MODIFIED_POKEMON[species][form] = PokeModifier.new(species, form, form_str, gender: gender) if MODIFIED_POKEMON[species][form].nil? or force
     MODIFIED_POKEMON[species][form]
   end
 
@@ -62,10 +62,10 @@ class PokeModifier
   @param species - pokemon symbolic constant (i.e. :NINETALES)
   @param form_str - a form, in string representation (i.e. "Alolan", "Mega")
   DOC
-  def self.add_form(species, form_str)
+  def self.add_form(species, form_str, gender: nil)
     form = UniLib.add_form(species, form_str)
     MODIFIED_POKEMON[species] = {} if MODIFIED_POKEMON[species].nil?
-    MODIFIED_POKEMON[species][form] = PokeModifier.new(species, form, form_str) if MODIFIED_POKEMON[species][form].nil?
+    MODIFIED_POKEMON[species][form] = PokeModifier.new(species, form, form_str, gender: gender) if MODIFIED_POKEMON[species][form].nil?
     MODIFIED_POKEMON[species][form]
   end
 
@@ -485,7 +485,7 @@ class PokeModifier
   end
 
   <<-DOC
-  >> hash, uses reborn 19.5 montext format, overrides existing data
+  >> hash, uses reborn 19.6 montext format, overrides existing data
   DOC
   def add_evolution(val)
     return self if UniLib.cached(POKEMON)
@@ -495,7 +495,7 @@ class PokeModifier
   end
 
   <<-DOC
-  >> array, uses reborn 19.5 montext format, overrides existing data
+  >> array, uses reborn 19.6 montext format, overrides existing data
   DOC
   def set_evolutions(val)
     return self if UniLib.cached(POKEMON)

@@ -10,36 +10,43 @@ UniLib.include "Asset"
 # ============================================================ INTERNAL/CORE ============================================================= #
 # ======================================================================================================================================== #
 
-module UniLib
+module MapEvent
 
   $map_debug = false
-
   $map_temp = nil
 
   unless UniLib.cached(UniLib::MAP)
 
     MAP_EVENTS = {}
-    FORM_PROVIDERS = {}
+    MAP_EVENT_MODIFIERS = {}
+    CACHED_MAPS = {}
 
   end
 
-  CACHED_MAPS = {}
-
-  NOT_LOST_CMD = 911
-
-end
-
-module MapEvent
-
-  include UniLib
-
-  def self.add_event_to_map(map, obj, x = nil, y = nil)
-    i = map.events.keys.max + 1
-    event = (obj.is_a?(EventBuilder) ? obj.event : obj).clone
-    event.id = i
-    event.x = x if x
-    event.y = y if y
-    map.events[i] = event
+  def self.apply_map_modifiers(cachedmaps, mapid)
+    unless CACHED_MAPS[mapid]
+      if MAP_EVENTS[mapid] || MAP_EVENT_MODIFIERS[mapid]
+        map = (CACHED_MAPS[mapid] = UniLib.deep_copy(cachedmaps[mapid]))
+        MAP_EVENTS[mapid].each { |event|
+          if event.is_a?(RPG::Event) || event.is_a?(EventBuilder)
+            MapEvent.copy_event_to_map(map, event)
+          else
+            event.call(map)
+          end
+        } if MAP_EVENTS[mapid]
+        if MAP_EVENT_MODIFIERS[mapid]
+          MAP_EVENT_MODIFIERS[mapid][0].each { |idx, fn| fn.call(EventBuilder.new(map, map.events[idx])) }
+          by = MAP_EVENT_MODIFIERS[mapid][1]
+          map.events.each { |_, event|
+            apply = by[event.name]
+            apply.call(map, EventBuilder.new(event, use_old: true)) if apply
+          }
+        end
+      else
+        CACHED_MAPS[mapid] = nil
+      end
+    end
+    return CACHED_MAPS[mapid]
   end
 
 end
@@ -623,6 +630,7 @@ class EncounterMod
   MODIFIERS = {} unless UniLib.cached(UniLib::MAP)
   CACHED_ENCOUNTERS = {} unless defined? CACHED_ENCOUNTERS
   MODIFIED = {}
+  FORM_PROVIDERS = {}
 
   attr_reader(:modifiers)
 
@@ -730,7 +738,7 @@ end
 
 class MonWrapper
 
-  def formInit = "proc { $game_map && UniLib::FORM_PROVIDERS[:#{@mon}] && (f = UniLib::FORM_PROVIDERS[:#{@mon}][$game_map.map_id]) ? f : #{@formInit.is_a?(String) ? "#{@formInit}.call" : 0} }"
+  def formInit = "proc { $game_map && EncounterMod::FORM_PROVIDERS[:#{@mon}] && (f = EncounterMod::FORM_PROVIDERS[:#{@mon}][$game_map.map_id]) ? f : #{@formInit.is_a?(String) ? "#{@formInit}.call" : 0} }"
 
 end
 
@@ -739,24 +747,12 @@ end
 # ======================================================================================================================================== #
 
 UniLib.insert_in_method(:Cache_Game, :map_load, "end",
-  "UniLib.obj_print(@cachedmaps[mapid]) if $map_debug
-  if UniLib::MAP_EVENTS[mapid]
-    unless UniLib::CACHED_MAPS[mapid]
-      UniLib::CACHED_MAPS[mapid] = UniLib.deep_copy(@cachedmaps[mapid])
-      UniLib::MAP_EVENTS[mapid].each { |event|
-        if event.is_a?(RPG::Event) || event.is_a?(EventBuilder)
-          MapEvent.add_event_to_map(UniLib::CACHED_MAPS[mapid], event)
-        else
-          event.call(UniLib::CACHED_MAPS[mapid])
-        end
-      }
-    end
-    return UniLib::CACHED_MAPS[mapid]
-  end")
+  "m = MapEvent.apply_map_modifiers(@cachedmaps, mapid)
+  UniLib.obj_print(m ? m : @cachedmaps[mapid]) if $map_debug
+  return m if m")
 
-UniLib.insert_in_method(:PokemonEncounters, :__hr_setup, "]",
-  "@enctypes, @density = EncounterMod::MODIFIERS[mapID].apply(@enctypes, @density) if EncounterMod::MODIFIERS[mapID]
-  @enctypes", 1)
+UniLib.insert_in_method(:PokemonEncounters, Reborn ? :__hr_setup : :setup, :TAIL,
+  "@enctypes, @density = EncounterMod::MODIFIERS[mapID].apply(@enctypes, @density) if EncounterMod::MODIFIERS[mapID]")
 
 UniLib.insert_in_method_before(:Interpreter, :execute_command, "case @list[@index].code",
   "rval = handle_custom

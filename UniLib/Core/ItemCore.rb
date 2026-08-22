@@ -13,7 +13,7 @@ UniLib.include "Events"
 
 module UniLib
 
-  ITEM_DATA = load_data("Data/items.dat") unless defined? ITEM_DATA
+  ITEM_DATA = load_data(Reborn ? "Data/items_modern.dat" : "Data/items.dat") unless defined? ITEM_DATA
 
   def self.add_invalid_item(item, count=1)
     INVALID_ITEMS[item] = 0 if INVALID_ITEMS[item].nil?
@@ -201,6 +201,11 @@ unless UniLib.lib_loaded(__FILE__)
     end
   end
 
+  def refresh_bag
+    $PokemonBag.pockets.each(&:clear)
+    $PokemonBag.contents.each { |k, v| $PokemonBag.pockets[pbGetPocket(k)].push(k) if v > 0 unless k.nil? || $cache.items[k].nil? }
+  end
+
   def write_invalid_items(save)
     data = save[:UniLibInvalidItems] ? save[:UniLibInvalidItems] : {}
     UniLib::INVALID_ITEMS.each do |i, c|
@@ -217,6 +222,7 @@ end
 
 UniLib.add_play_event(:add_items, 1001)
 UniLib.add_play_event(:remove_invalid_items, 500)
+UniLib.add_play_event(:refresh_bag, 400)
 UniLib.add_save_event(:write_invalid_items)
 
 # ======================================================================================================================================== #
@@ -270,11 +276,10 @@ UniLib.insert_in_function(:pbUseItem, "bag.pbDeleteItem(item)",
   end")
 
 # item score
-target = Reborn ? "itemscore -= 100" : "itemscore-=100"
-UniLib.insert_in_method_before(:PokeBattle_AI, :getItemScore, target,
+UniLib.insert_in_method_before(:PokeBattle_AI, :getItemScore, "itemscore -= 100",
   "@attacker.apply_item_event(:item_score, self, @attacker) { |m| itemscore *= m }")
 
 # item switch in score
 target = Reborn ? "if i.item == :ROCKYHELMET" : "if (i.item == :ROCKYHELMET)"
-UniLib.insert_in_method_before(:PokeBattle_AI, :getSwitchInScoresParty, target,
+UniLib.insert_in_method_before(:PokeBattle_AI, :getSwitchInScoresParty, "if [:IRONBARBS, :ROUGHSKIN].include?(i.ability) || i.item == :ROCKYHELMET",
   "i.apply_item_event(:switch_item_score, self, i, @opponent) { |m| itemscore += m }")

@@ -16,7 +16,7 @@ module UniLib
 
     SUB_2 = "../../"
     MOD_DIR = "#{File.dirname(__FILE__)}/#{SUB_2}"
-    CODE_INJECTOR_ENTRYPOINT = method(:pbCallTitle)
+    CODE_INJECTOR_ENTRYPOINT = IntroEventScene.instance_method(:closeSplash)
 
     def self.get_or_create_method_attr(clazz, method, sym, default)
       METHOD_MODS[clazz][method][sym] = default if METHOD_MODS[clazz][method][sym].nil?
@@ -34,7 +34,7 @@ module UniLib
       base = (METHOD_MODS[clazz].nil? or METHOD_MODS[clazz][method].nil? or METHOD_MODS[clazz][method][:CODE].nil?) ? get_method_source(clazz, method) : METHOD_MODS[clazz][method][:CODE].values
       deletion_index = get_target_index(base, target, index)
       if deletion_index.nil?
-        UniLib.log("Couldn't find target \"#{target}\" (index #{index}) in method \"#{method}\" of class \"#{clazz}\"")
+        UniLib.dev_log("Couldn't find target \"#{target}\" (index #{index}) in method \"#{method}\" of class \"#{clazz}\"")
         return false
       end
       get_or_create_method(clazz, method, base)
@@ -48,7 +48,7 @@ module UniLib
       inserted = proc.class == String ? [""] + proc.split("\n") + [""] : get_method_source(nil, proc)
       insertion_index = get_target_index(base, target, index)
       if insertion_index.nil?
-        UniLib.log("Couldn't find target \"#{target}\" (index #{index}) in method \"#{method}\" of class \"#{clazz}\"")
+        UniLib.dev_log("Couldn't find target \"#{target}\" (index #{index}) in method \"#{method}\" of class \"#{clazz}\"")
         return false
       end
       insertion_index -= 1 if prepend
@@ -143,7 +143,59 @@ module UniLib
   EVENT_ON_PLAY = []
   EVENT_ON_SAVE = []
   EVENT_ON_NEW_FILE = []
-  CODE_SOURCE = ""
+  $unilib_code_source = ""
+
+  def self.process_injections
+    UniLib::LOADED_FILES.clear
+    if UniLib.has_valid_cache
+      t = Time.now
+      $code_injector_aggressive_cache.each { |clazz, source| clazz.class_eval(source) }
+      UniLib.log("aggressive insertion cache compile time:", Time.now - t)
+    else
+      $code_injector_aggressive_cache = UniLib.cache_aggressive ? {} : nil
+      UniLib::EVENT_ON_PLAY.sort! { |a, b| b[1] <=> a[1]}
+      UniLib::EVENT_ON_SAVE.sort! { |a, b| b[1] <=> a[1]}
+      insertions = Time.now
+      UniLib::PENDING_PRE_INSERTIONS += [
+        [:PokemonLoadScene, :pbStartScene, :HEAD, "UniLib::EVENT_ON_INIT.each { |fn| method(fn[0]).call }", 0, false, 10000],
+        [:PokemonLoad, Reborn ? :__followingpkmn__startPlayingSaveFile : :startPlayingSaveFile, "$PokemonStorage         = @currentsave[:PokemonStorage]", "UniLib::EVENT_ON_LOAD.each { |fixer| a = method(fixer[0]); a.arity != 0 ? a.call(@currentsave) : a.call }", 0, false, 100000],
+        [:PokemonLoad, Reborn ? :__followingpkmn__startPlayingSaveFile : :startPlayingSaveFile, "$game_player.center($game_player.x, $game_player.y)", "UniLib::EVENT_ON_PLAY.each { |fixer| a = method(fixer[0]); a.arity != 0 ? a.call(@currentsave) : a.call }", 0, false, 100000],
+        [:PokemonLoad, :pbStartLoadScreen, :HEAD, "UniLib::EVENT_ON_LOAD_SCREEN.each { |fixer| method(fixer[0]).call }", 0, false, 100000],
+        [:PokemonLoad, :pbStartLoadScreen, "$PokemonTemp.begunNewGame = true",
+          "UniLib::EVENT_ON_NEW_FILE.each { |fixer| method(fixer[0]).call }
+          UniLib::EVENT_ON_PLAY.each { |fixer| a = method(fixer[0]); a.arity != 0 ? a.call(@currentsave) : a.call }",
+         0, false, 100000],
+        [:Object, Reborn ? :__followingpkmn__saveNew : :saveNew, "savehash = {}", "UniLib::EVENT_ON_SAVE.each { |saver| a = method(saver[0]); a.arity != 0 ? a.call(savehash) : a.call }", 0, false, 100000]]
+      UniLib::PENDING_PRE_INSERTIONS.sort! { |a, b| b[6] <=> a[6]}
+      UniLib::PENDING_PRE_INSERTIONS.each { |pending| UniLib.insert_in_method_internal(pending[0], pending[1], pending[2], pending[3], pending[4], pending[5]) }
+      UniLib::PENDING_INSERTIONS.sort! { |a, b| b[6] <=> a[6]}
+      UniLib::PENDING_INSERTIONS.each { |pending| UniLib.insert_in_method_internal(pending[0], pending[1], pending[2], pending[3], pending[4], pending[5]) }
+      deletions = Time.now
+      UniLib::PENDING_DELETIONS.sort! { |a, b| b[4] <=> a[4]}
+      UniLib::PENDING_DELETIONS.each { |pending| UniLib.delete_in_method_internal(pending[0], pending[1], pending[2], pending[3]) }
+      method_mods = Time.now
+      UniLib::METHOD_MODS.each do |clazz, methods|
+        $unilib_code_source = ""
+        methods.each do |m, ref|
+          ref[:CODE].each do |num, line|
+            $unilib_code_source += line + "\n" unless ref[:DELETE] and ref[:DELETE][num]
+            unless ref[:INJECT].nil?
+              ref[:INJECT][-1].each { |injected| $unilib_code_source += injected + "\n" } if num == 0 unless ref[:INJECT][-1].nil?
+              ref[:INJECT][num].each { |injected| $unilib_code_source += injected + "\n" } unless ref[:INJECT][num].nil?
+              ref[:INJECT][-2].each { |injected| $unilib_code_source += injected + "\n" } if num == ref[:CODE].length - 2 unless ref[:INJECT][-2].nil?
+            end
+          end
+          ref[:INJECT].clear if ref[:INJECT]
+          ref[:DELETE].clear if ref[:DELETE]
+        end
+        clazz.class_eval($unilib_code_source)
+        methods.delete_if { |method| method.is_a? Proc}
+        $code_injector_aggressive_cache[clazz] = $unilib_code_source if UniLib.cache_aggressive
+      end
+      end_compile = Time.now
+      UniLib.log("staging insertions=#{deletions - insertions}", "staging deletions=#{method_mods - deletions}", "compilation=#{end_compile - method_mods}")
+    end
+  end
 
 end
 
@@ -151,53 +203,10 @@ end
 # ================================================================ PATCH ================================================================= #
 # ======================================================================================================================================== #
 
-define_method(:pbCallTitle) do
-  UniLib::LOADED_FILES.clear
-  ret = UniLib::CODE_INJECTOR_ENTRYPOINT.()
-  if UniLib.has_valid_cache
-    t = Time.now
-    $code_injector_aggressive_cache.each { |clazz, source| clazz.class_eval(source) }
-    UniLib.log("aggressive insertion cache compile time:", Time.now - t)
-  else
-    $code_injector_aggressive_cache = UniLib.cache_aggressive ? {} : nil
-    UniLib::EVENT_ON_PLAY.sort! { |a, b| b[1] <=> a[1]}
-    UniLib::EVENT_ON_SAVE.sort! { |a, b| b[1] <=> a[1]}
-    insertions = Time.now
-    UniLib::PENDING_PRE_INSERTIONS += [
-      [:PokemonLoadScene, :pbStartScene, :HEAD, "UniLib::EVENT_ON_INIT.each { |fn| method(fn[0]).call }", 0, false, 10000],
-      [:PokemonLoad, :startPlayingSaveFile, "$PokemonStorage         = @currentsave[:PokemonStorage]", "UniLib::EVENT_ON_LOAD.each { |fixer| a = method(fixer[0]); a.arity != 0 ? a.call(@currentsave) : a.call }", 0, false, 100000],
-      [:PokemonLoad, :startPlayingSaveFile, "$game_player.center($game_player.x, $game_player.y)", "UniLib::EVENT_ON_PLAY.each { |fixer| a = method(fixer[0]); a.arity != 0 ? a.call(@currentsave) : a.call }", 0, false, 100000],
-      [:PokemonLoad, :pbStartLoadScreen, :HEAD, "UniLib::EVENT_ON_LOAD_SCREEN.each { |fixer| method(fixer[0]).call }", 0, false, 100000],
-      [:PokemonLoad, :pbStartLoadScreen, "saveClientData", "UniLib::EVENT_ON_NEW_FILE.each { |fixer| method(fixer[0]).call }", 0, false, 100000],
-      [:Object, :saveNew, "savehash = {}", "UniLib::EVENT_ON_SAVE.each { |saver| a = method(saver[0]); a.arity != 0 ? a.call(savehash) : a.call }", 0, false, 100000]]
-    UniLib::PENDING_PRE_INSERTIONS.sort! { |a, b| b[6] <=> a[6]}
-    UniLib::PENDING_PRE_INSERTIONS.each { |pending| UniLib.insert_in_method_internal(pending[0], pending[1], pending[2], pending[3], pending[4], pending[5]) }
-    UniLib::PENDING_INSERTIONS.sort! { |a, b| b[6] <=> a[6]}
-    UniLib::PENDING_INSERTIONS.each { |pending| UniLib.insert_in_method_internal(pending[0], pending[1], pending[2], pending[3], pending[4], pending[5]) }
-    deletions = Time.now
-    UniLib::PENDING_DELETIONS.sort! { |a, b| b[4] <=> a[4]}
-    UniLib::PENDING_DELETIONS.each { |pending| UniLib.delete_in_method_internal(pending[0], pending[1], pending[2], pending[3]) }
-    method_mods = Time.now
-    UniLib::METHOD_MODS.each do |clazz, methods|
-      UniLib::CODE_SOURCE = ""
-      methods.each do |_, ref|
-        ref[:CODE].each do |num, line|
-          UniLib::CODE_SOURCE += line + "\n" unless ref[:DELETE] and ref[:DELETE][num]
-          unless ref[:INJECT].nil?
-            ref[:INJECT][-1].each { |injected| UniLib::CODE_SOURCE += injected + "\n" } if num == 0 unless ref[:INJECT][-1].nil?
-            ref[:INJECT][num].each { |injected| UniLib::CODE_SOURCE += injected + "\n" } unless ref[:INJECT][num].nil?
-            ref[:INJECT][-2].each { |injected| UniLib::CODE_SOURCE += injected + "\n" } if num == ref[:CODE].length - 2 unless ref[:INJECT][-2].nil?
-          end
-        end
-        ref[:INJECT].clear if ref[:INJECT]
-        ref[:DELETE].clear if ref[:DELETE]
-      end
-      clazz.class_eval(UniLib::CODE_SOURCE)
-      methods.delete_if { |method| method.is_a? Proc}
-      $code_injector_aggressive_cache[clazz] = UniLib::CODE_SOURCE if UniLib.cache_aggressive
-    end
-    end_compile = Time.now
-    UniLib.log("staging insertions=#{deletions - insertions}", "staging deletions=#{method_mods - deletions}", "compilation=#{end_compile - method_mods}")
+class IntroEventScene
+
+  def closeSplash(a, b)
+    UniLib::CODE_INJECTOR_ENTRYPOINT.bind(self).(a, b)
   end
-  ret
+
 end

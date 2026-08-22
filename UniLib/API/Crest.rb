@@ -23,11 +23,7 @@ class CrestBuilder
     sym = (species.to_s + "CREST").to_sym
     form_str = nil
     form = UniLib.get_form_number(species, form)[0]
-    if Reborn
-      name = POKEMON_DATA[species].pokemonData[POKEMON_DATA[species].forms[0]].name + " Crest#{form_str.nil? ? "" : " (" + form_str + ")"}" if name.nil?
-    else
-      name = POKEMON_DATA[species].name + " Crest#{form_str.nil? ? "" : " (" + form_str + ")"}" if name.nil?
-    end
+    name = POKEMON_DATA[species].pokemonData[POKEMON_DATA[species].forms[0]].name + " Crest#{form_str.nil? ? "" : " (" + form_str + ")"}" if name.nil?
     CUSTOM_ITEMS[sym] = CrestBuilder.new(sym, { :name => name, :desc => desc }).crest.no_use.no_use_in_battle.add_receiver(species, form) if CUSTOM_ITEMS[sym].nil?
     CUSTOM_ITEMS[sym]
   end

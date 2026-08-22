@@ -20,13 +20,13 @@ module UniLib
 
   if Reborn
 
-    BASE_BMP = AnimatedBitmap.new(UniLib.asset_path("Battle/base.png"))
+    BASE_BMP = LazyBitmap.new(UniLib.asset_path("Battle/base.png"))
 
     ICON_BITMAPS = [
-      (1..4).map { |i| AnimatedBitmap.new(UniLib.asset_path("Battle/crest_#{i}.png")) },
-      (1..4).map { |i| AnimatedBitmap.new(UniLib.asset_path("Battle/type_change_#{i}.png")) },
-      (1..4).map { |i| AnimatedBitmap.new(UniLib.asset_path("Battle/pokebilities_#{i}.png")) },
-      (1..4).map { |i| AnimatedBitmap.new(UniLib.asset_path("Battle/aaa_#{i}.png")) }
+      (1..4).map { |i| LazyBitmap.new(UniLib.asset_path("Battle/crest_#{i}.png")) },
+      (1..4).map { |i| LazyBitmap.new(UniLib.asset_path("Battle/type_change_#{i}.png")) },
+      (1..4).map { |i| LazyBitmap.new(UniLib.asset_path("Battle/pokebilities_#{i}.png")) },
+      (1..4).map { |i| LazyBitmap.new(UniLib.asset_path("Battle/aaa_#{i}.png")) }
     ]
 
     def self.draw_battle_icons(bitmap, opp, doubles, type_change, crest, poke, multi)
@@ -48,8 +48,8 @@ module UniLib
         start += (5 - start) / 2 if poke
         (start..fin).each { |i| occupied[i - 1] = 3 }
       end
-      occupied.each_with_index { |slot, i| bitmap.blt(x, y, ICON_BITMAPS[slot][i].bitmap, Rect.new(0, 0, 22, 22)) if slot }
-      bitmap.blt(x, y, BASE_BMP.bitmap, Rect.new(0, 0, 22, 22))
+      occupied.each_with_index { |slot, i| bitmap.blt(x, y, ICON_BITMAPS[slot][i].bmp, Rect.new(0, 0, 22, 22)) if slot }
+      bitmap.blt(x, y, BASE_BMP.bmp, Rect.new(0, 0, 22, 22))
     end
 
   end
@@ -113,6 +113,6 @@ end
 # ================================================================ PATCH ================================================================= #
 # ======================================================================================================================================== #
 
-UniLib.insert_in_method(:PokemonDataBox, :refresh, "pbShowStatsBoosts if loopstop == false", "UniLib.display_battle(self.bitmap, @battler)", 0, 10000) if Reborn
+UniLib.insert_in_method_before(:PokemonDataBox, :refresh, "if @showexp", "UniLib.display_battle(self.bitmap, @battler)", 0, 10000) if Reborn
 
 %w[One Two Three Four Five].each { UniLib.insert_in_method(:PokemonSummaryScene, "drawPage#{_1}".to_sym, "imagepos = []", "UniLib.display_summary(@pokemon, imagepos)", 0, 10000) } if Reborn

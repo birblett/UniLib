@@ -30,47 +30,54 @@ class TrainerModifier
   include UniLib
 
   def get_trainer(tclass, name, id)
-    TRAINERS[tclass][name].each { |a| return deep_copy(a) if a[0] == id }
+    TRAINERS.dig(tclass, name, id)
   end
 
   def initialize(tclass, name, id, is_new)
-    unless is_new or TRAINERS[tclass] or TRAINERS[tclass][name] or get_trainer(tclass, name, id)
-      print "TrainerModifier: #{tclass} #{name} with team id #{id} doesn't exist"
-      exit
+    team = TRAINERS.dig(tclass, name, id)
+    unless is_new or !team.nil?
+      UniLib.dev_log "TrainerModifier: #{tclass} #{name} with team id #{id} doesn't exist but not flagged as new"
     end
     TRAINER_CACHE[@key = [@tclass = tclass, @name = name, @id = id]] = [nil, nil, nil]
     @is_new = is_new
-    if is_new
+    if team.nil?
       @pkmn = []
     else
-      t = get_trainer(tclass, name, id)
-      @pkmn = t[1]
-      @items = t[2]
-      @ace = t[3]
-      @defeat = t[4]
-      @effect = t[5]
+      @pkmn = team.party
+      @items = team.items
+      @defeat = team.defeat
+      @ace = team.ace if team.instance_variable_defined?(:@ace)
+      @effect = team.effect if team.instance_variable_defined?(:@effect)
+      @index = team.index
     end
   end
 
   def build
+    data = TeamData.new(@index, @id, {
+      mons: @pkmn,
+      items: @items,
+      ace: @ace,
+      defeat: @defeat,
+      effect: @effect
+    })
     trainers = $cache.trainers
     trainers[@tclass] = {} unless trainers[@tclass]
-    trainers[@tclass][@name] = [] unless trainers[@tclass][@name]
+    trainers[@tclass][@name] = {} unless trainers[@tclass][@name]
     if @is_new
-      trainers[@tclass][@name].push([@id, @pkmn, @items, @ace, @defeat, @effect])
+      trainers[@tclass][@name][@id] = data
     else
-      trainers[@tclass][@name].each_with_index do |trainer, i|
-        if trainer[0] == @id
-          trainers[@tclass][@name][i] = [@id, @pkmn, @items, @ace, @defeat, @effect]
+      trainers[@tclass][@name].each do |i, _|
+        if i == @id
+          trainers[@tclass][@name][i] = data
           return
         end
       end
     end
   end
 
-  def self.party_log(party)
-    str = ""
-    party[1].each_with_index do |pkmn, idx|
+  def self.party_log(type, name, id, data)
+    str = "TrainerModifier.add(:#{type}, \"#{name}\", #{id})\n"
+    data.party.each_with_index do |pkmn, idx|
       str += "               .set_pkmn(#{idx}, :#{pkmn[:species]}, #{pkmn[:level]}, #{pkmn[:ability] ? ':' + pkmn[:ability].to_s : 'nil'}"
       unless pkmn.nil?
         pkmn.each do |k, v|
@@ -89,10 +96,11 @@ class TrainerModifier
         end
       end
     end
-    str += "               .set_items(#{party[2] ? party[2] : "nil"})\n"
-    str += "               .set_ace(#{party[3] ? '"' + party[3] + '"' : "nil" })\n"
-    str += "               .set_defeat(#{party[4] ? '"' + party[4] + '"' : "nil" })\n"
-    str += "               .set_effects(#{party[5] ? party[5] : "nil"})\n"
+    str += "               .set_items(#{data.items ? data.items : "nil"})\n"
+    str += "               .set_ace(#{data.ace ? '"' + data.ace + '"' : "nil" })\n"
+    str += "               .set_defeat(#{data.defeat ? '"' + data.defeat + '"' : "nil" })\n"
+    flags = data.instance_variable_get(:@flags)
+    str += "               .set_effects(#{flags[:effect] ? flags[:effect] : "nil"})\n"
     str += "               .forced_fe(:#{$game_variables[:Forced_Field_Effect]})\n" if $game_variables[:Forced_Field_Effect].is_a? Symbol
     UniLib.dev_log(str)
   end
@@ -155,22 +163,22 @@ class BossModifier
       $cache.bosses[@id] = BossData.new(@id, data)
     else
       boss = $cache.bosses[@id]
-      boss.name = @name
-      boss.moninfo = @pkmn
-      boss.shieldCount = @shields
-      boss.immunities = @immunities
-      boss.entryText = @entry_text
-      boss.onEntryEffects = @entry_effects
-      boss.onBreakEffects = @break_effects
-      boss.sosDetails = @sos_details
-      boss.capturable = @capturable
-      boss.canrun = @can_run
+      boss.instance_variable_set(:@name, @name)
+      boss.instance_variable_set(:@moninfo, @pkmn)
+      boss.instance_variable_set(:@shieldCount, @shields)
+      boss.instance_variable_set(:@immunities, @immunities)
+      boss.instance_variable_set(:@entryText, @entry_text)
+      boss.instance_variable_set(:@onEntryEffects, @entry_effects)
+      boss.instance_variable_set(:@onBreakEffects, @break_effects)
+      boss.instance_variable_set(:@sosDetails, @sos_details)
+      boss.instance_variable_set(:@capturable, @capturable)
+      boss.instance_variable_set(:@canrun, @can_run)
     end
   end
 
   def self.data_log(pkmn)
-    boss = $cache.bosses[pkmn.bossId]
-    s = "BossModifier.add(:#{pkmn.bossId})\n"
+    boss = $cache.bosses[pkmn.bossID]
+    s = "BossModifier.add(:#{pkmn.bossID})\n"
     # name
     s += "            .set_name(\"#{boss.name}\")\n"
     pk = boss.moninfo
@@ -288,33 +296,29 @@ UniLib.add_play_event(:register_modified_bosses)
 # ================================================================ PATCH ================================================================= #
 # ======================================================================================================================================== #
 
-UniLib.insert_in_method(:PokeBattle_Battler, :pbInitBoss, "boss = bossdata[pkmn.bossId]", "BossModifier.data_log(pkmn) unless UniLib::BOSS_CACHE[pkmn.bossId] or pkmn.bossId == :SHADOWDEN") if Rejuv
+UniLib.insert_in_method(:PokeBattle_Battler, :pbInitBoss, "boss = bossdata[pkmn.bossID]", "BossModifier.data_log(pkmn) unless UniLib::BOSS_CACHE[pkmn.bossID] or pkmn.bossID == :SHADOWDEN") if Rejuv
 
-UniLib.insert_in_function(:pbLoadTrainer, :HEAD, proc do |type, name, id, trainerid, trainername, partyid|
-  type, name, id = trainerid, trainername, partyid if Rejuv
+UniLib.insert_in_function(:findParty, :HEAD, proc do |type, name, id|
   if (s = UniLib::TRAINER_CACHE[[type, name, id]])
     $game_variables[:Forced_Field_Effect] = s[0] if s[0]
   else
-    UniLib.dev_log("TrainerModifier.add(:#{type}, \"#{name}\", #{id})")
-    $cache.trainers[type][name].each do |i|
-      next unless i
-      if i[0] == id
-        TrainerModifier.party_log(i)
-        break
-      end
-    end
   end
 end)
 
 UniLib.insert_in_method(:PokeBattle_Battle, :pbEndOfBattle, :HEAD, "$game_variables[:Forced_Field_Effect] = 0")
 
-UniLib.insert_in_function(:pbLoadTrainer, "opponent = PokeBattle_Trainer.new(name, type)", "opponent.num_id = id")
+UniLib.insert_in_function(Rejuv ? :pbLoadTrainerDifficult : :pbLoadTrainer, Rejuv ? "opponent.openingLine = trainerTeam.openingLines ? trainerTeam.openingLines : \"\"" : "opponent = PokeBattle_Trainer.new(name, type)",
+  "opponent.num_id = id
+  if (s = UniLib::TRAINER_CACHE[[type, name, id]])
+    $game_variables[:Forced_Field_Effect] = s[0] if s[0]
+  else
+    TrainerModifier.party_log(type, name, id, trainerTeam)
+  end")
 
-UniLib.insert_in_function_before(:pbLoadTrainer, "party.push(pokemon)",
-  "poke[:unilib_flags].each { |k, v| pokemon.unilib_flags[k] = v } if poke[:unilib_flags]")
+UniLib.replace_in_function(:getTrainerPartyFromTrainerHash, "party.push(builder.build)",
+  "pokemon = builder.build
+  pokemon[:unilib_flags].each { |k, v| pokemon.unilib_flags[k] = v } if poke[:unilib_flags]
+  party.push(pokemon)")
 
 UniLib.insert_in_method(:PokeBattle_Trainer, :trainerTypeName, :HEAD,
   "return UniLib::TRAINER_CACHE[[@trainertype, @name, @num_id]][1] if UniLib::TRAINER_CACHE[[@trainertype, @name, @num_id]] and UniLib::TRAINER_CACHE[[@trainertype, @name, @num_id]][1]")
-
-UniLib.insert_in_method(:PokeBattle_Battle, :pbShieldEffects, "case onBreakdata[:bossSideStatusChanges][0]",
-  "when :BURN then canstatus = @battle.battlers[i].pbCanBurn?(false)")

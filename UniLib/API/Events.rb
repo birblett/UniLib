@@ -180,9 +180,8 @@ class EventProvider
 
   <<-DOC
   @param proc - a function returning an array of two type modifiers
-  >> adds a conditional type effectiveness setter. accepts 5 arguments, the attacker (PokeBattle_Battler), the target 
-     (PokeBattle_Battler), the move (PokeBattle_Move), and the two current type modifiers. if not nil, both values in return array
-     must be numeric. the type modifiers will be set to the two given values.called by the attacker.
+  >> adds a conditional type effectiveness setter. accepts 4 arguments, the attacker (PokeBattle_Battler), the target 
+     (PokeBattle_Battler), the move (PokeBattle_Move), and current modifier (TypeMod). return a numeric type modifier.
   DOC
   def attack_type_effectiveness_mod(proc=nil, &block)
     return self if UniLib.cached(UniLib::EVENTS)
@@ -191,9 +190,8 @@ class EventProvider
 
   <<-DOC
   @param proc - a function returning an array of two type modifiers
-  >> adds a conditional type effectiveness setter. accepts 5 arguments, the attacker (PokeBattle_Battler), the defender 
-     (PokeBattle_Battler), the move (PokeBattle_Move), and the two current type modifiers. if not nil, both values in return array
-     must be numeric. the type modifiers will be set to the two given values. called by the defender.
+  >> adds a conditional type effectiveness setter. accepts 4 arguments, the attacker (PokeBattle_Battler), the defender 
+     (PokeBattle_Battler), the move (PokeBattle_Move), and current modifier (TypeMod). return a numeric type modifier.
   DOC
   def defend_type_effectiveness_mod(proc=nil, &block)
     return self if UniLib.cached(UniLib::EVENTS)
@@ -363,6 +361,16 @@ class EventProvider
   def after_move_effect(proc=nil, &block)
     return self if UniLib.cached(UniLib::EVENTS)
     add_or_create_event(:after_move_effect, proc, block)
+  end
+
+  <<-DOC
+  @param proc - a void function.
+  >> an event hook called after the main tryUseMove call. accepts 4 arguments, the user (PokeBattle_Battler), the target (PokeBattle_Battler), 
+     and the move (PokeBattle_Move)
+  DOC
+  def after_move_attempt(proc=nil, &block)
+    return self if UniLib.cached(UniLib::EVENTS)
+    add_or_create_event(:after_move_attempt, proc, block)
   end
 
   <<-DOC

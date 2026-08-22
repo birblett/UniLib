@@ -14,6 +14,10 @@ class PokeBattle_Move
     PBStuff::BITEMOVE.include?(@move)
   end
 
+  def is_blinding_move?
+    PBStuff::BLINDINGMOVES.include?(@move)
+  end
+
   def is_dance_move?
     PBStuff::DANCEMOVE.include?(@move)
   end

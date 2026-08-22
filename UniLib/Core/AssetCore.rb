@@ -93,13 +93,13 @@ end
 module Audio
 
   UNILIB_BGM_PLAY_OLD = singleton_method(:bgm_play) unless defined? UNILIB_BGM_PLAY_OLD
-  define_singleton_method(:bgm_play) do |file, v=100, p=100|
+  define_singleton_method(:bgm_play) do |file, v=100, p=100, position = 0, fadeIn = true, track = -127|
     Assets.log(file) if $unilib_audio_asset_log
     if UniLib::AUDIO_FILE_REDIRECT[file]
       file = Assets.get_asset(UniLib::AUDIO_FILE_REDIRECT, file)
       next if $game_system.playing_bgm and Assets.strip_bgm(file) == Assets.strip_bgm($game_system.playing_bgm.name) and $game_system.playing_bgm.volume == v and $game_system.playing_bgm.pitch == p
     end
-    UNILIB_BGM_PLAY_OLD.(file, v, p)
+    UNILIB_BGM_PLAY_OLD.(file, v, p, position, fadeIn, track)
   end
 
 end
@@ -107,12 +107,18 @@ end
 UniLib.insert_in_method(:AnimatedBitmap, :initialize, :HEAD, "file = Assets.bmp_redirect(file)")
 
 UniLib.insert_in_method(:AnimatedBitmap, :setBitmap, :HEAD, "bitmap = Assets.bmp_redirect(bitmap)")
+UniLib.insert_in_method(:AnimatedPlane, :setBitmap, :HEAD, "bitmap = Assets.bmp_redirect(bitmap)")
+UniLib.insert_in_method(:IconSprite, :setBitmap, :HEAD, "bitmap = Assets.bmp_redirect(bitmap)")
+UniLib.insert_in_method(:IconWindow, :setBitmap, :HEAD, "bitmap = Assets.bmp_redirect(bitmap)")
+UniLib.insert_in_method(:PictureWindow, :setBitmap, :HEAD, "bitmap = Assets.bmp_redirect(bitmap)")
+UniLib.insert_in_method(:PokemonSprite, :setBitmap, :HEAD, "bitmap = Assets.bmp_redirect(bitmap)")
+UniLib.insert_in_method(:GifBitmap, :setBitmap, :HEAD, "bitmap = Assets.bmp_redirect(bitmap)")
 
 UniLib.insert_in_function(:pbStringToAudioFile, :HEAD, "str = Assets.get_asset(UniLib::AUDIO_FILE_REDIRECT, str) if UniLib::AUDIO_FILE_REDIRECT[str]")
 
 UniLib.insert_in_function(:pbResolveAudioFile, "if str.is_a?(String)", "str = Assets.get_asset(UniLib::AUDIO_FILE_REDIRECT, str) if UniLib::AUDIO_FILE_REDIRECT[str]")
 
-UniLib.insert_in_method(:Scene_Map ,:autofade , "actual_bgm_name = $previous_map.bgm.name.clone", "actual_bgm_name = Assets.get_asset(UniLib::AUDIO_FILE_REDIRECT, actual_bgm_name) if UniLib::AUDIO_FILE_REDIRECT[actual_bgm_name]; return if $game_system.playing_bgm and Assets.strip_bgm(actual_bgm_name) == Assets.strip_bgm($game_system.playing_bgm.name)")
+UniLib.insert_in_method(:Scene_Map ,:autofade , "actual_bgm_name = $previous_map.bgm.name if !FileTest.audio_exist?(\"Audio/BGM/\" + actual_bgm_name)", "actual_bgm_name = Assets.get_asset(UniLib::AUDIO_FILE_REDIRECT, actual_bgm_name) if UniLib::AUDIO_FILE_REDIRECT[actual_bgm_name]; return if $game_system.playing_bgm and Assets.strip_bgm(actual_bgm_name) == Assets.strip_bgm($game_system.playing_bgm.name)")
 
 UniLib.insert_in_function(:pbBGMPlay, "return if !param ",
   "s = param.is_a?(RPG::AudioFile) ? param.name : param
@@ -128,31 +134,37 @@ UniLib.insert_in_function(:pbCueBGM, "return if !bgm",
     return if $game_system.playing_bgm and Assets.strip_bgm(bgm) == Assets.strip_bgm($game_system.playing_bgm.name)
   end")
 
-UniLib.insert_in_function(:pbGetTrainerBattleBGM, "if $PokemonGlobal.nextBattleBGM", "p = $PokemonGlobal.nextBattleBGM; s = p.is_a?(RPG::AudioFile) ? p.name : p;  p = Assets.get_asset(UniLib::AUDIO_FILE_REDIRECT, s) if UniLib::AUDIO_FILE_REDIRECT[s]")
+UniLib.replace_in_function(:pbGetTrainerBattleBGM, "return $PokemonGlobal.nextBattleBGM.clone if $PokemonGlobal.nextBattleBGM",
+  "if $PokemonGlobal.nextBattleBGM
+    p = $PokemonGlobal.nextBattleBGM
+    s = p.is_a?(RPG::AudioFile) ? p.name : p
+    p = Assets.get_asset(UniLib::AUDIO_FILE_REDIRECT, s) if UniLib::AUDIO_FILE_REDIRECT[s]
+    return p
+  end")
 
-target = Reborn ? "music = $cache.trainertypes[trainertype].battleBGM" : "music=$cache.trainertypes[trainertype].battleBGM"
-UniLib.insert_in_function(:pbGetTrainerBattleBGM, target,
-  "if UniLib::AUDIO_FILE_REDIRECT[s]
-    s = music.is_a?(RPG::AudioFile) ? music.name : music;  music = Assets.get_asset(UniLib::AUDIO_FILE_REDIRECT, s)
+UniLib.insert_in_function(:pbGetTrainerBattleBGM, "music = chosen_trainer.battleBGM",
+  "s = music.is_a?(RPG::AudioFile) ? music.name : music
+  if UniLib::AUDIO_FILE_REDIRECT[s]
+    music = Assets.get_asset(UniLib::AUDIO_FILE_REDIRECT, s)
     return nil if $game_system.playing_bgm and Assets.strip_bgm(s) == Assets.strip_bgm($game_system.playing_bgm.name)
   end")
 
-UniLib.insert_in_function(:pbPokemonBitmap, "bitmapFileName = sprintf(\"Graphics/Battlers/%03d%s\", dexnum, gendermod)",
+UniLib.insert_in_function_before(:pbPokemonBitmap, "return nil if !pbResolveBitmap(bitmapFileName)",
   "ret = UniLib.get_redirected_asset(species, form, gender == \"Female\", false, false)
   if ret
     bitmapFileName = ret
     form = 0
   end")
 
-UniLib.insert_in_function(:pbLoadPokemonBitmapSpecies, "x = pokemon.isShiny? ? 192 : 0",
+UniLib.insert_in_function(:pbLoadPokemonBitmap, "special = :egg if pokemon.isEgg?",
   "ret = UniLib.get_redirected_asset(species, form, pokemon.gender == 1, pokemon.isEgg?, false)
   form = 0 if ret")
 
-UniLib.insert_in_function_before(:pbLoadPokemonBitmapSpecies, "spritesheet = RPG::Cache.load_bitmap(bitmapFileName)",
+UniLib.insert_in_function_before(:pbLoadPokemonBitmap, "spritesheet = RPG::Cache.load_bitmap(bitmapFileName)",
   "bitmapFileName = ret if ret")
 
-UniLib.insert_in_function(:pbPokemonIconBitmap, "filename = sprintf(\"Graphics/Icons/icon%03d%s%s\", species, girl, eggtag)",
-  "ret = UniLib.get_redirected_asset(pokemon.species, form, girl, egg, true)
+UniLib.insert_in_function_before(:pbIconBitmap, "iconbitmap = RPG::Cache.load_bitmap(filename)",
+  "ret = UniLib.get_redirected_asset(species, form, girl, egg, true)
   if ret
     filename = ret
     form = 0

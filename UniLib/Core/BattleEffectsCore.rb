@@ -61,9 +61,10 @@ end
 # ================================================================ PATCH ================================================================= #
 # ======================================================================================================================================== #
 
-target = Reborn ? "report.push(_INTL(\"Infatuated with {1}\", @battle.battlers[pkmn.effects[:Attract]].name)) if pkmn.effects[:Attract] >= 0" :
-           "report.push(_INTL(\"Infatuated with {1}\",@battle.battlers[pkmn.effects[:Attract]].name)) if pkmn.effects[:Attract]>=0"
-UniLib.insert_in_function(:pbShowBattleStats, target,
+UniLib.insert_in_method(:PokeBattle_Battler, :pbInitEffects, "OtherEff.each { |eff| @effects[eff] = nil }",
+  "UniLib::CUSTOM_BATTLE_EFFECTS.each { |eff, v| @effects[eff] = nil }")
+
+UniLib.insert_in_function_before(:pbShowBattleStats, "report.push(_INTL(\"Battler Effects:\")) unless battEff.empty?",
   "pkmn.apply_effect_event(:display, pkmn) { |m| report.push(m) }")
 
 # clear boss effects

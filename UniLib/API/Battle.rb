@@ -98,6 +98,27 @@ class TrainerModifier
     self
   end
 
+  def add_to_map(mapid, x, y, asset, dir, battle_text, after_battle_text, detection_range=0, doubles=false)
+    tclass = @tclass
+    name = @name
+    id = @id
+    MapEvent.add_builder(mapid, "Trainer(#{detection_range})", x, y)
+            .add_page(trigger: 2)
+            .set_graphic(asset, direction: dir) {
+              script "pbTrainerIntro(:#{tclass})"
+              script "Kernel.pbNoticePlayer(get_character(0))"
+              text(*battle_text)
+              branch("pbTrainerBattle(:#{tclass},\"#{name}\",nil,#{doubles},#{id})") {
+                self_switch["A"] = true
+              }
+              script "pbTrainerEnd"
+            }
+            .add_page(self_switch: "A")
+            .set_graphic(asset, direction: dir) {
+              text(*after_battle_text)
+            }
+  end
+
 end
 
 module BossBuilder

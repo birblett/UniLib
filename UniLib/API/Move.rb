@@ -156,7 +156,7 @@ class MoveModifier
   @param flags - additional move flags
   >> sets a move flag
   DOC
-  def flag(flag, value)
+  def flag(flag, value = true)
     return self if UniLib.cached(UniLib::MOVE)
     @flags[flag] = value
     self

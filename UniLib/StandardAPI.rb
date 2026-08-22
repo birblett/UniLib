@@ -32,6 +32,7 @@ module UniLib
   DISPLAY = "Display"
   EVENTS = "Events"
   EXTRA_MOVE_FLAGS = "ExtraMoveFlags"
+  FIELD = "Field"
   FIXES = "Fixes"
   FORM_PORTS = "FormPorts"
   HELPER = "Helper"
@@ -61,6 +62,7 @@ module UniLib
     DISPLAY => 0,
     EVENTS => 0,
     EXTRA_MOVE_FLAGS => 1,
+    FIELD => 3,
     FIXES => 4,
     FORM_PORTS => 4,
     HELPER => 0,
@@ -88,12 +90,13 @@ module UniLib
     DISPLAY => 5,
     EVENTS => 5,
     EXTRA_MOVE_FLAGS => 5,
+    FIELD => ADDITIONAL_CACHE_LEVEL,
     FIXES => 5,
     FORM_PORTS => ADDITIONAL_CACHE_LEVEL,
     HELPER => 5,
     HISUIAN_PORTS => CORE_CACHE_LEVEL,
     ITEM => 5,
-    MAP => 5,
+    MAP => CORE_CACHE_LEVEL,
     MOVE => CORE_CACHE_LEVEL,
     MULTIBILITY => CORE_CACHE_LEVEL,
     OPTIONS => 5,
@@ -101,6 +104,8 @@ module UniLib
     POKEMON_OM => CORE_CACHE_LEVEL,
     SWITCH => 5,
   } unless defined? CACHE_LEVELS
+
+  $dev_out = nil unless defined? $dev_out
 
   <<-DOC
   writes to current debug file, if enabled.
@@ -120,10 +125,33 @@ module UniLib
   dumps to dev.out
   DOC
   def self.dev_log(*args)
+    if $dev_out
+      str_final = ""
+      args.each {|msg| str_final += msg.to_s + (msg == args[-1] ? "" : " ") }
+      $dev_out.write("#{str_final}\n")
+    else
+      Dir.mkdir(LOG_PATH) unless Dir.exist?(LOG_PATH)
+      str_final = ""
+      args.each {|msg| str_final += msg.to_s + (msg == args[-1] ? "" : " ") }
+      File.open(LOG_PATH + "dev.out", "a+") { |f| f.write("#{str_final}\n") }
+    end
+  end
+
+  <<-DOC
+  returns a file descriptor for dev.out
+  DOC
+  def self.dev_file_open
+    return $dev_out if $dev_out
     Dir.mkdir(LOG_PATH) unless Dir.exist?(LOG_PATH)
-    str_final = ""
-    args.each {|msg| str_final += msg.to_s + (msg == args[-1] ? "" : " ") }
-    File.open(LOG_PATH + "dev.out", "a+") { |f| f.write("#{str_final}\n") }
+    $dev_out = File.open(LOG_PATH + "dev.out", "a+")
+  end
+
+  <<-DOC
+  closes dev.out
+  DOC
+  def self.dev_file_close
+    $dev_out.close if $dev_out
+    $dev_out = nil
   end
 
   <<-DOC
@@ -177,7 +205,7 @@ module UniLib
   used for loading files in subdirectories. makes sure the file is not loaded more than once.
   DOC
   def self.file_load(path_relative)
-    load path_relative + ".rb" unless LOADED_FILES[path_relative]
+    load "#{PATH}/../" + path_relative + ".rb" unless LOADED_FILES[path_relative]
     LOADED_FILES[path_relative] = true
   end
 
@@ -200,21 +228,21 @@ module UniLib
   returns a filepath to the mods directory
   DOC
   def self.path(path_relative)
-    "#{Reborn ? "patch/Mods/" : "Data/Mods/"}#{path_relative}"
+    "patch/Mods/#{path_relative}"
   end
 
   <<-DOC
   returns a filepath to the config directory
   DOC
   def self.config_path(path_relative)
-    "#{Reborn ? "patch/Mods/" : "Data/Mods/"}UniLibConfig/#{path_relative}"
+    "patch/Mods/UniLibConfig/#{path_relative}"
   end
 
   <<-DOC
   returns a filepath to the UniLib assets directory.
   DOC
   def self.asset_path(path_relative)
-    "#{Reborn ? "patch/Mods/UniLib/Assets/" : "Data/Mods/UniLib/Assets/"}#{path_relative}"
+    "patch/Mods/UniLib/Assets/#{path_relative}"
   end
 
   <<-DOC

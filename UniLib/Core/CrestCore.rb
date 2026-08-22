@@ -139,10 +139,10 @@ end if Rejuv
 # ================================================================ PATCH ================================================================= #
 # ======================================================================================================================================== #
 
-UniLib.insert_in_method(:PokeBattle_Battler, :hasCrest?, "return true if @battle.pbGetOwnerItems(@index).include?(:SILVCREST) && crestmon.species == :SILVALLY && !@battle.pbOwnedByPlayer?(@index)",
+UniLib.insert_in_method(:PokeBattle_Battler, :hasCrest?, "return true if $PokemonBag.pbQuantity(:SILVCREST) > 0 && species == :SILVALLY && @battle.pbOwnedByPlayer?(@index)",
   "UniLib::CREST_HOOKS.each { |h| if (m = h.(self, self.battle)).nil?; return m; end }
-  return crestmon.form == 0 ? true : UniLib::VALID_CRESTS[crestmon.item].holders if UniLib::VALID_CRESTS[crestmon.item] and ItemModifier.has_event?(crestmon, :crest)") if Rejuv
+  return self.form == 0 ? true : UniLib::VALID_CRESTS[self.item].holders if UniLib::VALID_CRESTS[self.item] and ItemModifier.has_event?(self, :crest)") if Rejuv
 
-UniLib.replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@crested = hasCrest? ? pkmn.species : false",
+UniLib.replace_in_method(:PokeBattle_Battler, :__shadow_pbInitPokemon, "@crested = @species == :ZORUA ? :ZOROARK : @species",
   "h = hasCrest?
-  @crested = h ? (h.is_a?(CrestHolder) ? h : pkmn.species) : false")
+  @crested = h ? (h.is_a?(CrestHolder) ? h : @species == :ZORUA ? :ZOROARK : @species) : false")

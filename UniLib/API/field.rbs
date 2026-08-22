@@ -1,0 +1,45 @@
+class FieldBuilder
+  def self.add: (Symbol field, string name, string message) -> FieldModifier
+end
+
+class FieldModifier
+
+  def self.add: (Symbol field) -> FieldModifier
+
+  def core_data: (?name: String? | :delete, ?field_message: String? | :delete) -> FieldModifier
+
+  def set_graphic: (?index: (Integer | :push | :delete), ?graphic: String?, ?redirect_bg: String?, ?redirect_base_player: String?, ?redirect_base_enemy: String?) -> FieldModifier
+
+  def seed_data: (:ELEMENTALSEED | :MAGICALSEED | :SYNTHETICSEED | :TELLURICSEED seed, ?effect: Symbol? | :delete, ?duration: (Integer | Symbol)?, ?message: String?, ?animation: (String | Symbol)?, ?atk: Integer?, ?defe: Integer?, ?spa: Integer?, ?spd: Integer?, ?spe: Integer?, ?acc: Integer?, ?eva: Integer?) -> FieldModifier
+
+  def basic_interactions: (?secret_power: Symbol? | :delete, ?nature_power: Symbol? | :delete, ?mimicry: Symbol? | :delete, ?burmy_cloak: (:TRASHCLOAK | :PLANTCLOAK | :SANDYCLOAK | :delete)?) -> FieldModifier
+
+  def change_condition: (Symbol field, String | :delete condition) -> FieldModifier
+
+  def move_interaction: (Array[Symbol] | Symbol move, ?mult: (Float | Integer)? | :delete, ?typemod: Symbol? | :delete, ?accmod: Integer? | :delete, ?text: String? | :delete, ?counter: [Integer, Integer, Integer, String?]? | :delete, ?effect: String? | :delete, ?field_change: Symbol? | :delete, ?change_message: String? | :delete, ?change_effect: String? | :delete, ?change_backup: bool?, ?status_buff: bool?, ?status_nerf: bool?) -> FieldModifier
+
+  def type_interaction: (Array[Symbol] | Symbol type, ?mult: (Float | Integer)? | :delete, ?addon: Symbol? | :delete, ?effect: Symbol? | :delete, ?text: String? | :delete, ?condition: String? | :delete) -> FieldModifier
+
+  def overlay_move_interaction: (Array[Symbol] | Symbol move, ?mult: (Float | Integer)? | :delete, ?typemod: Symbol? | :delete, ?text: String? | :delete, ?status_buff: bool?, ?status_nerf: bool?) -> FieldModifier
+
+  def overlay_type_interaction: (Array[Symbol] | Symbol move, ?mult: (Float | Integer)? | :delete, ?typemod: Symbol? | :delete, ?text: String? | :delete) -> FieldModifier
+
+  private
+
+  def initialize: (untyped data) -> void
+
+  def set_value: (untyped key, untyped value) -> (untyped | untyped | nil)
+
+  def set_hash: (untyped key, untyped key2, untyped value, ?untyped hash) -> (untyped | untyped | nil)
+
+  def set_hash_inverted: (untyped key, untyped key2, untyped value, ?untyped hash) -> (untyped | untyped | nil)
+
+  def set_array: (untyped key, untyped value, untyped index, ?untyped hash) -> (untyped | nil)
+
+  def set_array_inverted: (untyped key, untyped value, untyped add, ?untyped hash) -> (untyped | untyped | nil)
+
+  def set_array_inverted_overlay: (untyped key, untyped value, untyped add) -> untyped
+
+  def self.build: (untyped key, untyped fieldMessages, untyped data) -> untyped
+
+end

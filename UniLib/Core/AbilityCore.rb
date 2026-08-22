@@ -130,7 +130,7 @@ def add_abilities
   UniLib::CUSTOM_ABILITIES.each { |_, ability_builder| ability_builder.build }
 end unless UniLib.lib_loaded(__FILE__)
 
-UniLib.add_play_event(:add_abilities, 1001)
+UniLib.add_load_event(:add_abilities, 1001)
 
 # ======================================================================================================================================== #
 # ================================================================ PATCH ================================================================= #

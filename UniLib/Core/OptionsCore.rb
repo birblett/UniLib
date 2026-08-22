@@ -12,21 +12,6 @@ module UniLib
 
   UNILIB_CUSTOM_OPTIONS = []
   OLD_OPTIONS = []
-  UNILIB_PAUSE_COMMANDS = {"UniLib.option_menu" => ["UniLib", proc do |context|
-    pbFadeOutIn(99999) {
-      PokemonOption.new(UniLibOptionScene.new).pbStartScreen
-      pbUpdateSceneMap
-      context.instance_variable_get(:@scene).pbRefresh
-    }
-    $updateFLHUD = true
-  end, proc do |_|
-    if $queue_option_removal
-      arr = (UNILIB_CUSTOM_OPTIONS + [SEPARATE_UNILIB_OPTIONS]).map { |opt| opt.get }
-      PokemonOptionScene::OptionList.delete_if { |v| arr.include?(v) } if Rejuv
-    end
-    SEPARATE_UNILIB_OPTIONS == 1
-  end]}
-  UNILIB_PARTY_COMMANDS = {}
   UNILIB_BOX_COMMANDS = {}
   $queue_option_removal = false
 
@@ -35,29 +20,48 @@ end
 unless UniLib.lib_loaded(__FILE__)
 
   class OptionBase
+    include PropertyMixin
 
     include UniLib
 
     attr_accessor(:name)
     attr_accessor(:value)
     attr_accessor(:option)
+    attr_accessor(:category)
 
-    def initialize(name, desc, on_update_proc=nil)
+    UNILIB_OPTION_CATEGORY = {}
+    NATURAL_SORT = {}
+
+    def self.add_category(category, sort)
+      UNILIB_OPTION_CATEGORY[category] = sort
+    end
+
+    def self.get_category_sort(category)
+      NATURAL_SORT[category] ||= NATURAL_SORT.size
+      return 1000 * (UNILIB_OPTION_CATEGORY[category] ? UNILIB_OPTION_CATEGORY[category] : 2000) + NATURAL_SORT[category]
+    end
+
+    def initialize(name, desc, on_update_proc=nil, category="Misc.")
       @name = name
       @desc = desc
       @update = on_update_proc
       @increment = 1
       @min = 0
+      @category = category
       UNILIB_CUSTOM_OPTIONS.push(self) unless UNILIB_CUSTOM_OPTIONS.include?(self)
-    end
-
-    def update
-      @update.call(@value + @min) unless @update.nil? or @value.nil? or @min.nil?
-      UniLib.save_data("options", UniLib::UNILIB_CUSTOM_OPTIONS + UniLib::OLD_OPTIONS + [UniLib::SEPARATE_UNILIB_OPTIONS])
     end
 
     def get
       @option
+    end
+
+    def update
+      @update.call(@value + @min) unless @update.nil? or @value.nil? or @min.nil?
+      UniLib.save_data("options", UniLib::UNILIB_CUSTOM_OPTIONS + UniLib::OLD_OPTIONS)
+    end
+
+    def description
+      @desc.is_a?(Proc) ? @desc.call : @desc
     end
 
     def ==(other)
@@ -118,40 +122,24 @@ unless UniLib.lib_loaded(__FILE__)
   class IncrementNumberOption < NumberOption
 
     def initialize(name, format, min, max, getter, setter, increment, description="")
-      if Reborn
-        super(name, format, min, max, increment, getter, setter, description)
-      else
-        super(name, format, min, max, getter, setter, description)
-      end
+      super(name, format, min, max, increment, getter, setter, description)
       @increment = increment
     end
 
     def next(current)
       index = current + @optstart + @increment * (Input.press?(Input::SHIFT) ? 10 : 1)
       index = @optstart if index>@optend
+      tts(index.to_s, true)
+      self.set(index - @optstart)
       index - @optstart
     end
 
     def prev(current)
       index = current + @optstart - @increment * (Input.press?(Input::SHIFT) ? 10 : 1)
       index = @optend if index < @optstart
+      tts(index.to_s, true)
+      self.set(index - @optstart)
       index - @optstart
-    end
-
-  end
-
-  class UniStringOption < OptionBase
-
-    def initialize(name, desc, options, on_update_proc=nil, default=0)
-      super(name, desc, on_update_proc)
-      @options = []
-      @value = default
-      options.each { |option| @options.push(_INTL(option)) }
-      inst = self
-      @option = EnumOption.new(_INTL(@name) ,@options, proc { inst.value }, proc do |value|
-        inst.value = value
-        inst.update
-      end, @desc)
     end
 
   end
@@ -186,142 +174,32 @@ unless UniLib.lib_loaded(__FILE__)
 
 end
 
-module UniLib
-
-  SEPARATE_UNILIB_OPTIONS = UniStringOption.new("UniLib Option Menu", "Moves UniLib options to their own menu.", %w[Off On], proc { |value| $queue_option_removal = value == 1 }, 0)
-  UNILIB_CUSTOM_OPTIONS -= [SEPARATE_UNILIB_OPTIONS]
-
-end
-
 #noinspection RubyInstanceMethodNamingConvention
-class UniLibOptionScene
+class UniLibOptionScene < PokemonOptionScene
 
   include UniLib
 
+  $sorted_options = nil
+
   unless UniLib.lib_loaded(__FILE__)
 
-    if Rejuv
+    attr_accessor(:viewport)
 
-      OptionList = []
-
-      attr_accessor(:viewport)
-
-      def pbStartScene
-        @sprites={}
-        @viewport=Viewport.new(0,0,Graphics.width,Graphics.height)
-        @viewport.z=99999
-        @sprites["title"]=Window_UnformattedTextPokemon.newWithSize(_INTL("UniLib Options"),0,0,Graphics.width,64,@viewport)
-        @sprites["textbox"]=Kernel.pbCreateMessageWindow
-        @sprites["textbox"].letterbyletter=false
-        if SEPARATE_UNILIB_OPTIONS == 1
-          UNILIB_CUSTOM_OPTIONS.each { |option| OptionList.push(option.get) unless option.get.nil? or OptionList.include?(option.get)}
-          OptionList.push(SEPARATE_UNILIB_OPTIONS.get) unless OptionList.include?(SEPARATE_UNILIB_OPTIONS.get)
-        end
-        @sprites["option"]=Window_PokemonOption.new(OptionList, 0, @sprites["title"].height,Graphics.width, Graphics.height-@sprites["title"].height-@sprites["textbox"].height)
-        @sprites["option"].viewport=@viewport
-        @sprites["option"].visible=true
-        (0...OptionList.length).each { |i| @sprites["option"][i] = (OptionList[i].get || 0) }
-        pbDeactivateWindows(@sprites)
-        pbFadeInAndShow(@sprites) { pbUpdate }
-      end
-
-      def pbOptions
-        pbActivateWindow(@sprites,"option"){
-          loop do
-            Graphics.update
-            Input.update
-            pbUpdate
-            if @sprites["option"].mustUpdateOptions
-              # Set the values of each option
-              (0...OptionList.length).each { |i| OptionList[i].set(@sprites["option"][i]) }
-              @sprites["textbox"].setSkin(MessageConfig.pbGetSpeechFrame())
-              @sprites["textbox"].width=@sprites["textbox"].width  # Necessary evil
-              pbSetSystemFont(@sprites["textbox"].contents)
-              if @sprites["option"].options[@sprites["option"].index].description.is_a?(Proc)
-                @sprites["textbox"].text=@sprites["option"].options[@sprites["option"].index].description.call
-              else
-                @sprites["textbox"].text=@sprites["option"].options[@sprites["option"].index].description
-              end
-            end
-            break if Input.trigger?(Input::B) or Input.trigger?(Input::C) && @sprites["option"].index==OptionList.length
+    def initOptions
+      unless $sorted_options
+        $sorted_options = []
+        optionsSorted = UniLib::UNILIB_CUSTOM_OPTIONS.sort_by { |o| OptionBase.get_category_sort(o.category) }
+        cat = nil
+        optionsSorted.each { |o|
+          if o.category != cat
+            cat = o.category
+            $sorted_options.push _INTL(cat)
           end
+          $sorted_options.push(o.get)
         }
+        $sorted_options.push _INTL("Back")
       end
-
-      def pbEndScene
-        pbFadeOutAndHide(@sprites) { pbUpdate }
-        # Set the values of each option
-        (0...OptionList.length).each { |i| OptionList[i].set(@sprites["option"][i]) }
-        Kernel.pbDisposeMessageWindow(@sprites["textbox"])
-        pbDisposeSpriteHash(@sprites)
-        pbRefreshSceneMap
-        @viewport.dispose
-      end
-
-    else
-
-      attr_accessor(:viewport)
-
-      def pbStartScene
-        @optionList = []
-        @sprites = {}
-        @viewport = Viewport.new(0, 0, Graphics.width, Graphics.height)
-        @viewport.z = 99999
-        @sprites["title"] = Window_UnformattedTextPokemon.newWithSize(_INTL("UniLib Options"), 0, 0, Graphics.width, 64, @viewport)
-        @sprites["textbox"] = Kernel.pbCreateMessageWindow
-        @sprites["textbox"].letterbyletter = false
-        UNILIB_CUSTOM_OPTIONS.each { |option| @optionList.push(option.get) unless option.get.nil? }
-        @optionList.push(SEPARATE_UNILIB_OPTIONS.get)
-        @sprites["option"] = Window_PokemonOption.new(@optionList, 0, @sprites["title"].height,
-                                                      Graphics.width, Graphics.height - @sprites["title"].height - @sprites["textbox"].height)
-        @sprites["option"].viewport = @viewport
-        @sprites["option"].visible = true
-        # Get the values of each option
-        (0...@optionList.length).each { |i| @sprites["option"][i] = (@optionList[i].get || 0) }
-        pbDeactivateWindows(@sprites)
-        pbFadeInAndShow(@sprites) { pbUpdate }
-      end
-
-      def pbOptions
-        pbActivateWindow(@sprites,"option"){
-          loop do
-            Graphics.update
-            Input.update
-            pbUpdate
-            if @sprites["option"].mustUpdateOptions
-              # Set the values of each option
-              (0...@optionList.length).each { |i| @optionList[i].set(@sprites["option"][i]) }
-              @sprites["textbox"].setSkin(MessageConfig.pbGetSpeechFrame())
-              @sprites["textbox"].width=@sprites["textbox"].width  # Necessary evil
-              if (opt = @sprites["option"].options[@sprites["option"].index]).nil?
-                @sprites["textbox"].text = "Exit and save selected settings."
-              else
-                if opt.description.is_a?(Proc)
-                  @sprites["textbox"].text = opt.description.call
-                else
-                  @sprites["textbox"].text = opt.description
-                end
-              end
-            end
-            break if Input.trigger?(Input::B) or Input.trigger?(Input::C) && @sprites["option"].index == @optionList.length
-          end
-        }
-      end
-
-      def pbEndScene
-        pbFadeOutAndHide(@sprites) { pbUpdate }
-        # Set the values of each option
-        (0...@optionList.length).each { |i| @optionList[i].set(@sprites["option"][i]) }
-        Kernel.pbDisposeMessageWindow(@sprites["textbox"])
-        pbDisposeSpriteHash(@sprites)
-        pbRefreshSceneMap
-        @viewport.dispose
-      end
-
-    end
-
-    def pbUpdate
-      pbUpdateSpriteHash(@sprites)
+      return $sorted_options.clone
     end
 
   end
@@ -334,57 +212,39 @@ end
 
 def read_option_data
   UniLib.restore_data("options", []).each do |option|
-    if option == UniLib::SEPARATE_UNILIB_OPTIONS
-      UniLib::SEPARATE_UNILIB_OPTIONS.value = option.value
-      UniLib::SEPARATE_UNILIB_OPTIONS.update
+    i = UniLib::UNILIB_CUSTOM_OPTIONS.index(option)
+    if i
+      UniLib::UNILIB_CUSTOM_OPTIONS[i].value = option.value
+      UniLib::UNILIB_CUSTOM_OPTIONS[i].update
     else
-      i = UniLib::UNILIB_CUSTOM_OPTIONS.index(option)
-      if i
-        UniLib::UNILIB_CUSTOM_OPTIONS[i].value = option.value
-        UniLib::UNILIB_CUSTOM_OPTIONS[i].update
-      else
-        UniLib::OLD_OPTIONS.push(option)
-      end
+      UniLib::OLD_OPTIONS.push(option)
     end
-
   end
 end unless UniLib.lib_loaded(__FILE__)
 
 UniLib.add_load_screen_event(:read_option_data)
 
+MenuHandlers.add(:pause_menu, :unilib_options,
+                 name:      proc { _INTL("UniLib Options") },
+                 order:     71,
+                 effect:    proc { |scene, screen|
+                   opt_scene = UniLibOptionScene.new
+                   opt_screen = PokemonOption.new(opt_scene)
+                   pbFadeOutIn(99999) {
+                     opt_screen.pbStartScreen
+                     pbUpdateSceneMap
+                     scene.pbRefresh
+                   }
+                   # In case windowskin was changed
+                   scene.sprites["cmdwindow"].setSkin(MessageConfig.pbGetSystemFrame())
+                   scene.sprites["cmdwindow"].setDefaultTextColors
+                   $updateFLHUD = true
+                   next nil
+                 })
+
 # ======================================================================================================================================== #
 # ================================================================ PATCH ================================================================= #
 # ======================================================================================================================================== #
 
-target = Reborn ? "@optionList" : "OptionList"
-UniLib.insert_in_method_before(:PokemonOptionScene, :pbStartScene, "for i in 0...#{target}.length",
-  "if UniLib::SEPARATE_UNILIB_OPTIONS == 0 and UniLib::UNILIB_CUSTOM_OPTIONS.length > 0
-    UniLib::UNILIB_CUSTOM_OPTIONS.each { |option| #{target}.push(option.get) unless option.get.nil? or #{target}.include?(option.get)}
-    #{target}.push(UniLib::SEPARATE_UNILIB_OPTIONS.get) unless #{target}.include?(UniLib::SEPARATE_UNILIB_OPTIONS.get)
-  end")
-
-target = Reborn ? "commands[cmdOption = commands.length] = _INTL(\"Options\")" : "commands[cmdOption=commands.length]=_INTL(\"Options\")"
-UniLib.insert_in_method(:PokemonMenu, :pbStartPokemonMenu, target,
-  "uni_cmds = UniLib::UNILIB_PAUSE_COMMANDS.reduce({}) { |c, entry| commands[c[entry[0]] = commands.length] = _INTL(entry[1][0]) if entry[1][2].nil? or entry[1][2].call(self); c}")
-
-target = Reborn ? "command = @scene.pbShowCommands(commands)" : "command=@scene.pbShowCommands(commands)"
-UniLib.insert_in_method(:PokemonMenu, :pbStartPokemonMenu, target,
-  "b = false; uni_cmds.each { |c, idx| next if b; UniLib::UNILIB_PAUSE_COMMANDS[c][1].call(self) if b |= command == idx}; next if b")
-
-target = Reborn ? "commands[commands.length] = _INTL(\"Cancel\")" : "commands[commands.length]=_INTL(\"Cancel\")"
-UniLib.insert_in_method_before(:PokemonScreen, :pbPokemonScreen, target,
-  "uni_cmds = UniLib::UNILIB_PARTY_COMMANDS.reduce({}) { |c, entry| commands[c[entry[0]] = commands.length] = _INTL(entry[1][0]) if entry[1][2].nil? or entry[1][2].call(pkmn); c}")
-
-target = Reborn ? "if cmdSummary >= 0 && command == cmdSummary" : "if cmdSummary>=0 && command==cmdSummary"
-UniLib.insert_in_method_before(:PokemonScreen, :pbPokemonScreen, target,
-  "uni_cmds.each { |c, idx| UniLib::UNILIB_PARTY_COMMANDS[c][1].call(pkmn) if command == idx }")
-
-target = Reborn ? "command = pbShowCommands(helptext, commands)" : "command=pbShowCommands(helptext,commands)"
-UniLib.insert_in_method_before(:PokemonStorageScreen, :pbStartScreen, target,
-  "uni_cmds = UniLib::UNILIB_BOX_COMMANDS.reduce({}) { |c, entry| commands[c[entry[0]] = commands.length] = _INTL(entry[1][0]) if entry[1][2].nil? or entry[1][2].call(heldpoke ? heldpoke : pokemon, selected[0] == -1); c} if heldpoke or pokemon")
-
-target = Reborn ? "command = pbShowCommands(helptext, commands)" : "command=pbShowCommands(helptext,commands)"
-UniLib.insert_in_method(:PokemonStorageScreen, :pbStartScreen, target,
-  "called = false
-  uni_cmds.each { |c, idx| (UniLib::UNILIB_PARTY_COMMANDS[c][1].call(heldpoke ? heldpoke : pokemon, selected[0] == -1); called = true) if command == idx }
-  next if called")
+UniLib.insert_in_method_before(:PokemonStorageScreen, :pbBoxCommands, "commands[cmdCancel = commands.length] = _INTL(\"Cancel\")",
+  "uni_cmds = UniLib::UNILIB_BOX_COMMANDS.reduce({}) { |c, entry| commands[c[entry[0]] = commands.length] = _INTL(entry[1][0]) if entry[1][2].nil? or entry[1][2].call(pbHeldPokemon); c} if pbHeldPokemon")

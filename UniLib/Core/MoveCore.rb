@@ -11,7 +11,7 @@ UniLib.verify_version(0.8, __FILE__)
 module UniLib
 
   CUSTOM_MOVES = {} unless UniLib.cached(UniLib::MOVE)
-  MOVE_DATA = load_data("Data/moves.dat") unless defined? MOVE_DATA
+  MOVE_DATA = load_data(Reborn ? "Data/moves_modern.dat" : "Data/moves.dat") unless defined? MOVE_DATA
   MOVE_MAX_ID = MOVE_DATA.max_by { |_, v| v.flags[:ID].nil? ? 0 : v.flags[:ID] }[1].flags[:ID] unless defined? MOVE_MAX_ID
   $move_current_max = MOVE_MAX_ID
 
@@ -89,5 +89,6 @@ UniLib.add_play_event(:add_moves, 1001)
 # ================================================================ PATCH ================================================================= #
 # ======================================================================================================================================== #
 
-UniLib.replace_in_method(:PokeBattle_Move, :pbEffectMessages, "if !pbIsMultiHit && !attacker.effects[:ParentalBond]",
-  "if !pbIsMultiHit and !attacker.effects[:ParentalBond] and !attacker.effects[:Multihit]")
+target = Rejuv ? "if !pbIsMultiHit && !(attacker.effects[:ParentalBond] || attacker.effects[:TyphBond] || attacker.effects[:SurgingBlessing] > 0)" : "if !pbIsMultiHit && !(attacker.effects[:ParentalBond] || attacker.effects[:TyphBond])"
+UniLib.replace_in_method(:PokeBattle_Move, :pbEffectMessages, target,
+  "if (!pbIsMultiHit && !(attacker.effects[:ParentalBond] || attacker.effects[:TyphBond])) and !attacker.effects[:Multihit]")

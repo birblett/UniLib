@@ -116,7 +116,103 @@ module MapEvent
     EventBuilder.new("", 0, 0, pass: true)
   end
 
+  def self.modify_event(mapid, name_or_idx, &block)
+    unless UniLib.cached(UniLib::MAP)
+      (MAP_EVENT_MODIFIERS[mapid] ||= [{}, {}])[name_or_idx.is_a?(Numeric) ? 0 : 1][name_or_idx] = block
+    end
+  end
+
+  def self.copy_event_to_map(map, obj, x = nil, y = nil)
+    i = map.events.keys.max + 1
+    event = (obj.is_a?(EventBuilder) ? obj.event : obj).clone
+    event.id = i
+    event.x = x if x
+    event.y = y if y
+    map.events[i] = event
+  end
+
   def self.splice(base, from, base_x, base_y, base_layer, splice_x, splice_y, splice_x_final, splice_y_final, splice_layer)
+  end
+
+end
+
+class MapPatcher
+
+  def initialize(map)
+    @map = map
+    @data = map.data
+    @data_base = UniLib.deep_copy(@data)
+  end
+
+  def resize(xs, ys)
+    zsize = @data_base.zsize
+    @data.resize(xs, ys, zsize)
+    @map.width = xs
+    @map.height = ys
+  end
+
+  def clear(x, y, layer)
+    @data[x, y, layer] = 0
+  end
+
+  def stair_type_horizontal(stair_left, stair_right, stair_mid = nil)
+    @stair_left, @stair_right, @stair_mid = stair_left, stair_right, stair_mid
+  end
+
+  def clear_all(x, y, width, height, layer)
+    set_all(x, y, width, height, layer, 0)
+  end
+
+  def set_all(x, y, width, height, layer, value)
+    (x...x + width).each { |x1| (y...y + height).each { |y1| @data[x1, y1, layer] = value } }
+  end
+
+  def set_data(x, y, layer, data)
+    @data[x, y, layer] = data
+  end
+
+  def swap(x, y, x1, y1, layer)
+    d = @data[x, y, layer]
+    @data[x, y, layer] = @data[x1, y1, layer]
+    @data[x1, y1, layer] = d
+  end
+
+  def set_data_bulk(x, y, d1 = nil, d2 = nil, d3 = nil)
+    @data[x, y, 0] = d1 if d1
+    @data[x, y, 1] = d2 if d2
+    @data[x, y, 2] = d3 if d3
+  end
+
+  def add_stair_horizontal(x, y)
+    @data[x, y, 1] = @stair_left
+    @data[x + 1, y, 1] = @stair_mid ? @stair_mid : @stair_right
+    @data[x + 2, y, 1] = @stair_right if @stair_mid
+  end
+
+  def remove_tree(top_left_x, top_left_y, top_layer = 2)
+    (top_left_x..top_left_x + 2).each { |x| (top_left_y..top_left_y + 2).each { |y| @data[x, y, 1] = 0 } }
+    (top_left_x..top_left_x + 2).each { |x| @data[x, top_left_y, 2] = 0 }
+    @data[top_left_x + 1, top_left_y - 1, top_layer] = 0
+  end
+
+  def copy_paste(x, y, width, height, x_to, y_to, layer = nil, flipped_x: false, flipped_y: false)
+    if layer
+      (0...width).each { |dx| (0...height).each { |dy|
+        @data[x_to + dx, y_to + dy, layer] = @data_base[flipped_x ? x + width - dx : x + dx, flipped_y ? y + height - dy : y + dy, layer] }
+      }
+    else
+      (0..2).each { copy_paste(x, y, width, height, x_to, y_to, _1) }
+    end
+  end
+
+  def copy_paste_event(by, x, y)
+    ev = case by
+         when Numeric then @map.events[by]
+         when Array then @map.events.find { |_, ev| ev.x == by[0] && ev.y == by[1] }
+         else @map.events.find { |_, ev| ev.name == by }
+         end
+    ev = ev[1] if ev.is_a? Array
+    MapEvent.copy_event_to_map(@map, ev, x, y) if ev
   end
 
 end
@@ -125,7 +221,7 @@ class EventBuilder
 
   attr_accessor(:event)
 
-  def initialize(name, x = 0, y = 0, pass: false)
+  def initialize(name, x = 0, y = 0, pass: false, use_old: false)
     if pass
       @pass = true
       return
@@ -136,7 +232,7 @@ class EventBuilder
       @event.name = name
       @page = nil
     else
-      @page = (@event = name.clone).pages[0]
+      @page = (@event = use_old ? name : name.clone).pages[0]
     end
     @conditionals_left = {}
     @index = {}
@@ -188,11 +284,11 @@ class EventBuilder
     if variable and variable.is_a? Hash
       @page.condition.variable_id = variable[:id]
       @page.condition.variable_value = variable[:value]
-      @page.condition.variable_valid = true
+      @page.condition.variable_valid = variable[:valid] ? variable[:valid] : true
     end
     if self_switch and %w[A B C D].include? self_switch
-      @page.instance_variable_set(:@self_switch_valid, true)
-      @page.instance_variable_set(:@self_switch_ch, self_switch)
+      @page.condition.self_switch_valid = true
+      @page.condition.self_switch_ch = self_switch
     end
     if trigger
       @page.trigger = trigger

@@ -12,19 +12,20 @@ module UniLib
 
   unless UniLib.lib_loaded(__FILE__)
 
-    POKEMON_DATA = load_data("Data/mons.dat") if !defined? POKEMON_DATA or POKEMON_DATA.nil?
+    POKEMON_DATA = load_data(Reborn ? "Data/mons_modern.dat" : "Data/mons.dat") if !defined? POKEMON_DATA or POKEMON_DATA.nil?
     STAT_INDEX = {:HP => 0, :ATK => 1, :DEF => 2, :SPA => 3, :SPD => 4, :SPE => 5}
-    HIDDEN_ABILITY_SYM = Reborn ? :HiddenAbility : :HiddenAbilities
 
     def self.get_form_number(holder, form)
       return [form, FORM_MAP[holder][form]] if form.is_a? Integer
       form_str = nil
       if form.is_a? String
-        tmp = FORM_MAP[holder][form_str = form + " Form"]
+        tmp = FORM_MAP[holder][form_str = form]
+        tmp = FORM_MAP[holder][form_str = form + " Form"] if tmp.nil?
         tmp = FORM_MAP[holder][form_str = form + " Forme"] if tmp.nil?
         tmp = FORM_MAP[holder][form_str = form + " Rotom"] if tmp.nil?
         tmp = FORM_MAP[holder][form_str = form + " Mode"] if tmp.nil?
-        tmp = FORM_MAP[holder][form_str = form] if tmp.nil?
+        tmp = FORM_MAP[holder][form_str = form + " Trim"] if tmp.nil?
+        tmp = FORM_MAP[holder][form_str = form + " Plumage"] if tmp.nil?
         form_str = form if tmp.nil?
         form = tmp
       end
@@ -32,16 +33,10 @@ module UniLib
     end
 
     def self.add_form(species, form_str)
-      if FORM_MAP[species][form_str]
-        p $cache.pkmn[species] if species == :BASCULEGION
-        $cache.pkmn[species].forms[FORM_MAP[species].keys.index(form_str) / 2] = form_str
-        p $cache.pkmn[species] if species == :BASCULEGION
-        return FORM_MAP[species][form_str]
-      end
+      return FORM_MAP[species][form_str] if FORM_MAP[species] and FORM_MAP[species][form_str]
       form = FORM_MAP[species].keys.max_by { |k| k.is_a?(Numeric) ? k : -1 } + 1
       FORM_MAP[species][form] = form_str
       FORM_MAP[species][form_str] = form
-      $cache.pkmn[species].pokemonData[$cache.pkmn[species].forms[form] = form_str] = MonData.new(species, {})
       form
     end
 
@@ -109,7 +104,7 @@ class PokeModifier
     attr_accessor(:end_of_battle_reset)
     attr_accessor(:target_dex_num)
 
-    def initialize(species, form, form_str)
+    def initialize(species, form, form_str, gender: nil)
       return self if UniLib.cached(POKEMON)
       @species = species
       @form = form
@@ -133,6 +128,7 @@ class PokeModifier
       @base_data = nil
       @end_of_battle_reset = nil
       @target_dex_num = -1
+      @gender = gender
       EVENT_POKEMODIFIER_INIT.each { |event| event.call(self) }
     end
 
@@ -154,52 +150,54 @@ class PokeModifier
     end
 
     def mon_data
-      if Reborn
-        @base_data = $cache.pkmn[@species].pokemonData[$cache.pkmn[@species].forms[@form]] if @base_data.nil?
-      else
-        @base_data = @form == 0 ? $cache.pkmn[@species] : $cache.pkmn[@species].formData[$cache.pkmn[@species].forms[@form]] if @base_data.nil?
+      if @base_data.nil?
+        $cache.pkmn[@species] = MonWrapper.new(@species, {}) if $cache.pkmn[@species].nil?
+        d = $cache.pkmn[@species].pokemonData
+        f = $cache.pkmn[@species].forms
+        if @gender
+          @base_data = d[f[@form]].genderDifferences[@gender]
+          if @base_data.nil?
+            @base_data = MonData.new(@species, @form_str, {}, d)
+            d[f[@form]].instance_variable_set(:@genderDifferences, { @gender => @base_data })
+          end
+        else
+          @base_data = d[f[@form]]
+          if @base_data.nil?
+            f[f.length] = @form_str
+            @base_data = d[@form_str] = f.length > 0 ? UniLib.deep_copy(d[f[0]]) : MonData.new(@species, @form_str, {}, d)
+          end
+        end
       end
-      @base_data = MonData.new(@species, {}) if @base_data.nil?
       @base_data
     end
 
     def get_base_data(sym, default=nil)
-      if Reborn
-        ret = POKEMON_DATA[@species].pokemonData[@form_str].instance_variable_get(("@" + sym.to_s).to_sym) if ret.nil? rescue nil
-        ret = POKEMON_DATA[@species].pokemonData[POKEMON_DATA[@species].forms[0]].instance_variable_get(("@" + sym.to_s).to_sym) if ret.nil? rescue nil
-        ret = POKEMON_DATA[@species].flags[sym] if ret.nil? rescue nil
-      else
-        ret = POKEMON_DATA[@species].formData[@form_str][sym] if ret.nil? rescue nil
-        ret = POKEMON_DATA[@species].flags[sym] if ret.nil? rescue nil
-        ret = POKEMON_DATA[@species].instance_variable_get(("@" + sym.to_s).to_sym) if ret.nil? rescue nil
-      end
+      ret = POKEMON_DATA[@species].pokemonData[@form_str].instance_variable_get(("@" + sym.to_s).to_sym) if ret.nil? rescue nil
+      if ret.nil?
+        base_form = POKEMON_DATA[@species].pokemonData[@form_str].instance_variable_get(:@baseForm)
+        ret = POKEMON_DATA[@species].pokemonData[base_form].instance_variable_get(("@" + sym.to_s).to_sym)
+      end rescue ret = nil
+      ret = POKEMON_DATA[@species].pokemonData[POKEMON_DATA[@species].forms[0]].instance_variable_get(("@" + sym.to_s).to_sym) if ret.nil? rescue nil
+      ret = POKEMON_DATA[@species].flags[sym] if ret.nil? rescue nil
       ret.nil? ? default : ret.dup
     end
 
     def get_data(sym, default = nil)
       begin
-        if @form == 0 || Reborn
-          data = mon_data.instance_variable_get(("@" + sym.to_s).to_sym)
-          data = $cache.pkmn[@species].pokemonData[POKEMON_DATA[@species].forms[0]].instance_variable_get(("@" + sym.to_s).to_sym) if data.nil? and Reborn
-          data
-        else
-          mon_data[sym].nil? ? mon_data.instance_variable_get(("@" + sym.to_s).to_sym) : mon_data[sym]
-        end
+        data = mon_data.instance_variable_get(("@" + sym.to_s).to_sym)
+        data = $cache.pkmn[@species].pokemonData[POKEMON_DATA[@species].forms[0]].instance_variable_get(("@" + sym.to_s).to_sym) unless data
+        data
       rescue
         default
       end
     end
 
     def get_form_data(sym)
-      if Reborn
-        mon_data.instance_variable_get(("@" + sym.to_s).to_sym)
-      else
-        mon_data[sym]
-      end
+      mon_data.instance_variable_get(("@" + sym.to_s).to_sym)
     end
 
     def set_data(sym, data)
-      @form == 0 || Reborn ? mon_data.instance_variable_set(("@" + String(sym)).to_sym, data) : mon_data[sym] = data
+      mon_data.instance_variable_set(("@" + String(sym)).to_sym, data)
     end
 
     def set_megas_internal
@@ -221,26 +219,15 @@ class PokeModifier
         abilities[0] = @abilities[0]
         abilities[1] = @abilities[1]
         set_data(:Abilities, abilities)
-        set_data(HIDDEN_ABILITY_SYM, @abilities[2])
+        set_data(:HiddenAbility, @abilities[2])
       else
         @abilities.each do |index, ability|
           next if index > 2 or index < 0
-          if Reborn
-            if index == 2
-              set_data(HIDDEN_ABILITY_SYM, ability)
-            else
-              (abils = get_data(:Abilities, []).dup)[index] = ability
-              set_data(:Abilities, abils)
-            end
+          if index == 2
+            set_data(:HiddenAbility, ability)
           else
-            if index == 2 and @form == 0
-              ha = get_data(:flags, {})
-              ha[HIDDEN_ABILITY_SYM] = ability
-            else
-              data = get_data(:Abilities, []).dup
-              data[index] = ability
-              set_data(:Abilities, data)
-            end
+            (abils = get_data(:Abilities, []).dup)[index] = ability
+            set_data(:Abilities, abils)
           end
         end
         a = get_data(:Abilities, [])
@@ -404,7 +391,7 @@ end
 
 def pokemon_datafixer
   $Trainer.party.each do |pokemon|
-    pokemon.bossId = nil if Rejuv
+    pokemon.bossID = nil if Rejuv
     pokemon.isbossmon = false
     pokemon.calcStats
     pokemon.permanent_battle_effects.clear if pokemon.permanent_battle_effects
@@ -412,7 +399,7 @@ def pokemon_datafixer
   $PokemonStorage.boxes.each do |box|
     box.pokemon.each do |pokemon|
       next unless pokemon
-      pokemon.bossId = nil if Rejuv
+      pokemon.bossID = nil if Rejuv
       pokemon.isbossmon = false
       pokemon.calcStats
       pokemon.permanent_battle_effects.clear if pokemon.permanent_battle_effects
@@ -446,11 +433,9 @@ UniLib.insert_in_method(:PokeBattle_Pokemon, :type2, :HEAD,
 UniLib.insert_in_function(:getEvolutionForm, :HEAD,
   "UniLib::EVO_OVERRIDES[[mon.species, mon.form]].each { |override, m = nil| return m if (m = override.call(mon, item)) } if UniLib::EVO_OVERRIDES[[mon.species, mon.form]]")
 
-target = Reborn ? "if Rejuv" : "i.rampCrestUsed = false"
-index = Reborn ? 2 : 0
-UniLib.insert_in_method_before(:PokeBattle_Battle, :pbEndOfBattle, target,
+UniLib.insert_in_method_before(:PokeBattle_Battle, Reborn ? :__followingpkmn__pbEndOfBattle : :pbEndOfBattle, "i.changeFormOnBattleEnd",
   "i.permanent_battle_effects = {}
   k = [i.species, i.form]
-  i.form = UniLib::END_OF_BATTLE_RESET[k] if UniLib::END_OF_BATTLE_RESET[k]", index)
+  i.form = UniLib::END_OF_BATTLE_RESET[k] if UniLib::END_OF_BATTLE_RESET[k]")
 
 UniLib.insert_in_method(:PokeBattle_BattleCommon, :pbStorePokemon, :HEAD, "pokemon.permanent_battle_effects = {}; pokemon.bossId = nil if Rejuv; pokemon.isbossmon = false")
